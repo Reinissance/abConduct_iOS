@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="N7y-lU-YfX" userLabel="Screen">
+                                <rect key="frame" x="2" y="2" width="371" height="663"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="U5n-Ah-eKg" userLabel="Horizontal Stack">
+                                        <rect key="frame" x="0.0" y="0.0" width="371" height="663"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FEd-eI-mc2" customClass="PDFView">
+                                                <rect key="frame" x="0.0" y="0.0" width="371" height="490"/>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <gestureRecognizers/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="490" id="HDz-6e-im8"/>
+                                                </constraints>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="utE-pU-SjF" userLabel="HorizontalBorder">
+                                                <rect key="frame" x="0.0" y="490" width="371" height="24"/>
+                                                <subviews>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RUE-uk-wEi" userLabel="Buttons View">
+                                                        <rect key="frame" x="131" y="0.0" width="240" height="28"/>
+                                                        <subviews>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="f8C-hU-0nn">
+                                                                <rect key="frame" x="0.0" y="0.0" width="55" height="28"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="width" constant="55" id="GRP-I2-3gU"/>
+                                                                </constraints>
+                                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
+                                                                <state key="normal" title="Load">
+                                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                </state>
+                                                                <connections>
+                                                                    <action selector="buttonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="yv9-xb-OYC"/>
+                                                                </connections>
+                                                            </button>
+                                                            <button opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5W3-nD-gap">
+                                                                <rect key="frame" x="55" y="0.0" width="55" height="28"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="width" constant="55" id="wks-ca-exb"/>
+                                                                </constraints>
+                                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
+                                                                <state key="normal" title="Save">
+                                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                </state>
+                                                                <connections>
+                                                                    <action selector="buttonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="4gD-k6-XCZ"/>
+                                                                </connections>
+                                                            </button>
+                                                            <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FQf-WD-Flm">
+                                                                <rect key="frame" x="110" y="0.0" width="65" height="28"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="width" constant="65" id="l8k-yg-05Z"/>
+                                                                </constraints>
+                                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
+                                                                <state key="normal" title="display">
+                                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                </state>
+                                                                <connections>
+                                                                    <action selector="buttonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="SjY-Li-DA1"/>
+                                                                </connections>
+                                                            </button>
+                                                            <button opaque="NO" tag="3" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xx7-yP-9cF">
+                                                                <rect key="frame" x="175" y="0.0" width="65" height="28"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="width" constant="65" id="2bS-Gl-yiB"/>
+                                                                </constraints>
+                                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
+                                                                <state key="normal" title="refresh">
+                                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                </state>
+                                                                <connections>
+                                                                    <action selector="buttonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="dle-sd-3AV"/>
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="28" id="7iG-sn-Li9"/>
+                                                        </constraints>
+                                                    </stackView>
+                                                </subviews>
+                                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <gestureRecognizers/>
+                                                <constraints>
+                                                    <constraint firstAttribute="trailing" secondItem="RUE-uk-wEi" secondAttribute="trailing" id="4p7-MX-yPx"/>
+                                                    <constraint firstItem="RUE-uk-wEi" firstAttribute="top" secondItem="utE-pU-SjF" secondAttribute="top" id="Vz6-lV-FsL"/>
+                                                    <constraint firstAttribute="height" constant="24" id="eqC-BE-PVc"/>
+                                                </constraints>
+                                                <connections>
+                                                    <outletCollection property="gestureRecognizers" destination="NN7-Cs-weu" appends="YES" id="BBr-An-9jY"/>
+                                                    <outletCollection property="gestureRecognizers" destination="zcZ-me-i1g" appends="YES" id="Eaf-D3-K7z"/>
+                                                </connections>
+                                            </view>
+                                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="5sr-ro-rjN">
+                                                <rect key="frame" x="0.0" y="514" width="371" height="149"/>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <gestureRecognizers/>
+                                                <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                <connections>
+                                                    <outletCollection property="gestureRecognizers" destination="Zjw-eE-uJG" appends="YES" id="Ogo-Ef-8zJ"/>
+                                                </connections>
+                                            </textView>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstItem="5sr-ro-rjN" firstAttribute="top" secondItem="utE-pU-SjF" secondAttribute="bottom" id="kec-wo-dGY"/>
+                                        </constraints>
+                                    </stackView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" red="0.47450980390000003" green="0.46244407939557725" blue="0.43565538438960622" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="N7y-lU-YfX" secondAttribute="bottom" constant="2" id="54I-6j-O98"/>
+                            <constraint firstItem="N7y-lU-YfX" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" constant="2" id="XAr-ls-kgg"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="N7y-lU-YfX" secondAttribute="trailing" constant="2" id="gac-g6-GZM"/>
+                            <constraint firstItem="N7y-lU-YfX" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="2" id="xaw-uw-KmP"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                    </view>
+                    <connections>
+                        <outlet property="abcView" destination="5sr-ro-rjN" id="mWc-F3-Y5U"/>
+                        <outlet property="buttonViewHeight" destination="eqC-BE-PVc" id="psC-5t-cy3"/>
+                        <outlet property="displayHeight" destination="HDz-6e-im8" id="7Ax-wn-bMV"/>
+                        <outlet property="displayView" destination="FEd-eI-mc2" id="SLA-yG-dZK"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+                <panGestureRecognizer minimumNumberOfTouches="1" id="NN7-Cs-weu">
+                    <connections>
+                        <action selector="moveHorizontalStack:" destination="BYZ-38-t0r" id="CmX-Eb-PtK"/>
+                    </connections>
+                </panGestureRecognizer>
+                <pinchGestureRecognizer id="Zjw-eE-uJG">
+                    <connections>
+                        <action selector="zoomText:" destination="BYZ-38-t0r" id="Zsi-W4-cAQ"/>
+                    </connections>
+                </pinchGestureRecognizer>
+                <tapGestureRecognizer numberOfTapsRequired="2" id="zcZ-me-i1g">
+                    <connections>
+                        <action selector="buttonViewSizeToggle:" destination="BYZ-38-t0r" id="Q7j-u6-aeZ"/>
+                    </connections>
+                </tapGestureRecognizer>
+            </objects>
+            <point key="canvasLocation" x="136.80000000000001" y="133.5832083958021"/>
+        </scene>
+    </scenes>
+</document>
