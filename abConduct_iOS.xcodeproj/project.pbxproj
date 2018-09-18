@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4A23AC302151221D00A52D7B /* WebServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9E2D2150739700CA5CD4 /* WebServer.m */; };
 		4A2D7DBB214EBBCE005FB580 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DBA214EBBCE005FB580 /* AppDelegate.m */; };
 		4A2D7DBE214EBBCE005FB580 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DBD214EBBCE005FB580 /* ViewController.m */; };
 		4A2D7DC1214EBBCE005FB580 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A2D7DBF214EBBCE005FB580 /* Main.storyboard */; };
@@ -599,6 +600,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A2D7DD3214EBBCE005FB580 /* abConduct_iOSTests.m in Sources */,
+				4A23AC302151221D00A52D7B /* WebServer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

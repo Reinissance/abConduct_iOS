@@ -22,8 +22,11 @@
 - (IBAction)buttonPressed:(UIButton *)sender;
 - (IBAction)zoomText:(UIPinchGestureRecognizer *)sender;
 - (IBAction)startHTTPserver:(UISwitch *)sender;
+- (IBAction)codeHighlightingEnabled:(UISwitch *)sender;
 @property (weak, nonatomic) IBOutlet UILabel *serverLabel;
 @property (weak, nonatomic) IBOutlet UISwitch *serverSwitch;
+- (IBAction)hideKeyboard:(id)sender;
+@property (weak, nonatomic) IBOutlet UILabel *codeHighlightingLabel;
 
 @property (weak, nonatomic) WebServer *server;
 

@@ -38,6 +38,7 @@
 	return self;
 }
 
+
 - (BOOL)start:(NSString *)directory {
 
     //check Wifi connection
@@ -49,10 +50,19 @@
     BOOL noWifi = NO;
     if(status != ReachableViaWiFi) {
         //WiFi
-        noWifi = YES;
+        if (status == ReachableViaWWAN) {
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"no wifi connection..."
+                                                                message:[NSString stringWithFormat:@"Please make shure You have Personal Hotspot enabled in system settings.", nil]
+                                                               delegate:self
+                                                      cancelButtonTitle:@"Ok"
+                                                      otherButtonTitles:nil];
+            [alertView show];
+        }
+        else noWifi = YES;
     }
     if (noWifi) {
         NSLog(@"no wifi connection!");
+        
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"no wifi connection"
                                                             message:[NSString stringWithFormat:@"Please connect to a local Network first", nil]
                                                            delegate:self

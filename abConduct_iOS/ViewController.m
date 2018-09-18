@@ -16,6 +16,8 @@
 @property NSURL *filepath;
 @property NSMutableArray *allVoices;
 @property BOOL buttonViewExpanded;
+@property NSMutableArray *potentialVoices;
+@property BOOL codeHighlighting;
 
 @end
 
@@ -27,8 +29,8 @@
     NSString *file = [[NSBundle mainBundle] pathForResource:@"Hallelujah" ofType:@"abc" inDirectory: @"DefaultFiles"];
     _filepath = [NSURL fileURLWithPath:file];
     NSString *content = [NSString stringWithContentsOfFile:[_filepath path]  encoding:NSUTF8StringEncoding error:NULL];
-    NSMutableAttributedString *colouredCode = [self colouredCodeFromString:content];
-    [_abcView setAttributedText:colouredCode];
+    _codeHighlighting = YES;
+    [self setColouredCodeFromString:content];
     _allVoices = [NSMutableArray array];
     _allVoices = [self getVoicesWithHeader];
     NSString *pdfFile = [[NSBundle mainBundle] pathForResource:@"Hallelujah_Partitur" ofType:@"pdf" inDirectory: @"DefaultFiles"];
@@ -36,6 +38,36 @@
     _displayView.displayDirection = kPDFDisplayDirectionHorizontal;
     [self loadPdfFromFilePath:pdfFile];
     self.server = APP.server;
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+}
+
+- (void)keyboardWillShow:(NSNotification*)notification {
+    CGFloat keyboardHeight = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size.height;
+    CGFloat keyboardAnimationDuration = [[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+    if (_displayHeight.constant + 25 > keyboardHeight) {
+        [UIView animateWithDuration:keyboardAnimationDuration*1.5 animations:^{
+            self->_displayHeight.constant = self->_displayHeight.constant - keyboardHeight;
+            [self.view layoutIfNeeded];
+        }];
+    }
+    else {
+        CGPoint newContentOffset = CGPointMake(_abcView.contentOffset.x, _abcView.contentOffset.y + keyboardHeight);
+        [_abcView setContentOffset:newContentOffset animated:YES];
+    }
+    _abcView.frame = CGRectMake(_abcView.frame.origin.x, _abcView.frame.origin.y, _abcView.frame.size.width, _abcView.frame.size.height-keyboardHeight);
+}
+
+
+- (void)keyboardWillHide:(NSNotification*)notification {
+    CGFloat keyboardHeight = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size.height;
+    if (_displayHeight.constant + keyboardHeight < self.view.frame.size.height) {
+        CGFloat keyboardAnimationDuration = [[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+        [UIView animateWithDuration:keyboardAnimationDuration*1.5 animations:^{
+            self->_displayHeight.constant = self->_displayHeight.constant + keyboardHeight;
+            [self.view layoutIfNeeded];
+        }];
+    }
 }
 
 - (void) loadPdfFromFilePath: (NSString*) filpath {
@@ -47,20 +79,58 @@
     _displayView.autoScales = true;
 }
 
-- (NSMutableAttributedString *) colouredCodeFromString: (NSString*) code {
-    NSMutableAttributedString * string = [[NSMutableAttributedString alloc]initWithString:code];
-    NSArray *lines = [code componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-    for (NSString *line in lines) {
-        if ([line hasPrefix:@"V:"]) {
-            NSRange range=[code rangeOfString:line];
-            [string addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:range];
-        }
-        else if ([line hasPrefix:@"w:"]) {
+- (void) setColouredCodeFromString: (NSString*) code {
+    NSMutableAttributedString *string;
+    if (_codeHighlighting) {
+        
+        string = [[NSMutableAttributedString alloc]initWithString:code];
+        NSArray *lines = [code componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+        for (NSString *line in lines) {
+            if ([line hasPrefix:@"V:"]) {
+                //voices
                 NSRange range=[code rangeOfString:line];
-                [string addAttribute:NSForegroundColorAttributeName value:[UIColor blueColor] range:range];
+                [string addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:range];
+            }
+            else if ([line hasPrefix:@"w:"]) {
+                //lyrics
+                NSRange range=[code rangeOfString:line];
+                [string addAttribute:NSForegroundColorAttributeName value:[UIColor darkGrayColor] range:range];
+            }
+            else if ([line hasPrefix:@"%%score"] || [line hasPrefix:@"%%staves"]) {
+                //here we grab the parts to display
+                NSRange range=[code rangeOfString:line];
+                [string addAttribute:NSForegroundColorAttributeName value:[UIColor magentaColor] range:range];
+            }
+            else if ([line hasPrefix:@"%%"]) {
+                //format attributes
+                NSRange range=[code rangeOfString:line];
+                [string addAttribute:NSForegroundColorAttributeName value:[UIColor brownColor] range:range];
+            }
+            else if ([line hasPrefix:@"%"]) {
+                //comments
+                NSRange range=[code rangeOfString:line];
+                [string addAttribute:NSForegroundColorAttributeName value:[UIColor lightGrayColor] range:range];
+            }
+            [code enumerateSubstringsInRange:NSMakeRange(0, [string.string length])
+                                     options:NSStringEnumerationByComposedCharacterSequences usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop){
+                                         if ([substring isEqualToString:@"|"] || [substring isEqualToString:@"]"] || [substring isEqualToString:@"["]) {
+                                             [string addAttribute:NSForegroundColorAttributeName value: [UIColor blueColor] range:substringRange];
+                                         }
+                                         if ([substring isEqualToString:@"\""]) {
+                                             [string addAttribute:NSForegroundColorAttributeName value: [UIColor greenColor] range:substringRange];
+                                         }
+                                     }];
         }
     }
-    return string;
+    [_abcView setScrollEnabled:NO];
+    NSRange cursorPosition = _abcView.selectedRange;
+    if (_codeHighlighting) {
+        [_abcView setAttributedText:string];
+    }
+    else _abcView.text = code;
+    [_abcView setSelectedRange:cursorPosition];
+    [_abcView setTintColor:[UIColor whiteColor]];
+    [_abcView setScrollEnabled:YES];
 }
 
 - (NSMutableArray*) getVoicesWithHeader {
@@ -130,6 +200,12 @@
         }
         [combinedVoicesWithName addObject:@[staveOrScoreName, combinedVoices]];
     }
+    if (combinedVoicesWithName.count < 1) {
+        _potentialVoices = [NSMutableArray array];
+        for (NSArray *voice in allVoices) {
+            [_potentialVoices addObject:voice[0]];
+        }
+    }
     return combinedVoicesWithName;
 }
 
@@ -171,18 +247,80 @@
 
 - (IBAction)buttonViewSizeToggle:(id)sender {
     _buttonViewExpanded = !_buttonViewExpanded;
-    _buttonViewHeight.constant = (_buttonViewExpanded) ? 62 : 24;;
+    _buttonViewHeight.constant = (_buttonViewExpanded) ? 100 : 24;;
+}
+
+- (void) loadABCfileFromPath: (NSString*) path {
+    _filepath = [NSURL fileURLWithPath:path];
+    NSString *content = [NSString stringWithContentsOfFile:[_filepath path]  encoding:NSUTF8StringEncoding error:NULL];
+    content = [content stringByReplacingOccurrencesOfString:@"\r" withString:@"\n"];
+    [self setColouredCodeFromString:content];
+    
+    [_allVoices removeAllObjects];
+    _allVoices = [self getVoicesWithHeader];
+}
+
+- (void) enterFullScoreAndOrParts {
+    NSArray *buttons = [NSArray arrayWithObjects:@"create full score only", @"create parts only", @"create full score and parts", nil];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"no rule to create parts or a full score found!" message:@"choose to add full score, parts or both:" preferredStyle:UIAlertControllerStyleAlert];
+    for (NSString *title in buttons) {
+        UIAlertAction *action = [UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+            NSString *addFullScore = @"\n%%score ";
+            NSString *addParts = @"";
+            for (NSString *name in self->_potentialVoices) {
+                addFullScore = [addFullScore stringByAppendingString:[NSString stringWithFormat:@"%@ ", name]];
+                NSString *part = @"\n%%staves ";
+                addParts = [addParts stringByAppendingString:[[part stringByAppendingString:[NSString stringWithFormat:@"%@ ", name]] stringByAppendingString:[@"%" stringByAppendingString:[NSString stringWithFormat:@"%@ scale=0.7 barsperstaff=8", name]]]];
+            }
+            addFullScore = [addFullScore stringByAppendingString:@"%Partitur scale=0.6 barsperstaff=4"];
+            NSMutableString *orig = [NSMutableString stringWithString:self->_abcView.text];
+            NSRange location = [orig rangeOfString:@"\n"];
+            NSString *inserted = [[[[orig substringToIndex:location.location] stringByAppendingString:([title isEqualToString:@"create full score only"] || [title isEqualToString:@"create full score and parts"]) ? addFullScore : @"" ] stringByAppendingString:([title isEqualToString:@"create parts only"] || [title isEqualToString:@"create full score and parts"]) ? addParts : @""] stringByAppendingString:[orig substringFromIndex:location.location]];
+            [self setColouredCodeFromString:inserted];
+            [self->_allVoices removeAllObjects];
+            self->_allVoices = [self getVoicesWithHeader];
+        }];
+        [alert addAction:action];
+    }
+    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
+    [alert addAction:cancel];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (IBAction)buttonPressed:(UIButton *)sender {
     if (sender.tag == 0) {
         //load
+        NSString *docsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+        NSFileManager *fileManager = [[NSFileManager alloc] init];
+        NSArray *directory = [fileManager contentsOfDirectoryAtPath:docsPath error:nil];
+        NSPredicate *fltr = [NSPredicate predicateWithFormat:@"self ENDSWITH '.abc'"];
+        NSArray *abcFiles = [directory filteredArrayUsingPredicate:fltr];
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"load abc-Tune:" message:@"to add tunes put them in the apps Shared Folder with iTunes." preferredStyle:UIAlertControllerStyleAlert];
+        for (NSString *fileName in abcFiles){
+            UIAlertAction *action = [UIAlertAction actionWithTitle:fileName style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                [self loadABCfileFromPath:[docsPath stringByAppendingPathComponent:fileName]];
+            }];
+            [alert addAction:action];
+        }
+        UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
+        [alert addAction:cancel];
+        [self presentViewController:alert animated:YES completion:nil];
     }
     else if (sender.tag == 1) {
             //store
+        NSError *error;
+        BOOL write = [_abcView.text writeToURL:_filepath atomically:NO encoding:NSUTF8StringEncoding error:&error];
+        if (!write) {
+            NSLog(@"could not write file: %@", error);
+        }
     }
     else if (sender.tag == 2) {
         //display
+        _allVoices = [self getVoicesWithHeader]; //refresh from input
+        if (_allVoices.count < 1) {
+            [self enterFullScoreAndOrParts];
+            return;
+        }
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"display voice" message:@"choose the voice to display" preferredStyle:UIAlertControllerStyleAlert];
         for (NSArray *voice in _allVoices) {
             NSString *voiceName = voice[0];
@@ -198,7 +336,8 @@
         [self presentViewController:alert animated:YES completion:nil];
     }
     else if (sender.tag == 3) {
-        //refresh
+        //refresh:
+        [self setColouredCodeFromString:_abcView.text];
     }
 }
 
@@ -222,7 +361,17 @@
     }
 }
 
+- (IBAction)codeHighlightingEnabled:(UISwitch*)sender {
+    _codeHighlighting = sender.isOn;
+    [self setColouredCodeFromString:_abcView.text];
+    _codeHighlightingLabel.text = (_codeHighlighting) ? @"abc-code highlighting enabled" : @"enable abc-code highlighting";
+}
+
 -(void) updateServerLabel {
     [self.serverLabel setText: [NSString stringWithFormat:@"connect to: http://%@.local:%d", self.server.hostName, self.server.port]];
 }
+- (IBAction)hideKeyboard:(id)sender {
+    [_abcView endEditing:YES];
+}
+
 @end
