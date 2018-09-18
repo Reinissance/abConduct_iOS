@@ -7,6 +7,9 @@
 //
 
 #import "ViewController.h"
+#import "AppDelegate.h"
+
+#define APP ((AppDelegate *)[[UIApplication sharedApplication] delegate])
 
 @interface ViewController ()
 
@@ -32,6 +35,7 @@
     _displayView.displayMode = kPDFDisplaySinglePageContinuous;
     _displayView.displayDirection = kPDFDisplayDirectionHorizontal;
     [self loadPdfFromFilePath:pdfFile];
+    self.server = APP.server;
 }
 
 - (void) loadPdfFromFilePath: (NSString*) filpath {
@@ -167,7 +171,7 @@
 
 - (IBAction)buttonViewSizeToggle:(id)sender {
     _buttonViewExpanded = !_buttonViewExpanded;
-    _buttonViewHeight.constant = (_buttonViewExpanded) ? 150 : 24;;
+    _buttonViewHeight.constant = (_buttonViewExpanded) ? 62 : 24;;
 }
 
 - (IBAction)buttonPressed:(UIButton *)sender {
@@ -199,10 +203,25 @@
 }
 
 - (IBAction)zoomText:(UIPinchGestureRecognizer *)sender {
-    NSLog(@"scale: %f", sender.scale);
     float scale = ((sender.scale <=2) ? sender.scale : 2) - 1;
     CGFloat size = _abcView.font.pointSize + (scale * 0.5);
     _abcView.font = [UIFont systemFontOfSize:size];
 }
 
+- (IBAction)startHTTPserver:(UISwitch *)sender {
+    if (sender.isOn) {
+        if(![self.server start]) {
+            return;
+        }
+        [self performSelector:@selector(updateServerLabel) withObject:self afterDelay:1.0];
+    }
+    else {
+        [self.server stop];
+        _serverLabel.text = @"start http-server";
+    }
+}
+
+-(void) updateServerLabel {
+    [self.serverLabel setText: [NSString stringWithFormat:@"connect to: http://%@.local:%d", self.server.hostName, self.server.port]];
+}
 @end

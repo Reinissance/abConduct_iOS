@@ -7,6 +7,11 @@
 //
 
 #import "AppDelegate.h"
+#import "HTTPServer.h"
+#import "DDLog.h"
+#import "DDTTYLogger.h"
+
+// Log levels: off, error, warn, info, verbose
 
 @interface AppDelegate ()
 
@@ -17,6 +22,9 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    self.server = [[WebServer alloc] init];
+    
     return YES;
 }
 

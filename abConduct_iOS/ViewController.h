@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 #import <PDFKit/PDFView.h>
 
+@class WebServer;
+
 @interface ViewController : UIViewController
 
 @property (weak, nonatomic) IBOutlet PDFView *displayView;
@@ -19,5 +21,10 @@
 - (IBAction)buttonViewSizeToggle:(id)sender;
 - (IBAction)buttonPressed:(UIButton *)sender;
 - (IBAction)zoomText:(UIPinchGestureRecognizer *)sender;
+- (IBAction)startHTTPserver:(UISwitch *)sender;
+@property (weak, nonatomic) IBOutlet UILabel *serverLabel;
+@property (weak, nonatomic) IBOutlet UISwitch *serverSwitch;
+
+@property (weak, nonatomic) WebServer *server;
 
 @end
