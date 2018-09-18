@@ -12,6 +12,7 @@
  
 #import "HTTPServer.h"
 #import "DAVConnection.h"
+#import "Reachability.h"
 
 #import <CFNetwork/CFNetwork.h>
 #import <ifaddrs.h>
@@ -39,6 +40,29 @@
 
 - (BOOL)start:(NSString *)directory {
 
+    //check Wifi connection
+    Reachability *reachability = [Reachability reachabilityForInternetConnection];
+    [reachability startNotifier];
+    
+    NetworkStatus status = [reachability currentReachabilityStatus];
+    
+    BOOL noWifi = NO;
+    if(status != ReachableViaWiFi) {
+        //WiFi
+        noWifi = YES;
+    }
+    if (noWifi) {
+        NSLog(@"no wifi connection!");
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"no wifi connection"
+                                                            message:[NSString stringWithFormat:@"Please connect to a local Network first", nil]
+                                                           delegate:self
+                                                  cancelButtonTitle:@"Ok"
+                                                  otherButtonTitles:nil];
+        [alertView show];
+        
+        return NO;
+    }
+    
 	// create DAV server
 	[server setConnectionClass:[DAVConnection class]];
 	
@@ -50,7 +74,7 @@
 	NSLog(@"WebServer: set root to %@", directory);
 
 	// start DAV server
-	NSError* error = nil;
+    NSError* error = nil;
 	if(![server start:&error]) {
 		NSLog(@"WebServer: error starting: %@", error.localizedDescription);
 		UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Woops"
@@ -137,24 +161,5 @@
 	return address;
 }
 
-+ (int)checkPortValueFromTextField:(UITextField *)textField {
-	// check given value
-	// from http://stackoverflow.com/questions/6957203/ios-check-a-textfield-text
-	int newPort = -1;
-	if([[NSScanner scannerWithString:textField.text] scanInt:&newPort]) {
-		if(newPort > 1024 || newPort == 0) { // ports 1024 and lower are reserved for the OS
-			return newPort;
-		}
-	}
-	
-	// bad value
-	UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Invalid Port Number"
-														message:@"Port number should be an integer greater than 1024. Set 0 to choose a random port."
-													   delegate:self
-											  cancelButtonTitle:@"Ok"
-											  otherButtonTitles:nil];
-	[alertView show];
-	return -1;
-}
 
 @end

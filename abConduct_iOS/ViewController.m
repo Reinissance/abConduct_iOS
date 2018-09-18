@@ -211,6 +211,7 @@
 - (IBAction)startHTTPserver:(UISwitch *)sender {
     if (sender.isOn) {
         if(![self.server start]) {
+            [_serverSwitch setOn:NO];
             return;
         }
         [self performSelector:@selector(updateServerLabel) withObject:self afterDelay:1.0];

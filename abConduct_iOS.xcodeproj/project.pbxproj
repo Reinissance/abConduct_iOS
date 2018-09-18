@@ -18,6 +18,7 @@
 		4A3A9B342150081E009757BC /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3A9B332150081E009757BC /* WebKit.framework */; };
 		4A3A9B36215008B5009757BC /* PDFKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3A9B35215008B5009757BC /* PDFKit.framework */; };
 		4A6743822150012400886D97 /* DefaultFiles in Resources */ = {isa = PBXBuildFile; fileRef = 4A6743812150012400886D97 /* DefaultFiles */; };
+		4A7A5050215117A900B01095 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7A504E215117A900B01095 /* Reachability.m */; };
 		4ABD9E0B2150736C00CA5CD4 /* HTTPErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9DC92150736B00CA5CD4 /* HTTPErrorResponse.m */; };
 		4ABD9E0C2150736C00CA5CD4 /* HTTPDataResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9DCA2150736B00CA5CD4 /* HTTPDataResponse.m */; };
 		4ABD9E0D2150736C00CA5CD4 /* HTTPDynamicFileResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9DCC2150736B00CA5CD4 /* HTTPDynamicFileResponse.m */; };
@@ -74,7 +75,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		4A2CDA3221503F7700E7A9F3 /* abcm2psDynFr.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = abcm2psDynFr.framework; sourceTree = "<group>"; };
 		4A2D7DB6214EBBCE005FB580 /* abConduct_iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = abConduct_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A2D7DB9214EBBCE005FB580 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		4A2D7DBA214EBBCE005FB580 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -94,6 +94,8 @@
 		4A3A9B332150081E009757BC /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		4A3A9B35215008B5009757BC /* PDFKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PDFKit.framework; path = System/Library/Frameworks/PDFKit.framework; sourceTree = SDKROOT; };
 		4A6743812150012400886D97 /* DefaultFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = DefaultFiles; sourceTree = "<group>"; };
+		4A7A504E215117A900B01095 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
+		4A7A504F215117A900B01095 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		4ABD9DB621506E3A00CA5CD4 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		4ABD9DB921506F2F00CA5CD4 /* libxml2.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.2.dylib; path = ../../../../../../../usr/lib/libxml2.2.dylib; sourceTree = "<group>"; };
 		4ABD9DC22150736B00CA5CD4 /* HTTPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPConnection.h; sourceTree = "<group>"; };
@@ -218,6 +220,8 @@
 		4A2D7DB8214EBBCE005FB580 /* abConduct_iOS */ = {
 			isa = PBXGroup;
 			children = (
+				4A7A504F215117A900B01095 /* Reachability.h */,
+				4A7A504E215117A900B01095 /* Reachability.m */,
 				4ABD9E2C2150739700CA5CD4 /* WebServer.h */,
 				4ABD9E2D2150739700CA5CD4 /* WebServer.m */,
 				4ABD9DC02150736B00CA5CD4 /* CocoaHTTPServer */,
@@ -260,7 +264,6 @@
 				4ABD9EAB21508BE200CA5CD4 /* SystemConfiguration.framework */,
 				4ABD9DB921506F2F00CA5CD4 /* libxml2.2.dylib */,
 				4ABD9DB621506E3A00CA5CD4 /* libxml2.tbd */,
-				4A2CDA3221503F7700E7A9F3 /* abcm2psDynFr.framework */,
 				4A3A9B35215008B5009757BC /* PDFKit.framework */,
 				4A3A9B332150081E009757BC /* WebKit.framework */,
 			);
@@ -570,6 +573,7 @@
 				4ABD9E152150736C00CA5CD4 /* MultipartFormDataParser.m in Sources */,
 				4ABD9E212150736C00CA5CD4 /* DDTTYLogger.m in Sources */,
 				4ABD9E0C2150736C00CA5CD4 /* HTTPDataResponse.m in Sources */,
+				4A7A5050215117A900B01095 /* Reachability.m in Sources */,
 				4ABD9E282150736C00CA5CD4 /* DDAbstractDatabaseLogger.m in Sources */,
 				4ABD9E122150736C00CA5CD4 /* HTTPConnection.m in Sources */,
 				4ABD9E0B2150736C00CA5CD4 /* HTTPErrorResponse.m in Sources */,
