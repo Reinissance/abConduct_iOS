@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import "AppDelegate.h"
+#import "arrayPicker.h"
 
 #define APP ((AppDelegate *)[[UIApplication sharedApplication] delegate])
 
@@ -18,6 +19,11 @@
 @property BOOL buttonViewExpanded;
 @property NSMutableArray *potentialVoices;
 @property BOOL codeHighlighting;
+@property arrayPicker *keyPicker;
+@property arrayPicker *measurePicker;
+@property NSString *createFileName;
+@property NSString *createFileComposer;
+@property NSString *createFileLength;
 
 @end
 
@@ -40,22 +46,26 @@
     self.server = APP.server;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(orientationChanged:)    name:UIDeviceOrientationDidChangeNotification  object:nil];
 }
 
 - (void)keyboardWillShow:(NSNotification*)notification {
-    CGFloat keyboardHeight = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size.height;
-    CGFloat keyboardAnimationDuration = [[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
-    if (_displayHeight.constant + 25 > keyboardHeight) {
-        [UIView animateWithDuration:keyboardAnimationDuration*1.5 animations:^{
-            self->_displayHeight.constant = self->_displayHeight.constant - keyboardHeight;
-            [self.view layoutIfNeeded];
-        }];
+    if (!alertShown) {
+        CGFloat keyboardHeight = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size.height;
+        CGFloat keyboardAnimationDuration = [[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+        if (_displayHeight.constant + 25 > keyboardHeight) {
+            [UIView animateWithDuration:keyboardAnimationDuration*1.5 animations:^{
+                self->_displayHeight.constant = self->_displayHeight.constant - keyboardHeight;
+                [self.view layoutIfNeeded];
+            }];
+        }
+        else {
+            CGPoint newContentOffset = CGPointMake(_abcView.contentOffset.x, _abcView.contentOffset.y + keyboardHeight);
+            [_abcView setContentOffset:newContentOffset animated:YES];
+        }
+        _abcView.frame = CGRectMake(_abcView.frame.origin.x, _abcView.frame.origin.y, _abcView.frame.size.width, _abcView.frame.size.height-keyboardHeight);
     }
-    else {
-        CGPoint newContentOffset = CGPointMake(_abcView.contentOffset.x, _abcView.contentOffset.y + keyboardHeight);
-        [_abcView setContentOffset:newContentOffset animated:YES];
-    }
-    _abcView.frame = CGRectMake(_abcView.frame.origin.x, _abcView.frame.origin.y, _abcView.frame.size.width, _abcView.frame.size.height-keyboardHeight);
 }
 
 
@@ -336,8 +346,108 @@
         [self presentViewController:alert animated:YES completion:nil];
     }
     else if (sender.tag == 3) {
-        //refresh:
+        //TODO: refresh: redraw
         [self setColouredCodeFromString:_abcView.text];
+    }
+    else if (sender.tag == 4) {
+        //create new file:
+        [self createNewFile];
+    }
+}
+
+UIAlertController *alert;
+BOOL alertShown;
+
+- (void) createNewFile {
+    BOOL landscape = [[UIDevice currentDevice] orientation] == UIDeviceOrientationLandscapeLeft || [[UIDevice currentDevice] orientation] == UIDeviceOrientationLandscapeRight;
+    alert = [UIAlertController alertControllerWithTitle:@"create new abc-Code file:" message:(!landscape) ? @"please specify at least file-name (used as title) and key for your new tune.\n\n\n\n\n" :@"please specify at least the file-name (used as title) for your new tune (rotate device to change default key of 'C')" preferredStyle:UIAlertControllerStyleAlert];
+    NSArray *Keys = @[@"C#", @"F#", @"B", @"E", @"A", @"D", @"G", @"C", @"F", @"Bb", @"Eb", @"Ab", @"Db", @"Gb"];
+    _keyPicker = [[arrayPicker alloc] initWithArray:Keys frame:CGRectMake(30, 80, 100, 100) andTextColour:[UIColor redColor]];
+    if (!landscape)
+        [alert.view addSubview:_keyPicker.pickerView];
+    NSArray *Measures = @[@"2/4", @"3/4", @"4/4", @"2/2", @"3/8", @"6/8", @"12/8", @"5/8", @"5/4", @"6/4", @"7/4", @"9/8", @"7/8"];
+    _measurePicker = [[arrayPicker alloc] initWithArray:Measures frame:CGRectMake(140, 80, 100, 100) andTextColour:[UIColor darkTextColor]];if (!landscape)
+    [alert.view addSubview:_measurePicker.pickerView];
+    [_keyPicker.pickerView selectRow:7 inComponent:0 animated:NO];
+    [_measurePicker.pickerView selectRow:2 inComponent:0 animated:NO];
+    [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull title) {
+        UIColor *lightRed = [UIColor colorWithRed:256 green:0 blue:0 alpha:0.5];
+        title.attributedPlaceholder = [[NSAttributedString alloc] initWithString:@"enter a file-name (title) here" attributes:@{NSForegroundColorAttributeName: lightRed}];
+        title.clearButtonMode = UITextFieldViewModeWhileEditing;
+        title.borderStyle = UITextBorderStyleRoundedRect;
+        [title addTarget:self action:@selector(textDidChange:) forControlEvents:UIControlEventEditingChanged];
+    }];
+    [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull composer) {
+        composer.placeholder = @"enter composer name here";
+        composer.clearButtonMode = UITextFieldViewModeWhileEditing;
+        composer.borderStyle = UITextBorderStyleRoundedRect;
+        [composer addTarget:self action:@selector(textDidChange:) forControlEvents:UIControlEventEditingChanged];
+    }];
+    alert.textFields[1].tag = 1;
+    [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull noteLength) {
+        noteLength.placeholder = @"enter default note length (L:1/8)";
+        noteLength.clearButtonMode = UITextFieldViewModeWhileEditing;
+        noteLength.borderStyle = UITextBorderStyleRoundedRect;
+        noteLength.keyboardType = UIKeyboardTypeNumberPad;
+        [noteLength addTarget:self action:@selector(textDidChange:) forControlEvents:UIControlEventEditingChanged];
+    }];
+    alert.textFields[2].tag = 2;
+    UIAlertAction *create = [UIAlertAction actionWithTitle:@"create File" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+        BOOL extension = ((self->_createFileName.length > 4) && [[self->_createFileName substringFromIndex:self->_createFileName.length-4] isEqualToString:@".abc"]);
+        NSString *createAbcFileString = [NSString stringWithFormat:@"X:1\nT:%@\n", (extension) ? [self->_createFileName substringToIndex:self->_createFileName.length-4] : self->_createFileName];
+        if (![self->_createFileComposer isEqualToString:@""]) {
+            createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"C:%@\n", self->_createFileComposer]];
+        }
+        if (![self->_createFileLength isEqualToString:@""]) {
+            createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"L:%@\n", self->_createFileLength]];
+        }
+        createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"M:%@\n", Measures[[self->_measurePicker.pickerView selectedRowInComponent:0]]]];
+        createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"K:%@\n", Keys[[self->_keyPicker.pickerView selectedRowInComponent:0]]]];
+        NSLog(@"file created: %@", createAbcFileString);
+        createAbcFileString = [createAbcFileString stringByAppendingString: @"V:Voice1\n\%here start writing your tune:\n"];
+        [self setColouredCodeFromString: createAbcFileString];
+        NSError *error;
+        NSString *path = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:self->_createFileName];
+        if (!extension) {
+            path = [path stringByAppendingPathExtension:@"abc"];
+        }
+        self->_filepath = [NSURL fileURLWithPath:path];
+        BOOL write = [self->_abcView.text writeToURL:self->_filepath atomically:NO encoding:NSUTF8StringEncoding error:&error];
+        if (!write) {
+            NSLog(@"could not write file %@: %@", self->_filepath, error);
+        }
+        [self cleanUpAlert];
+    }];
+    create.enabled = NO;
+    [alert addAction:create];
+    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * action) {
+        [self cleanUpAlert];
+    }];
+    [alert addAction:cancel];
+    alertShown = YES;
+    [self presentViewController:alert animated:YES completion:nil];
+    
+}
+
+- (void) cleanUpAlert {
+    _measurePicker = nil;
+    _keyPicker = nil;
+    alertShown = NO;
+}
+
+-(void)textDidChange:(UITextField *)textField {
+    if (textField.tag == 0) {
+        alert.actions[0].enabled = (textField.text.length > 0);
+        _createFileName = textField.text;
+    }
+    else if (textField.tag == 1) {
+        _createFileComposer = textField.text;
+    }
+    else if (textField.tag == 2) {
+        if (![textField.text isEqualToString:@"/"] && textField.text.length == 1) {
+            textField.text = [textField.text stringByAppendingString:@"/"];
+        }
+        _createFileLength = textField.text;
     }
 }
 
@@ -374,4 +484,36 @@
     [_abcView endEditing:YES];
 }
 
+- (void) viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+        [_measurePicker.pickerView removeFromSuperview];
+        [_keyPicker.pickerView removeFromSuperview];
+}
+
+- (void)orientationChanged:(NSNotification *)notification{
+    [self adjustViewsForOrientation:[[UIApplication sharedApplication] statusBarOrientation]];
+}
+
+- (void) adjustViewsForOrientation:(UIInterfaceOrientation) orientation {
+    switch (orientation)
+    {
+        case UIInterfaceOrientationPortrait:
+        case UIInterfaceOrientationPortraitUpsideDown:
+        {
+            if (alertShown) {
+                [alert.view addSubview:_measurePicker.pickerView];
+                [alert.view addSubview:_keyPicker.pickerView];
+                alert.message = @"please specify at least file-name and key for your new tune.\n\n\n\n\n";
+            }
+        }
+            break;
+        case UIInterfaceOrientationLandscapeLeft:
+        case UIInterfaceOrientationLandscapeRight:
+        {
+            [_keyPicker.pickerView removeFromSuperview];
+            [_measurePicker.pickerView removeFromSuperview];
+            alert.message = @"please specify at least the file-name (used as title) for your new tune (rotate device to change default key of 'C')";
+        }            break;
+        case UIInterfaceOrientationUnknown:break;
+    }
+}
 @end

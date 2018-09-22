@@ -11,7 +11,7 @@
 
 @class WebServer;
 
-@interface ViewController : UIViewController
+@interface ViewController : UIViewController 
 
 @property (weak, nonatomic) IBOutlet PDFView *displayView;
 @property (weak, nonatomic) IBOutlet UITextView *abcView;

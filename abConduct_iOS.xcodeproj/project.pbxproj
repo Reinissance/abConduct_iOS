@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4A23AC302151221D00A52D7B /* WebServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9E2D2150739700CA5CD4 /* WebServer.m */; };
+		4A2B940A2152EDD300AA3F7A /* arrayPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2B94092152EDD300AA3F7A /* arrayPicker.m */; };
 		4A2D7DBB214EBBCE005FB580 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DBA214EBBCE005FB580 /* AppDelegate.m */; };
 		4A2D7DBE214EBBCE005FB580 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DBD214EBBCE005FB580 /* ViewController.m */; };
 		4A2D7DC1214EBBCE005FB580 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A2D7DBF214EBBCE005FB580 /* Main.storyboard */; };
@@ -75,7 +75,22 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		4AFCCA872156BDF5007A8098 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		4A2B94082152EDD300AA3F7A /* arrayPicker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = arrayPicker.h; sourceTree = "<group>"; };
+		4A2B94092152EDD300AA3F7A /* arrayPicker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = arrayPicker.m; sourceTree = "<group>"; };
 		4A2D7DB6214EBBCE005FB580 /* abConduct_iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = abConduct_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A2D7DB9214EBBCE005FB580 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		4A2D7DBA214EBBCE005FB580 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -197,6 +212,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4A2B94042152EB2E00AA3F7A /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				4A2B94082152EDD300AA3F7A /* arrayPicker.h */,
+				4A2B94092152EDD300AA3F7A /* arrayPicker.m */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
 		4A2D7DAD214EBBCE005FB580 = {
 			isa = PBXGroup;
 			children = (
@@ -221,10 +245,7 @@
 		4A2D7DB8214EBBCE005FB580 /* abConduct_iOS */ = {
 			isa = PBXGroup;
 			children = (
-				4A7A504F215117A900B01095 /* Reachability.h */,
-				4A7A504E215117A900B01095 /* Reachability.m */,
-				4ABD9E2C2150739700CA5CD4 /* WebServer.h */,
-				4ABD9E2D2150739700CA5CD4 /* WebServer.m */,
+				4A2B94042152EB2E00AA3F7A /* Classes */,
 				4ABD9DC02150736B00CA5CD4 /* CocoaHTTPServer */,
 				4AFDF9A721505A0D003DED65 /* Web */,
 				4A6743812150012400886D97 /* DefaultFiles */,
@@ -274,6 +295,10 @@
 		4ABD9DC02150736B00CA5CD4 /* CocoaHTTPServer */ = {
 			isa = PBXGroup;
 			children = (
+				4A7A504F215117A900B01095 /* Reachability.h */,
+				4A7A504E215117A900B01095 /* Reachability.m */,
+				4ABD9E2C2150739700CA5CD4 /* WebServer.h */,
+				4ABD9E2D2150739700CA5CD4 /* WebServer.m */,
 				4ABD9DC12150736B00CA5CD4 /* Core */,
 				4ABD9DE92150736B00CA5CD4 /* Extensions */,
 				4ABD9DF32150736B00CA5CD4 /* LICENSE.txt */,
@@ -432,6 +457,7 @@
 				4A2D7DB2214EBBCE005FB580 /* Sources */,
 				4A2D7DB3214EBBCE005FB580 /* Frameworks */,
 				4A2D7DB4214EBBCE005FB580 /* Resources */,
+				4AFCCA872156BDF5007A8098 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -559,6 +585,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4ABD9E2A2150736C00CA5CD4 /* GCDAsyncSocket.m in Sources */,
+				4A2B940A2152EDD300AA3F7A /* arrayPicker.m in Sources */,
 				4ABD9E162150736C00CA5CD4 /* MultipartMessageHeader.m in Sources */,
 				4A2D7DBE214EBBCE005FB580 /* ViewController.m in Sources */,
 				4ABD9E142150736C00CA5CD4 /* MultipartMessageHeaderField.m in Sources */,
@@ -600,7 +627,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A2D7DD3214EBBCE005FB580 /* abConduct_iOSTests.m in Sources */,
-				4A23AC302151221D00A52D7B /* WebServer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
