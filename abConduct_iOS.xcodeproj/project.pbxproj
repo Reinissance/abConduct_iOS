@@ -7,6 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4A1574062156D570009FE14E /* svg.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A1573F82156D56F009FE14E /* svg.c */; };
+		4A1574072156D570009FE14E /* deco.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A1573F92156D570009FE14E /* deco.c */; };
+		4A1574082156D570009FE14E /* glyph.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A1573FA2156D570009FE14E /* glyph.c */; };
+		4A1574092156D570009FE14E /* front.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A1573FB2156D570009FE14E /* front.c */; };
+		4A15740A2156D570009FE14E /* syms.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A1573FC2156D570009FE14E /* syms.c */; };
+		4A15740B2156D570009FE14E /* buffer.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A1573FD2156D570009FE14E /* buffer.c */; };
+		4A15740C2156D570009FE14E /* draw.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A1573FE2156D570009FE14E /* draw.c */; };
+		4A15740D2156D570009FE14E /* subs.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A1573FF2156D570009FE14E /* subs.c */; };
+		4A15740E2156D570009FE14E /* abcm2ps.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A1574002156D570009FE14E /* abcm2ps.c */; };
+		4A15740F2156D570009FE14E /* abcparse.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A1574022156D570009FE14E /* abcparse.c */; };
+		4A1574102156D570009FE14E /* music.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A1574032156D570009FE14E /* music.c */; };
+		4A1574112156D570009FE14E /* format.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A1574042156D570009FE14E /* format.c */; };
+		4A1574122156D570009FE14E /* parse.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A1574052156D570009FE14E /* parse.c */; };
 		4A2B940A2152EDD300AA3F7A /* arrayPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2B94092152EDD300AA3F7A /* arrayPicker.m */; };
 		4A2D7DBB214EBBCE005FB580 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DBA214EBBCE005FB580 /* AppDelegate.m */; };
 		4A2D7DBE214EBBCE005FB580 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DBD214EBBCE005FB580 /* ViewController.m */; };
@@ -89,6 +102,21 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4A1573F82156D56F009FE14E /* svg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = svg.c; sourceTree = "<group>"; };
+		4A1573F92156D570009FE14E /* deco.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = deco.c; sourceTree = "<group>"; };
+		4A1573FA2156D570009FE14E /* glyph.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = glyph.c; sourceTree = "<group>"; };
+		4A1573FB2156D570009FE14E /* front.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = front.c; sourceTree = "<group>"; };
+		4A1573FC2156D570009FE14E /* syms.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = syms.c; sourceTree = "<group>"; };
+		4A1573FD2156D570009FE14E /* buffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = buffer.c; sourceTree = "<group>"; };
+		4A1573FE2156D570009FE14E /* draw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = draw.c; sourceTree = "<group>"; };
+		4A1573FF2156D570009FE14E /* subs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = subs.c; sourceTree = "<group>"; };
+		4A1574002156D570009FE14E /* abcm2ps.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = abcm2ps.c; sourceTree = "<group>"; };
+		4A1574012156D570009FE14E /* abcm2ps.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = abcm2ps.h; sourceTree = "<group>"; };
+		4A1574022156D570009FE14E /* abcparse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = abcparse.c; sourceTree = "<group>"; };
+		4A1574032156D570009FE14E /* music.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = music.c; sourceTree = "<group>"; };
+		4A1574042156D570009FE14E /* format.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = format.c; sourceTree = "<group>"; };
+		4A1574052156D570009FE14E /* parse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = parse.c; sourceTree = "<group>"; };
+		4A1574132156D772009FE14E /* config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
 		4A2B94082152EDD300AA3F7A /* arrayPicker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = arrayPicker.h; sourceTree = "<group>"; };
 		4A2B94092152EDD300AA3F7A /* arrayPicker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = arrayPicker.m; sourceTree = "<group>"; };
 		4A2D7DB6214EBBCE005FB580 /* abConduct_iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = abConduct_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -212,6 +240,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4A1573F72156D53D009FE14E /* abcm2ps */ = {
+			isa = PBXGroup;
+			children = (
+				4A1574132156D772009FE14E /* config.h */,
+				4A1574002156D570009FE14E /* abcm2ps.c */,
+				4A1574012156D570009FE14E /* abcm2ps.h */,
+				4A1574022156D570009FE14E /* abcparse.c */,
+				4A1573FD2156D570009FE14E /* buffer.c */,
+				4A1573F92156D570009FE14E /* deco.c */,
+				4A1573FE2156D570009FE14E /* draw.c */,
+				4A1574042156D570009FE14E /* format.c */,
+				4A1573FB2156D570009FE14E /* front.c */,
+				4A1573FA2156D570009FE14E /* glyph.c */,
+				4A1574032156D570009FE14E /* music.c */,
+				4A1574052156D570009FE14E /* parse.c */,
+				4A1573FF2156D570009FE14E /* subs.c */,
+				4A1573F82156D56F009FE14E /* svg.c */,
+				4A1573FC2156D570009FE14E /* syms.c */,
+			);
+			path = abcm2ps;
+			sourceTree = "<group>";
+		};
 		4A2B94042152EB2E00AA3F7A /* Classes */ = {
 			isa = PBXGroup;
 			children = (
@@ -245,6 +295,7 @@
 		4A2D7DB8214EBBCE005FB580 /* abConduct_iOS */ = {
 			isa = PBXGroup;
 			children = (
+				4A1573F72156D53D009FE14E /* abcm2ps */,
 				4A2B94042152EB2E00AA3F7A /* Classes */,
 				4ABD9DC02150736B00CA5CD4 /* CocoaHTTPServer */,
 				4AFDF9A721505A0D003DED65 /* Web */,
@@ -587,11 +638,14 @@
 				4ABD9E2A2150736C00CA5CD4 /* GCDAsyncSocket.m in Sources */,
 				4A2B940A2152EDD300AA3F7A /* arrayPicker.m in Sources */,
 				4ABD9E162150736C00CA5CD4 /* MultipartMessageHeader.m in Sources */,
+				4A1574122156D570009FE14E /* parse.c in Sources */,
 				4A2D7DBE214EBBCE005FB580 /* ViewController.m in Sources */,
 				4ABD9E142150736C00CA5CD4 /* MultipartMessageHeaderField.m in Sources */,
 				4ABD9E192150736C00CA5CD4 /* DDData.m in Sources */,
+				4A1574082156D570009FE14E /* glyph.c in Sources */,
 				4A2D7DC9214EBBCE005FB580 /* main.m in Sources */,
 				4ABD9E0D2150736C00CA5CD4 /* HTTPDynamicFileResponse.m in Sources */,
+				4A1574112156D570009FE14E /* format.c in Sources */,
 				4ABD9E0E2150736C00CA5CD4 /* HTTPFileResponse.m in Sources */,
 				4A2D7DBB214EBBCE005FB580 /* AppDelegate.m in Sources */,
 				4ABD9E1F2150736C00CA5CD4 /* PUTResponse.m in Sources */,
@@ -601,23 +655,33 @@
 				4ABD9E152150736C00CA5CD4 /* MultipartFormDataParser.m in Sources */,
 				4ABD9E212150736C00CA5CD4 /* DDTTYLogger.m in Sources */,
 				4ABD9E0C2150736C00CA5CD4 /* HTTPDataResponse.m in Sources */,
+				4A1574092156D570009FE14E /* front.c in Sources */,
 				4A7A5050215117A900B01095 /* Reachability.m in Sources */,
+				4A1574062156D570009FE14E /* svg.c in Sources */,
+				4A1574102156D570009FE14E /* music.c in Sources */,
 				4ABD9E282150736C00CA5CD4 /* DDAbstractDatabaseLogger.m in Sources */,
 				4ABD9E122150736C00CA5CD4 /* HTTPConnection.m in Sources */,
+				4A15740F2156D570009FE14E /* abcparse.c in Sources */,
 				4ABD9E0B2150736C00CA5CD4 /* HTTPErrorResponse.m in Sources */,
 				4ABD9E1E2150736C00CA5CD4 /* DAVResponse.m in Sources */,
 				4ABD9E1A2150736C00CA5CD4 /* DDRange.m in Sources */,
 				4ABD9E1C2150736C00CA5CD4 /* DAVConnection.m in Sources */,
 				4ABD9E292150736C00CA5CD4 /* DDFileLogger.m in Sources */,
+				4A1574072156D570009FE14E /* deco.c in Sources */,
 				4ABD9E262150736C00CA5CD4 /* DDLog.m in Sources */,
 				4ABD9E1B2150736C00CA5CD4 /* HTTPServer.m in Sources */,
+				4A15740C2156D570009FE14E /* draw.c in Sources */,
 				4ABD9E182150736C00CA5CD4 /* DDNumber.m in Sources */,
 				4ABD9E112150736C00CA5CD4 /* HTTPMessage.m in Sources */,
+				4A15740D2156D570009FE14E /* subs.c in Sources */,
 				4ABD9E0F2150736C00CA5CD4 /* HTTPAsyncFileResponse.m in Sources */,
 				4ABD9E102150736C00CA5CD4 /* HTTPRedirectResponse.m in Sources */,
+				4A15740A2156D570009FE14E /* syms.c in Sources */,
+				4A15740E2156D570009FE14E /* abcm2ps.c in Sources */,
 				4ABD9E172150736C00CA5CD4 /* HTTPAuthenticationRequest.m in Sources */,
 				4ABD9E242150736C00CA5CD4 /* DispatchQueueLogFormatter.m in Sources */,
 				4ABD9E1D2150736C00CA5CD4 /* DELETEResponse.m in Sources */,
+				4A15740B2156D570009FE14E /* buffer.c in Sources */,
 				4ABD9E232150736C00CA5CD4 /* ContextFilterLogFormatter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

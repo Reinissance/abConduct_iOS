@@ -9,6 +9,8 @@
 #import "ViewController.h"
 #import "AppDelegate.h"
 #import "arrayPicker.h"
+#include "abcm2ps.h"
+#include <string.h>
 
 #define APP ((AppDelegate *)[[UIApplication sharedApplication] delegate])
 
@@ -348,6 +350,15 @@
     else if (sender.tag == 3) {
         //TODO: refresh: redraw
         [self setColouredCodeFromString:_abcView.text];
+        NSString *outFile = [NSString stringWithFormat:@"-O%@", [[[_filepath path] substringToIndex:[_filepath path].length-4] stringByAppendingPathExtension:@"ps"]]; // don`t work like dis.
+        NSString *inFile = [_filepath path];
+        char *outPath = strdup([outFile UTF8String]);
+        char *inPath = strdup([inFile UTF8String]);
+        char* args[] = {outPath, inPath, NULL };
+        int result = abcMain(2, args);
+        if (!result) {
+            NSLog(@"didnt work...");
+        }
     }
     else if (sender.tag == 4) {
         //create new file:
