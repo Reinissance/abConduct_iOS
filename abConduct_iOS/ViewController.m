@@ -9,8 +9,9 @@
 #import "ViewController.h"
 #import "AppDelegate.h"
 #import "arrayPicker.h"
-#include "abcm2ps.h"
+#import "abcRenderer.h"
 #include <string.h>
+
 
 #define APP ((AppDelegate *)[[UIApplication sharedApplication] delegate])
 
@@ -23,9 +24,11 @@
 @property BOOL codeHighlighting;
 @property arrayPicker *keyPicker;
 @property arrayPicker *measurePicker;
+@property NSArray *abcDocuments;
 @property NSString *createFileName;
 @property NSString *createFileComposer;
 @property NSString *createFileLength;
+@property abcRenderer *renderer;
 
 @end
 
@@ -41,10 +44,10 @@
     [self setColouredCodeFromString:content];
     _allVoices = [NSMutableArray array];
     _allVoices = [self getVoicesWithHeader];
-    NSString *pdfFile = [[NSBundle mainBundle] pathForResource:@"Hallelujah_Partitur" ofType:@"pdf" inDirectory: @"DefaultFiles"];
-    _displayView.displayMode = kPDFDisplaySinglePageContinuous;
-    _displayView.displayDirection = kPDFDisplayDirectionHorizontal;
-    [self loadPdfFromFilePath:pdfFile];
+    NSString *svgFile = [[NSBundle mainBundle] pathForResource:@"Hallelujah" ofType:@"svg" inDirectory: @"DefaultFiles"];
+//    _displayView.displayMode = kPDFDisplaySinglePageContinuous;
+//    _displayView.displayDirection = kPDFDisplayDirectionHorizontal;
+    [self loadSvgImageFromPath:svgFile];
     self.server = APP.server;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
@@ -82,13 +85,23 @@
     }
 }
 
-- (void) loadPdfFromFilePath: (NSString*) filpath {
-    NSURL *file = [NSURL fileURLWithPath:filpath];
-    PDFDocument *pdf = [[PDFDocument alloc] initWithURL:file];
-    _displayView.document = pdf;
-    _displayView.maxScaleFactor = 4.0;
-    _displayView.minScaleFactor = _displayView.scaleFactorForSizeToFit;
-    _displayView.autoScales = true;
+//- (void) loadPdfFromFilePath: (NSString*) filepath {
+//    NSURL *file = [NSURL fileURLWithPath:filepath];
+//    PDFDocument *pdf = [[PDFDocument alloc] initWithURL:file];
+//    _displayView.document = pdf;
+//    _displayView.maxScaleFactor = 4.0;
+//    _displayView.minScaleFactor = _displayView.scaleFactorForSizeToFit;
+//    _displayView.autoScales = true;
+//}
+
+- (void) loadSvgImageFromPath: (NSString*) path {
+    if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
+        NSLog(@"not dere");
+    }
+    NSURL *file = [NSURL fileURLWithPath:path];
+    NSURLRequest *request = [NSURLRequest requestWithURL:file];
+    [_displayView setScalesPageToFit:YES];
+    [_displayView loadRequest:request];
 }
 
 - (void) setColouredCodeFromString: (NSString*) code {
@@ -259,7 +272,10 @@
 
 - (IBAction)buttonViewSizeToggle:(id)sender {
     _buttonViewExpanded = !_buttonViewExpanded;
-    _buttonViewHeight.constant = (_buttonViewExpanded) ? 100 : 24;;
+    _buttonViewHeight.constant = (_buttonViewExpanded) ? 100 : 24;
+    [UIView animateWithDuration:0.3 animations:^{
+        [self.view layoutIfNeeded];
+    }];
 }
 
 - (void) loadABCfileFromPath: (NSString*) path {
@@ -299,21 +315,60 @@
     [self presentViewController:alert animated:YES completion:nil];
 }
 
+- (void) loadABCdocuments {
+    NSString *docsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSFileManager *fileManager = [[NSFileManager alloc] init];
+    NSArray *directory = [fileManager contentsOfDirectoryAtPath:docsPath error:nil];
+    NSPredicate *fltr = [NSPredicate predicateWithFormat:@"self ENDSWITH '.abc'"];
+    _abcDocuments = [directory filteredArrayUsingPredicate:fltr];
+}
+
 - (IBAction)buttonPressed:(UIButton *)sender {
     if (sender.tag == 0) {
         //load
-        NSString *docsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-        NSFileManager *fileManager = [[NSFileManager alloc] init];
-        NSArray *directory = [fileManager contentsOfDirectoryAtPath:docsPath error:nil];
-        NSPredicate *fltr = [NSPredicate predicateWithFormat:@"self ENDSWITH '.abc'"];
-        NSArray *abcFiles = [directory filteredArrayUsingPredicate:fltr];
+        [self loadABCdocuments];
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"load abc-Tune:" message:@"to add tunes put them in the apps Shared Folder with iTunes." preferredStyle:UIAlertControllerStyleAlert];
-        for (NSString *fileName in abcFiles){
-            UIAlertAction *action = [UIAlertAction actionWithTitle:fileName style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-                [self loadABCfileFromPath:[docsPath stringByAppendingPathComponent:fileName]];
-            }];
-            [alert addAction:action];
+        UIViewController *controller = [[UIViewController alloc]init];
+        UITableView *alertTableView;
+        CGRect rect;
+        if (_abcDocuments.count < 4) {
+            rect = CGRectMake(0, 0, 272, 100);
+            [controller setPreferredContentSize:rect.size];
+            
         }
+        else if (_abcDocuments.count < 6){
+            rect = CGRectMake(0, 0, 272, 150);
+            [controller setPreferredContentSize:rect.size];
+        }
+        else if (_abcDocuments.count < 8){
+            rect = CGRectMake(0, 0, 272, 200);
+            [controller setPreferredContentSize:rect.size];
+            
+        }
+        else {
+            rect = CGRectMake(0, 0, 272, 250);
+            [controller setPreferredContentSize:rect.size];
+        }
+        
+        alertTableView  = [[UITableView alloc]initWithFrame:rect];
+        alertTableView.delegate = self;
+        alertTableView.dataSource = self;
+        alertTableView.tableFooterView = [[UIView alloc]initWithFrame:CGRectZero];
+        [alertTableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
+        [controller.view addSubview:alertTableView];
+        [controller.view bringSubviewToFront:alertTableView];
+        [controller.view setUserInteractionEnabled:YES];
+        [alertTableView setUserInteractionEnabled:YES];
+        [alertTableView setAllowsSelection:YES];
+        [alertTableView setEditing:YES];
+        alertTableView.allowsSelectionDuringEditing = YES;
+        [alert setValue:controller forKey:@"contentViewController"];
+//        for (NSString *fileName in abcFiles){
+//            UIAlertAction *action = [UIAlertAction actionWithTitle:fileName style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+//                [self loadABCfileFromPath:[docsPath stringByAppendingPathComponent:fileName]];
+//            }];
+//            [alert addAction:action];
+//        }
         UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
         [alert addAction:cancel];
         [self presentViewController:alert animated:YES completion:nil];
@@ -339,7 +394,7 @@
             UIAlertAction *action = [UIAlertAction actionWithTitle:voiceName style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                 NSLog(@"display voice: %@", voice);
                 NSString *fileName = [[self->_filepath lastPathComponent] substringToIndex:[self->_filepath lastPathComponent].length-4];
-                [self loadPdfFromFilePath:[[NSBundle mainBundle] pathForResource:[fileName stringByAppendingString:[NSString stringWithFormat:@"_%@", voiceName]] ofType:@"pdf" inDirectory: @"DefaultFiles"]];
+//                [self loadPdfFromFilePath:[[NSBundle mainBundle] pathForResource:[fileName stringByAppendingString:[NSString stringWithFormat:@"_%@", voiceName]] ofType:@"pdf" inDirectory: @"DefaultFiles"]];
             }];
             [alert addAction:action];
         }
@@ -349,16 +404,11 @@
     }
     else if (sender.tag == 3) {
         //TODO: refresh: redraw
+        [self removeOldSvgFilesInWebfolder];
         [self setColouredCodeFromString:_abcView.text];
-        NSString *outFile = [NSString stringWithFormat:@"-O%@", [[[_filepath path] substringToIndex:[_filepath path].length-4] stringByAppendingPathExtension:@"ps"]]; // don`t work like dis.
-        NSString *inFile = [_filepath path];
-        char *outPath = strdup([outFile UTF8String]);
-        char *inPath = strdup([inFile UTF8String]);
-        char* args[] = {outPath, inPath, NULL };
-        int result = abcMain(2, args);
-        if (!result) {
-            NSLog(@"didnt work...");
-        }
+        _renderer = [[abcRenderer alloc] initWithAbcFile:[_filepath path]];
+        [self loadSvgImageFromPath:_renderer.svgFilePaths[0]];
+//        }
     }
     else if (sender.tag == 4) {
         //create new file:
@@ -366,10 +416,28 @@
     }
 }
 
+- (void) removeOldSvgFilesInWebfolder {
+    
+    NSFileManager *fileManager = [[NSFileManager alloc] init];
+    NSString *webFolderPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Web"];
+    NSArray *directory = [fileManager contentsOfDirectoryAtPath:webFolderPath error:nil];
+    NSPredicate *fltr = [NSPredicate predicateWithFormat:@"self ENDSWITH '.svg'"];
+    NSArray *files = [directory filteredArrayUsingPredicate:fltr];
+    for (NSString *file in files) {
+        NSError *error;
+        NSString *svgFile = [webFolderPath stringByAppendingPathComponent:file];
+        if (![fileManager removeItemAtPath:svgFile error:&error]) {
+            NSLog(@"couldn't remove file: %@", error.localizedDescription);
+        }
+    }
+}
+
 UIAlertController *alert;
 BOOL alertShown;
 
 - (void) createNewFile {
+    _createFileComposer = @"";
+    _createFileLength = @"";
     BOOL landscape = [[UIDevice currentDevice] orientation] == UIDeviceOrientationLandscapeLeft || [[UIDevice currentDevice] orientation] == UIDeviceOrientationLandscapeRight;
     alert = [UIAlertController alertControllerWithTitle:@"create new abc-Code file:" message:(!landscape) ? @"please specify at least file-name (used as title) and key for your new tune.\n\n\n\n\n" :@"please specify at least the file-name (used as title) for your new tune (rotate device to change default key of 'C')" preferredStyle:UIAlertControllerStyleAlert];
     NSArray *Keys = @[@"C#", @"F#", @"B", @"E", @"A", @"D", @"G", @"C", @"F", @"Bb", @"Eb", @"Ab", @"Db", @"Gb"];
@@ -415,7 +483,7 @@ BOOL alertShown;
         createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"M:%@\n", Measures[[self->_measurePicker.pickerView selectedRowInComponent:0]]]];
         createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"K:%@\n", Keys[[self->_keyPicker.pickerView selectedRowInComponent:0]]]];
         NSLog(@"file created: %@", createAbcFileString);
-        createAbcFileString = [createAbcFileString stringByAppendingString: @"V:Voice1\n\%here start writing your tune:\n"];
+        createAbcFileString = [createAbcFileString stringByAppendingString: @"V:Voice1\n\%start writing your tune here:\n"];
         [self setColouredCodeFromString: createAbcFileString];
         NSError *error;
         NSString *path = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:self->_createFileName];
@@ -525,6 +593,47 @@ BOOL alertShown;
             alert.message = @"please specify at least the file-name (used as title) for your new tune (rotate device to change default key of 'C')";
         }            break;
         case UIInterfaceOrientationUnknown:break;
+    }
+}
+- (nonnull UITableViewCell *)tableView:(nonnull UITableView *)tableView cellForRowAtIndexPath:(nonnull NSIndexPath *)indexPath {
+    static NSString *cellIdentifier = @"cellIdentifier";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    if(cell == nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+    }
+    cell.textLabel.text = _abcDocuments[indexPath.row];
+    cell.textLabel.font = [UIFont systemFontOfSize:16];
+    return cell;
+}
+
+- (NSInteger)tableView:(nonnull UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return _abcDocuments.count;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSString *fileName = _abcDocuments[indexPath.row];
+    [self loadABCfileFromPath:[[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:fileName]];
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (editingStyle == UITableViewCellEditingStyleDelete) {
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+        NSString *filePath = [documentsPath stringByAppendingPathComponent:_abcDocuments[indexPath.row]];
+        NSError *error;
+        BOOL success = [fileManager removeItemAtPath:filePath error:&error];
+        if (!success) {
+            NSLog(@"Could not delete file -:%@ ",[error localizedDescription]);
+        }
+        else {
+            [self loadABCdocuments];
+            if (_abcDocuments.count == 0) {
+                [self dismissViewControllerAnimated:YES completion:nil];
+                return;
+            }
+            [tableView reloadData];
+        }
     }
 }
 @end

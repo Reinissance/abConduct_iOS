@@ -7,13 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <PDFKit/PDFView.h>
+#import <WebKit/WebKit.h>
 
 @class WebServer;
 
-@interface ViewController : UIViewController 
+@interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 
-@property (weak, nonatomic) IBOutlet PDFView *displayView;
+@property (weak, nonatomic) IBOutlet UIWebView *displayView;
 @property (weak, nonatomic) IBOutlet UITextView *abcView;
 - (IBAction)moveHorizontalStack:(UIPanGestureRecognizer *)sender;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *displayHeight;

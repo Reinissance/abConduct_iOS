@@ -17,7 +17,8 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "abcm2ps.h" 
+#include "abcm2ps.h"
+#import "utilities.h"
 
 #define PPI_96_72 0.75		// convert page format to 72 PPI
 #define BUFFLN	80		/* max number of lines in output buffer */
@@ -106,7 +107,7 @@ void open_fout(void)
 	close_output_file();
 	strcpy(outfnam, fnm);
 	if (i != 0 || fnm[0] != '-') {
-		if ((fout = fopen(fnm, "w")) == NULL) {
+		if ((fout = iosfopen(fnm, "w")) == NULL) {
 			error(1, NULL, "Cannot create output file %s - abort", fnm);
 			exit(EXIT_FAILURE);
 		}
@@ -771,7 +772,7 @@ void bskip(float h)
 void init_outbuf(int kbsz)
 {
 	if (outbuf)
-		free(outbuf);
+        free(outbuf);
 	outbufsz = kbsz * 1024;
 //	if (outbufsz < 0x10000)
 //		outbufsz = 0x10000;

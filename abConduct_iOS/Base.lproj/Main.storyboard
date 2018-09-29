@@ -24,7 +24,7 @@
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="U5n-Ah-eKg" userLabel="Horizontal Stack">
                                         <rect key="frame" x="0.0" y="0.0" width="371" height="663"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FEd-eI-mc2" customClass="PDFView">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FEd-eI-mc2" customClass="UIWebView">
                                                 <rect key="frame" x="0.0" y="0.0" width="371" height="490"/>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <gestureRecognizers/>
