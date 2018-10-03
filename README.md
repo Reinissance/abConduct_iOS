@@ -6,8 +6,6 @@ I am a music teacher, musician in at least three active bands and I imagine myse
 
 Of course this scenario is part of the future, but still you can imagine a lot of other situation for ensembles that might profit from this app.
 
-But I need help:  By now, the main part, the port of https://github.com/leesavide/abcm2ps to an static library for iOS is not done. Any help appreciated!!!
-
 Users have to be familiar with the abcnotation format, more info here: http://abcnotation.com/ and all features here: http://moinejf.free.fr/abcm2ps-doc/index.html
 
 With the underlying http://abcnotation.com/wiki/abc:standard:v2.2 it is possible to write highly professional scores.
