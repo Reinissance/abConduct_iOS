@@ -577,6 +577,8 @@ static void set_opt(char *w, char *v)
 /* -- main program -- */
 int abcMain(int argc, char **argv)
 {
+    
+    in_fname = NULL;
 	unsigned j;
 	char *p, c, *aaa;
 
@@ -686,10 +688,10 @@ int abcMain(int argc, char **argv)
 	clrarena(0);				/* global */
 	clrarena(1);				/* tunes */
 	clrarena(2);				/* generation */
-//	memset(&info, 0, sizeof info);
+    memset(&info, 0, sizeof info);
 	info['T' - 'A'] = &notitle;
 	notitle.text = "T:";
-	set_format();
+    set_format();
 	init_deco();
 
 #ifdef linux

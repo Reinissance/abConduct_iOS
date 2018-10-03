@@ -463,13 +463,13 @@ void set_format(void)
 		| (1 << ('T' - 'A'))
 		| (1 << ('W' - 'A'));
 	f->fields[1] = (1 << ('w' - 'a'));
-    set_infoname("R \"Rhythm: \"");
-    set_infoname("B \"Book: \"");
-    set_infoname("S \"Source: \"");
-    set_infoname("D \"Discography: \"");
-    set_infoname("N \"Notes: \"");
-    set_infoname("Z \"Transcription: \"");
-    set_infoname("H \"History: \"");
+	set_infoname("R \"Rhythm: \"");
+	set_infoname("B \"Book: \"");
+	set_infoname("S \"Source: \"");
+	set_infoname("D \"Discography: \"");
+	set_infoname("N \"Notes: \"");
+	set_infoname("Z \"Transcription: \"");
+	set_infoname("H \"History: \"");
 }
 
 /* -- print the current format -- */

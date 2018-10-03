@@ -13,6 +13,7 @@
 
 @interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 
+@property (weak, nonatomic) IBOutlet UIButton *refreshButton;
 @property (weak, nonatomic) IBOutlet UIWebView *displayView;
 @property (weak, nonatomic) IBOutlet UITextView *abcView;
 - (IBAction)moveHorizontalStack:(UIPanGestureRecognizer *)sender;

@@ -9,8 +9,9 @@
 #import "ViewController.h"
 #import "AppDelegate.h"
 #import "arrayPicker.h"
-#import "abcRenderer.h"
+#import "abcRunner.h"
 #include <string.h>
+#import "voiceHandler.h"
 
 
 #define APP ((AppDelegate *)[[UIApplication sharedApplication] delegate])
@@ -28,7 +29,8 @@
 @property NSString *createFileName;
 @property NSString *createFileComposer;
 @property NSString *createFileLength;
-@property abcRenderer *renderer;
+@property voiceHandler *voiceSVGpaths;
+@property NSString *selectedVoice;
 
 @end
 
@@ -44,10 +46,11 @@
     [self setColouredCodeFromString:content];
     _allVoices = [NSMutableArray array];
     _allVoices = [self getVoicesWithHeader];
-    NSString *svgFile = [[NSBundle mainBundle] pathForResource:@"Hallelujah" ofType:@"svg" inDirectory: @"DefaultFiles"];
-//    _displayView.displayMode = kPDFDisplaySinglePageContinuous;
-//    _displayView.displayDirection = kPDFDisplayDirectionHorizontal;
-    [self loadSvgImageFromPath:svgFile];
+    _voiceSVGpaths = [[voiceHandler alloc] init];
+    [_voiceSVGpaths createVoices:_allVoices];
+    NSArray *voice = _allVoices[0];
+    _selectedVoice = voice[0];
+    [self loadSvgImage:voice[0]];
     self.server = APP.server;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
@@ -85,20 +88,13 @@
     }
 }
 
-//- (void) loadPdfFromFilePath: (NSString*) filepath {
-//    NSURL *file = [NSURL fileURLWithPath:filepath];
-//    PDFDocument *pdf = [[PDFDocument alloc] initWithURL:file];
-//    _displayView.document = pdf;
-//    _displayView.maxScaleFactor = 4.0;
-//    _displayView.minScaleFactor = _displayView.scaleFactorForSizeToFit;
-//    _displayView.autoScales = true;
-//}
-
-- (void) loadSvgImageFromPath: (NSString*) path {
-    if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
-        NSLog(@"not dere");
-    }
-    NSURL *file = [NSURL fileURLWithPath:path];
+- (void) loadSvgImage: (NSString*) image {
+    NSFileManager *fileManager = [[NSFileManager alloc] init];
+    NSString *webFolder = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:@"webDAV"];
+    NSArray *directory = [fileManager contentsOfDirectoryAtPath:webFolder error:nil];
+    NSString *imagePath = [_selectedVoice stringByAppendingPathExtension:@"svg"];
+    int index = (int) [directory indexOfObject:imagePath];
+    NSURL *file = [NSURL fileURLWithPath:[webFolder stringByAppendingPathComponent:directory[index]]];
     NSURLRequest *request = [NSURLRequest requestWithURL:file];
     [_displayView setScalesPageToFit:YES];
     [_displayView loadRequest:request];
@@ -152,7 +148,10 @@
     if (_codeHighlighting) {
         [_abcView setAttributedText:string];
     }
-    else _abcView.text = code;
+    else {
+        _abcView.textColor = [UIColor darkGrayColor];
+        _abcView.text = code;
+    }
     [_abcView setSelectedRange:cursorPosition];
     [_abcView setTintColor:[UIColor whiteColor]];
     [_abcView setScrollEnabled:YES];
@@ -223,7 +222,8 @@
                 }
             }
         }
-        [combinedVoicesWithName addObject:@[staveOrScoreName, combinedVoices]];
+        NSString *filename = [[_filepath path] lastPathComponent];
+        [combinedVoicesWithName addObject:@[[NSString stringWithFormat:@"%@_%@", [filename substringToIndex:filename.length-4], staveOrScoreName], combinedVoices]];
     }
     if (combinedVoicesWithName.count < 1) {
         _potentialVoices = [NSMutableArray array];
@@ -363,12 +363,6 @@
         [alertTableView setEditing:YES];
         alertTableView.allowsSelectionDuringEditing = YES;
         [alert setValue:controller forKey:@"contentViewController"];
-//        for (NSString *fileName in abcFiles){
-//            UIAlertAction *action = [UIAlertAction actionWithTitle:fileName style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-//                [self loadABCfileFromPath:[docsPath stringByAppendingPathComponent:fileName]];
-//            }];
-//            [alert addAction:action];
-//        }
         UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
         [alert addAction:cancel];
         [self presentViewController:alert animated:YES completion:nil];
@@ -392,9 +386,8 @@
         for (NSArray *voice in _allVoices) {
             NSString *voiceName = voice[0];
             UIAlertAction *action = [UIAlertAction actionWithTitle:voiceName style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                NSLog(@"display voice: %@", voice);
-                NSString *fileName = [[self->_filepath lastPathComponent] substringToIndex:[self->_filepath lastPathComponent].length-4];
-//                [self loadPdfFromFilePath:[[NSBundle mainBundle] pathForResource:[fileName stringByAppendingString:[NSString stringWithFormat:@"_%@", voiceName]] ofType:@"pdf" inDirectory: @"DefaultFiles"]];
+                self->_selectedVoice = voiceName;
+                [self loadSvgImage:voiceName];
             }];
             [alert addAction:action];
         }
@@ -403,32 +396,14 @@
         [self presentViewController:alert animated:YES completion:nil];
     }
     else if (sender.tag == 3) {
-        //TODO: refresh: redraw
-        [self removeOldSvgFilesInWebfolder];
-        [self setColouredCodeFromString:_abcView.text];
-        _renderer = [[abcRenderer alloc] initWithAbcFile:[_filepath path]];
-        [self loadSvgImageFromPath:_renderer.svgFilePaths[0]];
-//        }
+        //refresh
+        _allVoices = [self getVoicesWithHeader];
+        [_voiceSVGpaths createVoices:_allVoices];
+        [self loadSvgImage:_selectedVoice];
     }
     else if (sender.tag == 4) {
         //create new file:
         [self createNewFile];
-    }
-}
-
-- (void) removeOldSvgFilesInWebfolder {
-    
-    NSFileManager *fileManager = [[NSFileManager alloc] init];
-    NSString *webFolderPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Web"];
-    NSArray *directory = [fileManager contentsOfDirectoryAtPath:webFolderPath error:nil];
-    NSPredicate *fltr = [NSPredicate predicateWithFormat:@"self ENDSWITH '.svg'"];
-    NSArray *files = [directory filteredArrayUsingPredicate:fltr];
-    for (NSString *file in files) {
-        NSError *error;
-        NSString *svgFile = [webFolderPath stringByAppendingPathComponent:file];
-        if (![fileManager removeItemAtPath:svgFile error:&error]) {
-            NSLog(@"couldn't remove file: %@", error.localizedDescription);
-        }
     }
 }
 
@@ -611,9 +586,14 @@ BOOL alertShown;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    _refreshButton.enabled = YES;
     NSString *fileName = _abcDocuments[indexPath.row];
     [self loadABCfileFromPath:[[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:fileName]];
     [self dismissViewControllerAnimated:YES completion:nil];
+    [_voiceSVGpaths createVoices:_allVoices];
+    NSArray *voice = _allVoices[0];
+    _selectedVoice = voice[0];
+    [self loadSvgImage:_selectedVoice];
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {

@@ -897,7 +897,7 @@ int svg_output(FILE *out, const char *fmt, ...)
 #endif
 	;
 void svg_write(char *buf, int len);
-void svg_close();
+void svg_close(void);
 /* syms.c */
 void define_font(char *name, int num, int enc);
 void define_symbols(void);

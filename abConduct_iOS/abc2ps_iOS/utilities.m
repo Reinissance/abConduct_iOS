@@ -9,10 +9,8 @@
 
 
 FILE *iosfopen(const char *filename, const char *mode) {
-//    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-//    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *webFolder = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:@"webDAV"];
 
-    NSString *webFolder = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Web"];
     NSString *fileString = [NSString stringWithCString:filename encoding:NSASCIIStringEncoding];
     NSString *path = [webFolder stringByAppendingPathComponent:fileString];
     const char *filePath = [path cStringUsingEncoding:NSASCIIStringEncoding];

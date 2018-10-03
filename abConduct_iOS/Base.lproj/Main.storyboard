@@ -105,14 +105,18 @@
                                                                             <action selector="buttonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="SjY-Li-DA1"/>
                                                                         </connections>
                                                                     </button>
-                                                                    <button opaque="NO" tag="3" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xx7-yP-9cF">
+                                                                    <button opaque="NO" tag="3" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xx7-yP-9cF">
                                                                         <rect key="frame" x="314" y="0.0" width="65" height="28"/>
                                                                         <constraints>
                                                                             <constraint firstAttribute="width" constant="65" id="2bS-Gl-yiB"/>
                                                                         </constraints>
                                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
+                                                                        <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                         <state key="normal" title="refresh">
                                                                             <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        </state>
+                                                                        <state key="disabled" title="(refresh)">
+                                                                            <color key="titleColor" red="0.93725490199999995" green="0.93725490199999995" blue="0.95686274510000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                         </state>
                                                                         <connections>
                                                                             <action selector="buttonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="dle-sd-3AV"/>
@@ -234,6 +238,7 @@
                         <outlet property="codeHighlightingLabel" destination="nBJ-Cx-Qga" id="5HF-QL-Kj7"/>
                         <outlet property="displayHeight" destination="HDz-6e-im8" id="7Ax-wn-bMV"/>
                         <outlet property="displayView" destination="FEd-eI-mc2" id="SLA-yG-dZK"/>
+                        <outlet property="refreshButton" destination="Xx7-yP-9cF" id="34U-PU-vuY"/>
                         <outlet property="serverLabel" destination="RVD-w4-2a0" id="HXT-wM-f5N"/>
                         <outlet property="serverSwitch" destination="loR-1b-8cc" id="tP1-dp-Kc8"/>
                     </connections>

@@ -99,8 +99,15 @@
 }
 
 - (BOOL)start {
-    NSString *path = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"Web"];
-	return [self start:path];
+    NSError *error;
+    NSString *webFolder = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:@"webDAV"];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:webFolder])
+        [[NSFileManager defaultManager] createDirectoryAtPath:webFolder withIntermediateDirectories:NO attributes:nil error:&error];
+    if (error) {
+        NSLog(@"couldn't create webDAV-folder: %@, reason: %@", error.localizedDescription, error.localizedFailureReason);
+        return NO;
+    }
+	return [self start:webFolder];
 }
 
 - (void)stop {
