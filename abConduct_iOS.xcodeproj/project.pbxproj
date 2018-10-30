@@ -63,7 +63,6 @@
 		4ABD9E242150736C00CA5CD4 /* DispatchQueueLogFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9DFF2150736B00CA5CD4 /* DispatchQueueLogFormatter.m */; };
 		4ABD9E252150736C00CA5CD4 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4ABD9E002150736B00CA5CD4 /* README.txt */; };
 		4ABD9E262150736C00CA5CD4 /* DDLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9E012150736B00CA5CD4 /* DDLog.m */; };
-		4ABD9E272150736C00CA5CD4 /* About.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4ABD9E022150736B00CA5CD4 /* About.txt */; };
 		4ABD9E282150736C00CA5CD4 /* DDAbstractDatabaseLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9E042150736B00CA5CD4 /* DDAbstractDatabaseLogger.m */; };
 		4ABD9E292150736C00CA5CD4 /* DDFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9E052150736B00CA5CD4 /* DDFileLogger.m */; };
 		4ABD9E2A2150736C00CA5CD4 /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9E082150736B00CA5CD4 /* GCDAsyncSocket.m */; };
@@ -618,7 +617,6 @@
 				4ABD9E2B2150736C00CA5CD4 /* About.txt in Resources */,
 				4ABD9E202150736C00CA5CD4 /* LICENSE.txt in Resources */,
 				4A6743822150012400886D97 /* DefaultFiles in Resources */,
-				4ABD9E272150736C00CA5CD4 /* About.txt in Resources */,
 				4A2D7DC6214EBBCE005FB580 /* LaunchScreen.storyboard in Resources */,
 				4A2D7DC3214EBBCE005FB580 /* Assets.xcassets in Resources */,
 				4ABD9E252150736C00CA5CD4 /* README.txt in Resources */,

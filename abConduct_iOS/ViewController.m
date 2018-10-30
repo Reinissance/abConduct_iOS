@@ -9,7 +9,6 @@
 #import "ViewController.h"
 #import "AppDelegate.h"
 #import "arrayPicker.h"
-#import "abcRunner.h"
 #include <string.h>
 #import "voiceHandler.h"
 
@@ -132,7 +131,7 @@
                 NSRange range=[code rangeOfString:line];
                 [string addAttribute:NSForegroundColorAttributeName value:[UIColor lightGrayColor] range:range];
             }
-            [code enumerateSubstringsInRange:NSMakeRange(0, [string.string length])
+            else [code enumerateSubstringsInRange:NSMakeRange(0, [string.string length])
                                      options:NSStringEnumerationByComposedCharacterSequences usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop){
                                          if ([substring isEqualToString:@"|"] || [substring isEqualToString:@"]"] || [substring isEqualToString:@"["]) {
                                              [string addAttribute:NSForegroundColorAttributeName value: [UIColor blueColor] range:substringRange];
