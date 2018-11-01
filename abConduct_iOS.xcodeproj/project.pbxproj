@@ -8,6 +8,16 @@
 
 /* Begin PBXBuildFile section */
 		4A15A514215C2C9D00688610 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3A9B332150081E009757BC /* WebKit.framework */; };
+		4A20DCA5218B3DA600EC3765 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A20DCA4218B3DA600EC3765 /* CoreAudio.framework */; };
+		4A20DCA7218B3DB100EC3765 /* CoreMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A20DCA6218B3DB100EC3765 /* CoreMIDI.framework */; };
+		4A20DCA9218B3DBE00EC3765 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A20DCA8218B3DBE00EC3765 /* AudioToolbox.framework */; };
+		4A20DCAC218B3E0200EC3765 /* midiPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A20DCAB218B3E0200EC3765 /* midiPlayer.m */; };
+		4A212607218A11AE007EFE1D /* parseabc.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A2125FE218A11AC007EFE1D /* parseabc.c */; };
+		4A212608218A11AE007EFE1D /* store.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A212601218A11AD007EFE1D /* store.c */; };
+		4A212609218A11AE007EFE1D /* midifile.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A212603218A11AD007EFE1D /* midifile.c */; };
+		4A21260A218A11AE007EFE1D /* genmidi.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A212605218A11AE007EFE1D /* genmidi.c */; };
+		4A21260B218A11AE007EFE1D /* parser2.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A212606218A11AE007EFE1D /* parser2.c */; };
+		4A21260F218A13D3007EFE1D /* queues.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A21260D218A13D3007EFE1D /* queues.c */; };
 		4A2B940A2152EDD300AA3F7A /* arrayPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2B94092152EDD300AA3F7A /* arrayPicker.m */; };
 		4A2D7DBB214EBBCE005FB580 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DBA214EBBCE005FB580 /* AppDelegate.m */; };
 		4A2D7DBE214EBBCE005FB580 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DBD214EBBCE005FB580 /* ViewController.m */; };
@@ -17,6 +27,7 @@
 		4A2D7DC9214EBBCE005FB580 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DC8214EBBCE005FB580 /* main.m */; };
 		4A2D7DD3214EBBCE005FB580 /* abConduct_iOSTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DD2214EBBCE005FB580 /* abConduct_iOSTests.m */; };
 		4A2D7DDE214EBBCF005FB580 /* abConduct_iOSUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DDD214EBBCF005FB580 /* abConduct_iOSUITests.m */; };
+		4A3C598C218A18AE00AD9A62 /* stresspat.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A3C598B218A18AE00AD9A62 /* stresspat.c */; };
 		4A596582215C300300F226A5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A596581215C300300F226A5 /* Foundation.framework */; };
 		4A6743822150012400886D97 /* DefaultFiles in Resources */ = {isa = PBXBuildFile; fileRef = 4A6743812150012400886D97 /* DefaultFiles */; };
 		4A74251A2163F282001C7466 /* abcparse.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A7425052163F281001C7466 /* abcparse.c */; };
@@ -103,6 +114,23 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4A20DCA4218B3DA600EC3765 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
+		4A20DCA6218B3DB100EC3765 /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = System/Library/Frameworks/CoreMIDI.framework; sourceTree = SDKROOT; };
+		4A20DCA8218B3DBE00EC3765 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		4A20DCAA218B3E0200EC3765 /* midiPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = midiPlayer.h; sourceTree = "<group>"; };
+		4A20DCAB218B3E0200EC3765 /* midiPlayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = midiPlayer.m; sourceTree = "<group>"; };
+		4A2125FE218A11AC007EFE1D /* parseabc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = parseabc.c; sourceTree = "<group>"; };
+		4A2125FF218A11AC007EFE1D /* parseabc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = parseabc.h; sourceTree = "<group>"; };
+		4A212600218A11AC007EFE1D /* genmidi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = genmidi.h; sourceTree = "<group>"; };
+		4A212601218A11AD007EFE1D /* store.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = store.c; sourceTree = "<group>"; };
+		4A212602218A11AD007EFE1D /* midifile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = midifile.h; sourceTree = "<group>"; };
+		4A212603218A11AD007EFE1D /* midifile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = midifile.c; sourceTree = "<group>"; };
+		4A212604218A11AD007EFE1D /* parser2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = parser2.h; sourceTree = "<group>"; };
+		4A212605218A11AE007EFE1D /* genmidi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = genmidi.c; sourceTree = "<group>"; };
+		4A212606218A11AE007EFE1D /* parser2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = parser2.c; sourceTree = "<group>"; };
+		4A21260C218A11D0007EFE1D /* abc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = abc.h; sourceTree = "<group>"; };
+		4A21260D218A13D3007EFE1D /* queues.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = queues.c; sourceTree = "<group>"; };
+		4A21260E218A13D3007EFE1D /* queues.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = queues.h; sourceTree = "<group>"; };
 		4A2B94082152EDD300AA3F7A /* arrayPicker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = arrayPicker.h; sourceTree = "<group>"; };
 		4A2B94092152EDD300AA3F7A /* arrayPicker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = arrayPicker.m; sourceTree = "<group>"; };
 		4A2D7DB6214EBBCE005FB580 /* abConduct_iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = abConduct_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -122,6 +150,7 @@
 		4A2D7DDD214EBBCF005FB580 /* abConduct_iOSUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = abConduct_iOSUITests.m; sourceTree = "<group>"; };
 		4A2D7DDF214EBBCF005FB580 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A3A9B332150081E009757BC /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		4A3C598B218A18AE00AD9A62 /* stresspat.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = stresspat.c; sourceTree = "<group>"; };
 		4A596581215C300300F226A5 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		4A6743812150012400886D97 /* DefaultFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = DefaultFiles; sourceTree = "<group>"; };
 		4A7425052163F281001C7466 /* abcparse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = abcparse.c; sourceTree = "<group>"; };
@@ -136,10 +165,8 @@
 		4A74250F2163F281001C7466 /* deco.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = deco.c; sourceTree = "<group>"; };
 		4A7425102163F281001C7466 /* music.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = music.c; sourceTree = "<group>"; };
 		4A7425112163F281001C7466 /* front.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = front.c; sourceTree = "<group>"; };
-		4A7425122163F281001C7466 /* abc2ps_iOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = abc2ps_iOS.h; sourceTree = "<group>"; };
 		4A7425132163F281001C7466 /* utilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = utilities.m; sourceTree = "<group>"; };
 		4A7425142163F281001C7466 /* parse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = parse.c; sourceTree = "<group>"; };
-		4A7425152163F281001C7466 /* abcm2ps.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = abcm2ps.h; sourceTree = "<group>"; };
 		4A7425172163F281001C7466 /* syms.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = syms.c; sourceTree = "<group>"; };
 		4A7425182163F281001C7466 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A7425192163F281001C7466 /* svg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = svg.c; sourceTree = "<group>"; };
@@ -147,6 +174,8 @@
 		4A7A504F215117A900B01095 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		4A8C198A2164071F00134416 /* voiceHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = voiceHandler.m; sourceTree = "<group>"; };
 		4A8C198C2164072C00134416 /* voiceHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = voiceHandler.h; sourceTree = "<group>"; };
+		4A9FD8FD218A431E00DF03D1 /* store.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = store.h; sourceTree = "<group>"; };
+		4A9FD8FF218A43D800DF03D1 /* abcm2ps.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = abcm2ps.h; sourceTree = "<group>"; };
 		4ABCD482215BDBDE000A6A53 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		4ABD9DC22150736B00CA5CD4 /* HTTPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPConnection.h; sourceTree = "<group>"; };
 		4ABD9DC32150736B00CA5CD4 /* HTTPLogging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPLogging.h; sourceTree = "<group>"; };
@@ -223,6 +252,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A20DCA9218B3DBE00EC3765 /* AudioToolbox.framework in Frameworks */,
+				4A20DCA7218B3DB100EC3765 /* CoreMIDI.framework in Frameworks */,
+				4A20DCA5218B3DA600EC3765 /* CoreAudio.framework in Frameworks */,
 				4ADEC5712163D2CB0069274B /* libxml2.2.dylib in Frameworks */,
 				4AD31CEB215C357400D3A910 /* UIKit.framework in Frameworks */,
 				4A596582215C300300F226A5 /* Foundation.framework in Frameworks */,
@@ -247,13 +279,38 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4A2125FD218A10EE007EFE1D /* abc2midi */ = {
+			isa = PBXGroup;
+			children = (
+				4A3C598B218A18AE00AD9A62 /* stresspat.c */,
+				4A21260C218A11D0007EFE1D /* abc.h */,
+				4A212605218A11AE007EFE1D /* genmidi.c */,
+				4A212600218A11AC007EFE1D /* genmidi.h */,
+				4A212603218A11AD007EFE1D /* midifile.c */,
+				4A212602218A11AD007EFE1D /* midifile.h */,
+				4A2125FE218A11AC007EFE1D /* parseabc.c */,
+				4A2125FF218A11AC007EFE1D /* parseabc.h */,
+				4A212606218A11AE007EFE1D /* parser2.c */,
+				4A212604218A11AD007EFE1D /* parser2.h */,
+				4A212601218A11AD007EFE1D /* store.c */,
+				4A9FD8FD218A431E00DF03D1 /* store.h */,
+				4A21260D218A13D3007EFE1D /* queues.c */,
+				4A21260E218A13D3007EFE1D /* queues.h */,
+			);
+			path = abc2midi;
+			sourceTree = "<group>";
+		};
 		4A2B94042152EB2E00AA3F7A /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				4A74250A2163F281001C7466 /* utilities.h */,
+				4A7425132163F281001C7466 /* utilities.m */,
 				4A2B94082152EDD300AA3F7A /* arrayPicker.h */,
 				4A2B94092152EDD300AA3F7A /* arrayPicker.m */,
 				4A8C198A2164071F00134416 /* voiceHandler.m */,
 				4A8C198C2164072C00134416 /* voiceHandler.h */,
+				4A20DCAA218B3E0200EC3765 /* midiPlayer.h */,
+				4A20DCAB218B3E0200EC3765 /* midiPlayer.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -282,6 +339,7 @@
 		4A2D7DB8214EBBCE005FB580 /* abConduct_iOS */ = {
 			isa = PBXGroup;
 			children = (
+				4A2125FD218A10EE007EFE1D /* abc2midi */,
 				4A7425042163F281001C7466 /* abc2ps_iOS */,
 				4A2B94042152EB2E00AA3F7A /* Classes */,
 				4ABD9DC02150736B00CA5CD4 /* CocoaHTTPServer */,
@@ -320,6 +378,9 @@
 		4A3A9B322150081E009757BC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4A20DCA8218B3DBE00EC3765 /* AudioToolbox.framework */,
+				4A20DCA6218B3DB100EC3765 /* CoreMIDI.framework */,
+				4A20DCA4218B3DA600EC3765 /* CoreAudio.framework */,
 				4ADEC5702163D2CB0069274B /* libxml2.2.dylib */,
 				4A596581215C300300F226A5 /* Foundation.framework */,
 				4ABCD482215BDBDE000A6A53 /* UIKit.framework */,
@@ -337,17 +398,14 @@
 				4A7425072163F281001C7466 /* config.h */,
 				4A7425082163F281001C7466 /* format.c */,
 				4A7425092163F281001C7466 /* abcm2ps.c */,
-				4A74250A2163F281001C7466 /* utilities.h */,
+				4A9FD8FF218A43D800DF03D1 /* abcm2ps.h */,
 				4A74250B2163F281001C7466 /* draw.c */,
 				4A74250C2163F281001C7466 /* glyph.c */,
 				4A74250E2163F281001C7466 /* subs.c */,
 				4A74250F2163F281001C7466 /* deco.c */,
 				4A7425102163F281001C7466 /* music.c */,
 				4A7425112163F281001C7466 /* front.c */,
-				4A7425122163F281001C7466 /* abc2ps_iOS.h */,
-				4A7425132163F281001C7466 /* utilities.m */,
 				4A7425142163F281001C7466 /* parse.c */,
-				4A7425152163F281001C7466 /* abcm2ps.h */,
 				4A7425172163F281001C7466 /* syms.c */,
 				4A7425182163F281001C7466 /* Info.plist */,
 				4A7425192163F281001C7466 /* svg.c */,
@@ -664,8 +722,10 @@
 				4A2D7DBB214EBBCE005FB580 /* AppDelegate.m in Sources */,
 				4ABD9E1F2150736C00CA5CD4 /* PUTResponse.m in Sources */,
 				4ABD9E132150736C00CA5CD4 /* WebSocket.m in Sources */,
+				4A20DCAC218B3E0200EC3765 /* midiPlayer.m in Sources */,
 				4A74251B2163F282001C7466 /* buffer.c in Sources */,
 				4ABD9E2E2150739800CA5CD4 /* WebServer.m in Sources */,
+				4A212609218A11AE007EFE1D /* midifile.c in Sources */,
 				4ABD9E222150736C00CA5CD4 /* DDASLLogger.m in Sources */,
 				4A7425252163F282001C7466 /* utilities.m in Sources */,
 				4ABD9E152150736C00CA5CD4 /* MultipartFormDataParser.m in Sources */,
@@ -673,14 +733,17 @@
 				4ABD9E0C2150736C00CA5CD4 /* HTTPDataResponse.m in Sources */,
 				4A7A5050215117A900B01095 /* Reachability.m in Sources */,
 				4ABD9E282150736C00CA5CD4 /* DDAbstractDatabaseLogger.m in Sources */,
+				4A21260B218A11AE007EFE1D /* parser2.c in Sources */,
 				4ABD9E122150736C00CA5CD4 /* HTTPConnection.m in Sources */,
 				4ABD9E0B2150736C00CA5CD4 /* HTTPErrorResponse.m in Sources */,
+				4A3C598C218A18AE00AD9A62 /* stresspat.c in Sources */,
 				4A74251D2163F282001C7466 /* abcm2ps.c in Sources */,
 				4ABD9E1E2150736C00CA5CD4 /* DAVResponse.m in Sources */,
 				4ABD9E1A2150736C00CA5CD4 /* DDRange.m in Sources */,
 				4ABD9E1C2150736C00CA5CD4 /* DAVConnection.m in Sources */,
 				4ABD9E292150736C00CA5CD4 /* DDFileLogger.m in Sources */,
 				4ABD9E262150736C00CA5CD4 /* DDLog.m in Sources */,
+				4A21260A218A11AE007EFE1D /* genmidi.c in Sources */,
 				4ABD9E1B2150736C00CA5CD4 /* HTTPServer.m in Sources */,
 				4ABD9E182150736C00CA5CD4 /* DDNumber.m in Sources */,
 				4A7425242163F282001C7466 /* front.c in Sources */,
@@ -690,11 +753,14 @@
 				4ABD9E0F2150736C00CA5CD4 /* HTTPAsyncFileResponse.m in Sources */,
 				4ABD9E102150736C00CA5CD4 /* HTTPRedirectResponse.m in Sources */,
 				4ABD9E172150736C00CA5CD4 /* HTTPAuthenticationRequest.m in Sources */,
+				4A212608218A11AE007EFE1D /* store.c in Sources */,
+				4A21260F218A13D3007EFE1D /* queues.c in Sources */,
 				4A74251F2163F282001C7466 /* glyph.c in Sources */,
 				4A74251A2163F282001C7466 /* abcparse.c in Sources */,
 				4ABD9E242150736C00CA5CD4 /* DispatchQueueLogFormatter.m in Sources */,
 				4ABD9E1D2150736C00CA5CD4 /* DELETEResponse.m in Sources */,
 				4ABD9E232150736C00CA5CD4 /* ContextFilterLogFormatter.m in Sources */,
+				4A212607218A11AE007EFE1D /* parseabc.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -881,17 +947,12 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/abConduct_iOS/Ghostscript",
-					"$(PROJECT_DIR)/abConduct_iOS/abcm2ps",
 					"$(PROJECT_DIR)/abConduct_iOS",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.reinissance.abConduct-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = (
-					"./CocoaHTTPServer/**",
-					../../../abc2ps/abc2ps,
-				);
+				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
 		};
@@ -913,17 +974,12 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/abConduct_iOS/Ghostscript",
-					"$(PROJECT_DIR)/abConduct_iOS/abcm2ps",
 					"$(PROJECT_DIR)/abConduct_iOS",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.reinissance.abConduct-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = (
-					"./CocoaHTTPServer/**",
-					../../../abc2ps/abc2ps,
-				);
+				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Release;
 		};

@@ -576,7 +576,7 @@ extern int defl;		/* decoration flags */
 #define DEF_STEMUP 0x04		/* stem up (1) or down (0) */
 
 		/* switches modified by flags: */
-extern int quiet;		/* quiet mode */
+extern int quiett;		/* quiet mode */
 extern int secure;		/* secure mode */
 extern int annotate;		/* output source references */
 extern int pagenumbers; 	/* write page numbers */

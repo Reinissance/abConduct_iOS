@@ -8,10 +8,11 @@
 
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
+#import "midiPlayer.h"
 
 @class WebServer;
 
-@interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
+@interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, midiPlayerDelegate>
 
 @property (weak, nonatomic) IBOutlet UIButton *refreshButton;
 @property (weak, nonatomic) IBOutlet UIWebView *displayView;
@@ -28,7 +29,10 @@
 @property (weak, nonatomic) IBOutlet UISwitch *serverSwitch;
 - (IBAction)hideKeyboard:(id)sender;
 @property (weak, nonatomic) IBOutlet UILabel *codeHighlightingLabel;
+- (IBAction)exportMIDI:(UIButton*)sender;
 
 @property (weak, nonatomic) WebServer *server;
+- (void) loadABCfileFromPath: (NSString*) path;
+@property (weak, nonatomic) IBOutlet UIButton *playButton;
 
 @end

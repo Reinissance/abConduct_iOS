@@ -111,7 +111,7 @@ void open_fout(void)
     close_output_file();
     strcpy(outfnam, fnm);
     if (i != 0 || fnm[0] != '-') {
-        if ((fout = iosfopen(fnm, "w")) == NULL) {
+        if ((fout = iosfopenw(fnm, "w")) == NULL) {
             error(1, NULL, "Cannot create output file %s - abort", fnm);
             exit(EXIT_FAILURE);
         }
@@ -258,7 +258,7 @@ static void close_fout(void)
     
     if (fout == stdout)
         goto out2;
-    if (quiet)
+    if (quiett)
         goto out1;
     m = ftell(fout);
     if (epsf || svg == 1)

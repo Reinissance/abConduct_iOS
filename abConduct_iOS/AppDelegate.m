@@ -10,6 +10,7 @@
 #import "HTTPServer.h"
 #import "DDLog.h"
 #import "DDTTYLogger.h"
+#import "ViewController.h"
 
 // Log levels: off, error, warn, info, verbose
 
@@ -55,5 +56,41 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+{
+    
+    if (url != nil && [url isFileURL]) {
+        
+        //  xdxf file type handling
+        
+        if ([[url pathExtension] isEqualToString:@"abc"]) {
+            
+            NSString *docsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+            NSError *error;
+            NSFileManager *fileManager = [[NSFileManager alloc] init];
+            NSString *file = [url path];
+            NSString *copyFile = [docsPath stringByAppendingPathComponent:[[file lastPathComponent] stringByReplacingOccurrencesOfString:@" " withString:@"_"]];
+            if (![fileManager copyItemAtPath:file toPath:copyFile error:&error]) {
+                NSLog(@"couldn´t copy File: %@ to documentsDirectory: %@, resaon: %@, %@", file, copyFile, error.localizedDescription, error.localizedFailureReason);
+            }
+            else {
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"copied file %@ to documents folder.", [file lastPathComponent]] message:@"select open to view..." preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction *action = [UIAlertAction actionWithTitle:@"open" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                    ViewController *controller = (ViewController*) self.window.rootViewController;
+                    [controller loadABCfileFromPath:copyFile];
+                    
+                }];
+                [alert addAction:action];
+                UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
+                [alert addAction:cancel];
+                [self.window.rootViewController presentViewController:alert animated:YES completion:nil];
+            }
+            
+        }
+        
+    }
+    
+    return YES;
+}
 
 @end

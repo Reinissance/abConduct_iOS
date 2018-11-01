@@ -11,11 +11,15 @@
 #import "arrayPicker.h"
 #include <string.h>
 #import "voiceHandler.h"
+#import "store.h"
 
 
 #define APP ((AppDelegate *)[[UIApplication sharedApplication] delegate])
+#define docsPath [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]
 
-@interface ViewController ()
+@interface ViewController () {
+    
+}
 
 @property NSURL *filepath;
 @property NSMutableArray *allVoices;
@@ -30,6 +34,7 @@
 @property NSString *createFileLength;
 @property voiceHandler *voiceSVGpaths;
 @property NSString *selectedVoice;
+@property midiPlayer *mp;
 
 @end
 
@@ -315,11 +320,18 @@
 }
 
 - (void) loadABCdocuments {
-    NSString *docsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSFileManager *fileManager = [[NSFileManager alloc] init];
     NSArray *directory = [fileManager contentsOfDirectoryAtPath:docsPath error:nil];
     NSPredicate *fltr = [NSPredicate predicateWithFormat:@"self ENDSWITH '.abc'"];
     _abcDocuments = [directory filteredArrayUsingPredicate:fltr];
+    for (NSString *file in _abcDocuments) {
+        if ([file containsString:@" "]) {
+            NSError *error;
+            if (![fileManager moveItemAtPath:[docsPath stringByAppendingPathComponent:file] toPath:[docsPath stringByAppendingPathComponent:[[file lastPathComponent] stringByReplacingOccurrencesOfString:@" " withString:@"_"]] error:&error])
+                NSLog(@"couldn´t rename file: %@", error.localizedFailureReason);
+            [self loadABCdocuments];
+        }
+    }
 }
 
 - (IBAction)buttonPressed:(UIButton *)sender {
@@ -460,7 +472,7 @@ BOOL alertShown;
         createAbcFileString = [createAbcFileString stringByAppendingString: @"V:Voice1\n\%start writing your tune here:\n"];
         [self setColouredCodeFromString: createAbcFileString];
         NSError *error;
-        NSString *path = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:self->_createFileName];
+        NSString *path = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:[self->_createFileName stringByReplacingOccurrencesOfString:@" " withString:@"_"]];
         if (!extension) {
             path = [path stringByAppendingPathExtension:@"abc"];
         }
@@ -615,4 +627,52 @@ BOOL alertShown;
         }
     }
 }
+- (IBAction)exportMIDI:(UIButton*) sender {
+    if (!sender.isSelected) {
+        //delete old midi files
+        NSFileManager *fileManager = [[NSFileManager alloc] init];
+        NSArray *directory = [fileManager contentsOfDirectoryAtPath:docsPath error:nil];
+        NSPredicate *fltr = [NSPredicate predicateWithFormat:@"self ENDSWITH '.mid'"];
+        NSArray *array = [directory filteredArrayUsingPredicate:fltr];
+        for (NSString *file in array) {
+            NSError *error;
+            BOOL success = [fileManager removeItemAtPath:[docsPath stringByAppendingPathComponent:file] error:&error];
+            if (!success) {
+                NSLog(@"Could not delete file -:%@ ",[error localizedDescription]);
+            }
+        }
+        //    create the new one
+        NSString *inPath = [_filepath path];
+        NSString *filename = [[[inPath lastPathComponent] substringToIndex:[inPath lastPathComponent].length-4] stringByAppendingPathExtension:@"mid"];
+        NSString *outFile = [NSString stringWithFormat:@"%@", [docsPath stringByAppendingPathComponent: filename]];
+        char *open = strdup([@"-o" UTF8String]);
+        const char *outPath = strdup([outFile UTF8String]);
+        char *duppedOut = strdup(outPath);
+        char *duppedInPath = strdup([inPath UTF8String]);
+        char *args[] = {open, duppedInPath, open, duppedOut, NULL };
+        abc2midiMain(4, args);
+        
+        if (_mp == nil) {
+            _mp = [[midiPlayer alloc] initWithMidiFile:outFile];
+            _mp.delegate = self;
+        }
+        else {
+            [_mp loadMidiFileFromUrl:[NSURL fileURLWithPath:outFile]];
+        }
+        [_mp startMidiPlayer];
+        
+        _playButton.selected = YES;
+    }
+    else {
+        [_mp stopMidiPlayer];
+        _playButton.selected = NO;
+    }
+}
+
+- (void) midiPlayerReachedEnd:(midiPlayer *)player {
+    if (_playButton.isSelected) {
+        _playButton.selected = NO;
+    }
+}
+
 @end

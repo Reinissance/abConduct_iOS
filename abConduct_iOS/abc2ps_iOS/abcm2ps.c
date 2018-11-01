@@ -38,7 +38,7 @@ int pagenum = 1;		/* current page in output file */
 int pagenum_nr = 1;		/* current page (non-resettable) */
 
 				/* switches modified by command line flags: */
-int quiet;			/* quiet mode */
+int quiett;			/* quiet mode */
 int secure;			/* secure mode */
 int annotate;			/* output source references */
 int pagenumbers;		/* write page numbers */
@@ -221,7 +221,7 @@ static void treat_file(char *fn, char *ext)
 		return;
 	}
 	abc_fn = strdup(tex_buf);
-	if (!quiet)
+	if (!quiett)
 		fprintf(strcmp(outfn, "-") == 0 ? stderr : stdout,
 			"File %s\n", abc_fn);
 
@@ -611,7 +611,7 @@ int abcMain(int argc, char **argv)
 				epsf = 2;
 				break;
 			case 'H':
-				quiet = 1;	// don't output the version
+				quiett = 1;	// don't output the version
 				break;
 			case 'h':
 				usage();	/* no return */
@@ -619,7 +619,7 @@ int abcMain(int argc, char **argv)
 				pipeformat = 1;	/* format for bagpipe regardless of key */
 				break;
 			case 'q':
-				quiet = 1;
+				quiett = 1;
 				break;
 			case 'S':
 				secure = 1;
@@ -681,7 +681,7 @@ int abcMain(int argc, char **argv)
 			}
 		}
 	}
-	if (!quiet)
+	if (!quiett)
 		display_version(0);
 
 	/* initialize */
