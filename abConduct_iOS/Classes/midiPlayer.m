@@ -33,7 +33,7 @@ AudioUnit io;
     MusicSequenceFileLoad(seq, (__bridge CFURLRef _Nonnull)(midiFileURL), 0, kMusicSequenceLoadSMF_PreserveTracks);
     NSString *sfPath = [[NSBundle mainBundle] pathForResource:@"GeneralUser_GS_SoftSynth_v144" ofType:@"sf2" inDirectory:@"DefaultFiles"];
     NSURL *url = [[NSURL alloc] initFileURLWithPath:sfPath];
-    [self loadSoundFont:url withPatch:(int)15];
+    [self loadSoundFont:url];
     MusicPlayerSetSequence(_player, seq);
     MusicPlayerPreroll(_player);
 }
@@ -65,7 +65,7 @@ AudioUnit io;
     result = NewAUGraph (&procGraph);
     NSCAssert (result == noErr, @"Couldn't create an AUGraph: %d '%.4s'", (int) result, (const char *)&result);
     compD.componentType = kAudioUnitType_MusicDevice;
-    compD.componentSubType = kAudioUnitSubType_Sampler;
+    compD.componentSubType = kAudioUnitSubType_MIDISynth;
     result = AUGraphAddNode (procGraph, &compD, &samplerNode);
     NSCAssert (result == noErr, @"Couldn't add the Sampler unit to the audio processing graph: %d '%.4s'", (int) result, (const char *)&result);
     compD.componentType = kAudioUnitType_Output;
@@ -93,23 +93,17 @@ AudioUnit io;
     }
 }
 
--(OSStatus) loadSoundFont: (NSURL *)bankURL withPatch: (int)presetNumber {
+-(OSStatus) loadSoundFont: (NSURL *)bankURL {
     OSStatus result = noErr;
-    AUSamplerBankPresetData bpdata;
-    bpdata.bankURL  = (__bridge CFURLRef) bankURL;
-    bpdata.bankMSB  = kAUSampler_DefaultMelodicBankMSB;
-    bpdata.bankLSB  = kAUSampler_DefaultBankLSB;
-    bpdata.presetID = (UInt8) presetNumber;
+    const char *soundBankPath = bankURL.path.UTF8String;
+    CFURLRef soundBankURL = CFURLCreateFromFileSystemRepresentation(kCFAllocatorDefault, (const UInt8 *)soundBankPath, strlen(soundBankPath), false);
     result = AudioUnitSetProperty(sampler,
-                                  kAUSamplerProperty_LoadPresetFromBank,
-                                  kAudioUnitScope_Global,
-                                  0,
-                                  &bpdata,
-                                  sizeof(bpdata));
-    NSCAssert (result == noErr,
-               @"Couldn't set preset property on sampler:%d '%.4s'",
-               (int) result,
-               (const char *)&result);
+                                           kMusicDeviceProperty_SoundBankURL,
+                                           kAudioUnitScope_Global, 0,
+                                           &soundBankURL, sizeof(soundBankURL));
+    
+    if (soundBankURL) CFRelease(soundBankURL);
+    if (result) printf("AudioUnitSetProperty failed %d\n", result);
     return result;
 }
 
