@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak) id  delegate;
 @property MusicPlayer player;
-- (instancetype) initWithMidiFile: (NSString*) midiFilePath;
+- (instancetype) initWithSoundFontURL: (NSURL*) sfURL;
 - (void) loadMidiFileFromUrl: (NSURL*) midiFileURL;
 - (void) startMidiPlayer;
 - (void) stopMidiPlayer;

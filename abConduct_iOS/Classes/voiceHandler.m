@@ -31,7 +31,7 @@
             }
         }
         for (NSArray *voice in voices) {
-            if (![voice[1] writeToFile:[[tmpDir stringByAppendingPathComponent:voice[0]] stringByAppendingPathExtension:@"abc"] atomically:YES encoding:NSASCIIStringEncoding error:&error]) {
+            if (![voice[1] writeToFile:[[tmpDir stringByAppendingPathComponent:voice[0]] stringByAppendingPathExtension:@"abc"] atomically:YES encoding:NSUTF8StringEncoding error:&error]) {
                 NSLog(@"couln't write file: %@, reason: %@", error.localizedDescription, error.localizedFailureReason);
             }
         }

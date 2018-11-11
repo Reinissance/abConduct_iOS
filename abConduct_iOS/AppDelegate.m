@@ -77,6 +77,8 @@
                 UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"copied file %@ to documents folder.", [file lastPathComponent]] message:@"select open to view..." preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction *action = [UIAlertAction actionWithTitle:@"open" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                     ViewController *controller = (ViewController*) self.window.rootViewController;
+                    controller.refreshButton.enabled = YES;
+                    controller.saveButton.enabled = YES;
                     [controller loadABCfileFromPath:copyFile];
                     
                 }];

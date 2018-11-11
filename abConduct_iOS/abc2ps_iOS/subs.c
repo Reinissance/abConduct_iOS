@@ -18,6 +18,7 @@
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
+#include <libgen.h>
 #ifdef HAVE_PANGO
 #include <pango/pangocairo.h>
 #include <pango/pangofc-font.h>
@@ -90,6 +91,7 @@ void error(int sev,	/* 0: warning, 1: error */
 	fprintf(stderr, sev == 0 ? "warning: " : "error: ");
 	va_start(args, fmt);
 	vfprintf(stderr, fmt, args);
+    printf("%s%s: line %d: %d: %s\n", sev == 0 ? "warning in " : "error in ", basename(s->fn), s->linenum, s->colnum, fmt);
 	va_end(args);
 	fprintf(stderr, "\n");
 	if (sev > severity)

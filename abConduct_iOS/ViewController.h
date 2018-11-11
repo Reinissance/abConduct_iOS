@@ -9,15 +9,20 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 #import "midiPlayer.h"
+#import "LineNumberTextViewWrapper.h"
 
 @class WebServer;
 
-@interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, midiPlayerDelegate>
+@interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, midiPlayerDelegate, UITextViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UIButton *refreshButton;
+@property (weak, nonatomic) IBOutlet UIButton *saveButton;
 @property (weak, nonatomic) IBOutlet UIWebView *displayView;
-@property (weak, nonatomic) IBOutlet UITextView *abcView;
+@property (assign, nonatomic) IBOutlet LineNumberTextViewWrapper* abcView;
 - (IBAction)moveHorizontalStack:(UIPanGestureRecognizer *)sender;
+- (IBAction)toggleLogExpansion:(id)sender;
+- (IBAction)expandLog:(UIPanGestureRecognizer *)sender;
+@property (weak, nonatomic) IBOutlet UISwitch *logSwitch;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *displayHeight;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *buttonViewHeight;
 - (IBAction)buttonViewSizeToggle:(id)sender;
@@ -34,5 +39,11 @@
 @property (weak, nonatomic) WebServer *server;
 - (void) loadABCfileFromPath: (NSString*) path;
 @property (weak, nonatomic) IBOutlet UIButton *playButton;
+- (IBAction)loadUserSoundFont:(id)sender;
+- (void) logText: (NSString *) log;
+@property (weak, nonatomic) IBOutlet UILabel *logSwitchLabel;
+- (IBAction)enableLog:(UISwitch*)sender;
+@property (weak, nonatomic) IBOutlet UILabel *logLabel;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *logHeight;
 
 @end

@@ -18,23 +18,29 @@
 #define docsPath [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]
 
 @interface ViewController () {
-    
+
 }
 
 @property NSURL *filepath;
 @property NSMutableArray *allVoices;
+@property NSString *selectedVoice;
+@property voiceHandler *voiceSVGpaths;
 @property BOOL buttonViewExpanded;
 @property NSMutableArray *potentialVoices;
 @property BOOL codeHighlighting;
 @property arrayPicker *keyPicker;
 @property arrayPicker *measurePicker;
 @property NSArray *abcDocuments;
+@property NSArray *userSoundfonts;
 @property NSString *createFileName;
 @property NSString *createFileComposer;
 @property NSString *createFileLength;
-@property voiceHandler *voiceSVGpaths;
-@property NSString *selectedVoice;
 @property midiPlayer *mp;
+@property NSURL *soundfontUrl;
+@property BOOL loadSFs;
+@property BOOL logEnabled;
+@property NSStringEncoding encoding;
+@property NSString *logString;
 
 @end
 
@@ -46,6 +52,7 @@
     NSString *file = [[NSBundle mainBundle] pathForResource:@"Hallelujah" ofType:@"abc" inDirectory: @"DefaultFiles"];
     _filepath = [NSURL fileURLWithPath:file];
     NSString *content = [NSString stringWithContentsOfFile:[_filepath path]  encoding:NSUTF8StringEncoding error:NULL];
+    _logString = @"";
     _codeHighlighting = YES;
     [self setColouredCodeFromString:content];
     _allVoices = [NSMutableArray array];
@@ -60,6 +67,54 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(orientationChanged:)    name:UIDeviceOrientationDidChangeNotification  object:nil];
+    
+    NSString *sfPath = [[NSBundle mainBundle] pathForResource:@"32MbGMStereo" ofType:@"sf2" inDirectory:@"DefaultFiles"];
+    _soundfontUrl = [[NSURL alloc] initFileURLWithPath:sfPath];
+    _encoding = NSUTF8StringEncoding;
+    _abcView.textView.delegate = self;
+    [_abcView.textView setTintColor:[UIColor whiteColor]];
+    _abcView.textView.backgroundColor = [UIColor colorWithHue:41.0/360.0 saturation:11.0/360.0 brightness:84.0/360.0 alpha:0.0];
+    _abcView.textView.autocorrectionType = UITextAutocorrectionTypeNo;
+    UIToolbar *toolBar = [[UIToolbar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, self.view.window.frame.size.width, 44.0f)];
+    toolBar.tintColor = [UIColor blackColor];
+    toolBar.translucent = YES;
+    toolBar.items =   @[[[UIBarButtonItem alloc] initWithTitle: @"|" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         [[UIBarButtonItem alloc] initWithTitle: @"/" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         [[UIBarButtonItem alloc] initWithTitle: @"^" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         [[UIBarButtonItem alloc] initWithTitle: @"_" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         [[UIBarButtonItem alloc] initWithTitle: @"=" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         [[UIBarButtonItem alloc] initWithTitle: @"-" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         [[UIBarButtonItem alloc] initWithTitle: @"." style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         [[UIBarButtonItem alloc] initWithTitle: @"," style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         [[UIBarButtonItem alloc] initWithTitle: @":" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         [[UIBarButtonItem alloc] initWithTitle: @">" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         [[UIBarButtonItem alloc] initWithTitle: @"<" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         [[UIBarButtonItem alloc] initWithTitle: @"(" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         [[UIBarButtonItem alloc] initWithTitle: @")" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         [[UIBarButtonItem alloc] initWithTitle: @"!" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         [[UIBarButtonItem alloc] initWithTitle: @"\"" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         ];
+    _abcView.textView.inputAccessoryView = toolBar;
+}
+
+- (void) enterSpecialKeyFromBarButtonItem: (UIBarButtonItem*) item {
+    NSString *character = [[NSString alloc] initWithUTF8String:item.title.UTF8String];
+    [_abcView.textView replaceRange:_abcView.textView.selectedTextRange withText:character];
 }
 
 - (void)keyboardWillShow:(NSNotification*)notification {
@@ -73,8 +128,8 @@
             }];
         }
         else {
-            CGPoint newContentOffset = CGPointMake(_abcView.contentOffset.x, _abcView.contentOffset.y + keyboardHeight);
-            [_abcView setContentOffset:newContentOffset animated:YES];
+            CGPoint newContentOffset = CGPointMake(_abcView.textView.contentOffset.x, _abcView.textView.contentOffset.y + keyboardHeight);
+            [_abcView.textView setContentOffset:newContentOffset animated:YES];
         }
         _abcView.frame = CGRectMake(_abcView.frame.origin.x, _abcView.frame.origin.y, _abcView.frame.size.width, _abcView.frame.size.height-keyboardHeight);
     }
@@ -110,6 +165,7 @@
         
         string = [[NSMutableAttributedString alloc]initWithString:code];
         NSArray *lines = [code componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+        __block BOOL quote = NO;
         for (NSString *line in lines) {
             if ([line hasPrefix:@"V:"]) {
                 //voices
@@ -136,33 +192,36 @@
                 NSRange range=[code rangeOfString:line];
                 [string addAttribute:NSForegroundColorAttributeName value:[UIColor lightGrayColor] range:range];
             }
-            else [code enumerateSubstringsInRange:NSMakeRange(0, [string.string length])
+            else if (line.length > 0) [code enumerateSubstringsInRange:[code rangeOfString:line]
                                      options:NSStringEnumerationByComposedCharacterSequences usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop){
                                          if ([substring isEqualToString:@"|"] || [substring isEqualToString:@"]"] || [substring isEqualToString:@"["]) {
-                                             [string addAttribute:NSForegroundColorAttributeName value: [UIColor blueColor] range:substringRange];
+                                             [string addAttribute:NSForegroundColorAttributeName value: [UIColor greenColor] range:substringRange];
                                          }
                                          if ([substring isEqualToString:@"\""]) {
-                                             [string addAttribute:NSForegroundColorAttributeName value: [UIColor greenColor] range:substringRange];
+                                             quote = !quote;
+                                         }
+                                         if (quote) {
+                                             [string addAttribute:NSForegroundColorAttributeName value: [UIColor blueColor] range:substringRange];
                                          }
                                      }];
         }
     }
-    [_abcView setScrollEnabled:NO];
-    NSRange cursorPosition = _abcView.selectedRange;
+    [_abcView.textView setScrollEnabled:NO];
+    NSRange cursorPosition = _abcView.textView.selectedRange;
     if (_codeHighlighting) {
-        [_abcView setAttributedText:string];
+        [_abcView.textView setAttributedText:string];
     }
     else {
-        _abcView.textColor = [UIColor darkGrayColor];
-        _abcView.text = code;
+        _abcView.textView.textColor = [UIColor darkGrayColor];
+        _abcView.textView.text = code;
     }
-    [_abcView setSelectedRange:cursorPosition];
+    [_abcView.textView setSelectedRange:cursorPosition];
     [_abcView setTintColor:[UIColor whiteColor]];
-    [_abcView setScrollEnabled:YES];
+    [_abcView.textView setScrollEnabled:YES];
 }
 
 - (NSMutableArray*) getVoicesWithHeader {
-    NSArray* allLinedStrings = [_abcView.text componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+    NSArray* allLinedStrings = [_abcView.textView.text componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
     NSMutableArray *header = [NSMutableArray array];
     BOOL headerRead = false;
     NSString *currentVoice;
@@ -274,6 +333,17 @@
     else _displayHeight.constant = [sender locationInView:self.view].y;
 }
 
+- (IBAction)toggleLogExpansion:(id)sender {
+    [UIView animateWithDuration:0.3 animations:^{
+        [self->_logSwitch setOn: NO];
+    }];
+    [self enableLog:_logSwitch];
+}
+
+- (IBAction)expandLog:(UIPanGestureRecognizer *)sender {
+    _logHeight.constant = [sender locationInView:self.view].y;
+}
+
 - (IBAction)buttonViewSizeToggle:(id)sender {
     _buttonViewExpanded = !_buttonViewExpanded;
     _buttonViewHeight.constant = (_buttonViewExpanded) ? 100 : 24;
@@ -284,12 +354,42 @@
 
 - (void) loadABCfileFromPath: (NSString*) path {
     _filepath = [NSURL fileURLWithPath:path];
-    NSString *content = [NSString stringWithContentsOfFile:[_filepath path]  encoding:NSUTF8StringEncoding error:NULL];
-    content = [content stringByReplacingOccurrencesOfString:@"\r" withString:@"\n"];
-    [self setColouredCodeFromString:content];
-    
-    [_allVoices removeAllObjects];
-    _allVoices = [self getVoicesWithHeader];
+    NSError *error = nil;
+    NSString *content = [NSString stringWithContentsOfFile:[_filepath path]  encoding:NSUTF8StringEncoding error:&error];
+    if (error != nil) {
+        error = nil;
+        content = [NSString stringWithContentsOfFile:[_filepath path]  encoding:NSASCIIStringEncoding error:&error];
+        if (error != nil) {
+            error = nil;
+            content = [NSString stringWithContentsOfFile:[_filepath path]  encoding:NSUnicodeStringEncoding error:&error];
+            if (error != nil) {
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"could not read file" message:[NSString stringWithFormat:@"unknown encoding of file: : %@", error.localizedFailureReason] preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
+                [alert addAction:cancel];
+                [self presentViewController:alert animated:YES completion:nil];
+            }
+            else _encoding = NSUnicodeStringEncoding;
+        }
+        else _encoding = NSASCIIStringEncoding;
+    }
+    else _encoding = NSUTF8StringEncoding;
+    if (error == nil) {
+        content = [content stringByReplacingOccurrencesOfString:@"\r\n" withString:@"\n"];
+        content = [content stringByReplacingOccurrencesOfString:@"\\n" withString:@"\n"];
+        content = [content stringByReplacingOccurrencesOfString:@"\r" withString:@"\n"];
+        [self setColouredCodeFromString:content];
+        
+        [_allVoices removeAllObjects];
+        _allVoices = [self getVoicesWithHeader];
+    }
+    if (_allVoices.count < 1) {
+        [_displayView loadHTMLString:@"" baseURL:nil];
+        return;
+    }
+    [_voiceSVGpaths createVoices:_allVoices];
+    NSArray *voice = _allVoices[0];
+    _selectedVoice = voice[0];
+    [self loadSvgImage:_selectedVoice];
 }
 
 - (void) enterFullScoreAndOrParts {
@@ -305,7 +405,7 @@
                 addParts = [addParts stringByAppendingString:[[part stringByAppendingString:[NSString stringWithFormat:@"%@ ", name]] stringByAppendingString:[@"%" stringByAppendingString:[NSString stringWithFormat:@"%@ scale=0.7 barsperstaff=8", name]]]];
             }
             addFullScore = [addFullScore stringByAppendingString:@"%Partitur scale=0.6 barsperstaff=4"];
-            NSMutableString *orig = [NSMutableString stringWithString:self->_abcView.text];
+            NSMutableString *orig = [NSMutableString stringWithString:self->_abcView.textView.text];
             NSRange location = [orig rangeOfString:@"\n"];
             NSString *inserted = [[[[orig substringToIndex:location.location] stringByAppendingString:([title isEqualToString:@"create full score only"] || [title isEqualToString:@"create full score and parts"]) ? addFullScore : @"" ] stringByAppendingString:([title isEqualToString:@"create parts only"] || [title isEqualToString:@"create full score and parts"]) ? addParts : @""] stringByAppendingString:[orig substringFromIndex:location.location]];
             [self setColouredCodeFromString:inserted];
@@ -337,6 +437,7 @@
 - (IBAction)buttonPressed:(UIButton *)sender {
     if (sender.tag == 0) {
         //load
+        _loadSFs = NO;
         [self loadABCdocuments];
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"load abc-Tune:" message:@"to add tunes put them in the apps Shared Folder with iTunes." preferredStyle:UIAlertControllerStyleAlert];
         UIViewController *controller = [[UIViewController alloc]init];
@@ -381,9 +482,16 @@
     else if (sender.tag == 1) {
             //store
         NSError *error;
-        BOOL write = [_abcView.text writeToURL:_filepath atomically:NO encoding:NSUTF8StringEncoding error:&error];
+        BOOL write = [_abcView.textView.text writeToURL:_filepath atomically:NO encoding:_encoding error:&error];
         if (!write) {
-            NSLog(@"could not write file: %@", error);
+            write = [_abcView.textView.text writeToURL:_filepath atomically:NO encoding:NSUTF8StringEncoding error:&error];
+            if (!write) {
+                NSLog(@"could not write file: %@", error);
+            }
+        }
+        else {
+            _refreshButton.enabled = YES;
+            _saveButton.enabled = YES;
         }
     }
     else if (sender.tag == 2) {
@@ -409,6 +517,10 @@
     else if (sender.tag == 3) {
         //refresh
         _allVoices = [self getVoicesWithHeader];
+        if (_allVoices.count < 1) {
+            [_displayView loadHTMLString:@"" baseURL:nil];
+            return;
+        }
         [_voiceSVGpaths createVoices:_allVoices];
         [self loadSvgImage:_selectedVoice];
     }
@@ -425,7 +537,7 @@ BOOL alertShown;
     _createFileComposer = @"";
     _createFileLength = @"";
     BOOL landscape = [[UIDevice currentDevice] orientation] == UIDeviceOrientationLandscapeLeft || [[UIDevice currentDevice] orientation] == UIDeviceOrientationLandscapeRight;
-    alert = [UIAlertController alertControllerWithTitle:@"create new abc-Code file:" message:(!landscape) ? @"please specify at least file-name (used as title) and key for your new tune.\n\n\n\n\n" :@"please specify at least the file-name (used as title) for your new tune (rotate device to change default key of 'C')" preferredStyle:UIAlertControllerStyleAlert];
+    alert = [UIAlertController alertControllerWithTitle:@"create new abc-Code file:" message:(!landscape) ? @"please specify at least file-name (used as title) and key for your new tune.\n\n\n\n\n" :@"please specify at least the file-name (used as title) for your new tune (rotate device to change default key of 'C')\n" preferredStyle:UIAlertControllerStyleAlert];
     NSArray *Keys = @[@"C#", @"F#", @"B", @"E", @"A", @"D", @"G", @"C", @"F", @"Bb", @"Eb", @"Ab", @"Db", @"Gb"];
     _keyPicker = [[arrayPicker alloc] initWithArray:Keys frame:CGRectMake(30, 80, 100, 100) andTextColour:[UIColor redColor]];
     if (!landscape)
@@ -472,14 +584,18 @@ BOOL alertShown;
         createAbcFileString = [createAbcFileString stringByAppendingString: @"V:Voice1\n\%start writing your tune here:\n"];
         [self setColouredCodeFromString: createAbcFileString];
         NSError *error;
-        NSString *path = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:[self->_createFileName stringByReplacingOccurrencesOfString:@" " withString:@"_"]];
+        NSString *path = [docsPath stringByAppendingPathComponent:[self->_createFileName stringByReplacingOccurrencesOfString:@" " withString:@"_"]];
         if (!extension) {
             path = [path stringByAppendingPathExtension:@"abc"];
         }
         self->_filepath = [NSURL fileURLWithPath:path];
-        BOOL write = [self->_abcView.text writeToURL:self->_filepath atomically:NO encoding:NSUTF8StringEncoding error:&error];
+        BOOL write = [self->_abcView.textView.text writeToURL:self->_filepath atomically:NO encoding:self->_encoding error:&error];
         if (!write) {
             NSLog(@"could not write file %@: %@", self->_filepath, error);
+        }
+        else {
+            self->_refreshButton.enabled = YES;
+            self->_saveButton.enabled = YES;
         }
         [self cleanUpAlert];
     }];
@@ -518,8 +634,9 @@ BOOL alertShown;
 
 - (IBAction)zoomText:(UIPinchGestureRecognizer *)sender {
     float scale = ((sender.scale <=2) ? sender.scale : 2) - 1;
-    CGFloat size = _abcView.font.pointSize + (scale * 0.5);
-    _abcView.font = [UIFont systemFontOfSize:size];
+    CGFloat size = _abcView.textView.font.pointSize + (scale * 0.5);
+    _abcView.textView.font = [UIFont systemFontOfSize:size];
+    _abcView.textView.lineNumberFont = [UIFont systemFontOfSize:size*0.7];
 }
 
 - (IBAction)startHTTPserver:(UISwitch *)sender {
@@ -538,7 +655,7 @@ BOOL alertShown;
 
 - (IBAction)codeHighlightingEnabled:(UISwitch*)sender {
     _codeHighlighting = sender.isOn;
-    [self setColouredCodeFromString:_abcView.text];
+    [self setColouredCodeFromString:_abcView.textView.text];
     _codeHighlightingLabel.text = (_codeHighlighting) ? @"abc-code highlighting enabled" : @"enable abc-code highlighting";
 }
 
@@ -567,7 +684,7 @@ BOOL alertShown;
             if (alertShown) {
                 [alert.view addSubview:_measurePicker.pickerView];
                 [alert.view addSubview:_keyPicker.pickerView];
-                alert.message = @"please specify at least file-name and key for your new tune.\n\n\n\n\n";
+                alert.message = @"please specify at least file-name (used as title) and key for your new tune.\n\n\n\n\n";
             }
         }
             break;
@@ -576,7 +693,7 @@ BOOL alertShown;
         {
             [_keyPicker.pickerView removeFromSuperview];
             [_measurePicker.pickerView removeFromSuperview];
-            alert.message = @"please specify at least the file-name (used as title) for your new tune (rotate device to change default key of 'C')";
+            alert.message = @"please specify at least the file-name (used as title) for your new tune (rotate device to change default key of 'C')\n";
         }            break;
         case UIInterfaceOrientationUnknown:break;
     }
@@ -587,24 +704,47 @@ BOOL alertShown;
     if(cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
-    cell.textLabel.text = _abcDocuments[indexPath.row];
+    if (!_loadSFs) {
+        cell.textLabel.text = _abcDocuments[indexPath.row];
+    }
+    else {
+        if (indexPath.row == 0) {
+            cell.textLabel.text = @"Default";
+        }
+        else cell.textLabel.text = _userSoundfonts[indexPath.row-1];
+    }
     cell.textLabel.font = [UIFont systemFontOfSize:16];
     return cell;
 }
 
 - (NSInteger)tableView:(nonnull UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return _abcDocuments.count;
+    if (!_loadSFs) {
+        return _abcDocuments.count;
+    }
+    else return _userSoundfonts.count + 1;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    _refreshButton.enabled = YES;
-    NSString *fileName = _abcDocuments[indexPath.row];
-    [self loadABCfileFromPath:[[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:fileName]];
-    [self dismissViewControllerAnimated:YES completion:nil];
-    [_voiceSVGpaths createVoices:_allVoices];
-    NSArray *voice = _allVoices[0];
-    _selectedVoice = voice[0];
-    [self loadSvgImage:_selectedVoice];
+    if (!_loadSFs) {
+        [self dismissViewControllerAnimated:YES completion:nil];
+        _refreshButton.enabled = YES;
+        _saveButton.enabled = YES;
+        NSString *fileName = _abcDocuments[indexPath.row];
+        _logString = @"";
+        [self loadABCfileFromPath:[docsPath stringByAppendingPathComponent:fileName]];
+    }
+    else {
+        [self dismissViewControllerAnimated:YES completion:nil];
+        _mp = nil;
+        NSString *sfFile = [[NSString alloc] init];
+        if (indexPath.row == 0) {
+            sfFile = [[NSBundle mainBundle] pathForResource:@"32MbGMStereo" ofType:@"sf2" inDirectory:@"DefaultFiles"];
+        }
+        else sfFile = [docsPath stringByAppendingPathComponent: _userSoundfonts[indexPath.row-1]];
+        _soundfontUrl = [[NSURL alloc] initFileURLWithPath:sfFile];
+        _mp = [[midiPlayer alloc] initWithSoundFontURL:_soundfontUrl];
+        _mp.delegate = self;
+    }
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -617,7 +757,7 @@ BOOL alertShown;
         if (!success) {
             NSLog(@"Could not delete file -:%@ ",[error localizedDescription]);
         }
-        else {
+        else if (!_loadSFs) {
             [self loadABCdocuments];
             if (_abcDocuments.count == 0) {
                 [self dismissViewControllerAnimated:YES completion:nil];
@@ -625,8 +765,17 @@ BOOL alertShown;
             }
             [tableView reloadData];
         }
+//        else {
+//            [self loadSf2Documents];
+//            if (_userSoundfonts.count == 0) {
+//                [self dismissViewControllerAnimated:YES completion:nil];
+//                return;
+//            }
+//            [tableView reloadData];
+//        }
     }
 }
+
 - (IBAction)exportMIDI:(UIButton*) sender {
     if (!sender.isSelected) {
         //delete old midi files
@@ -642,7 +791,7 @@ BOOL alertShown;
             }
         }
         //    create the new one
-        NSString *inPath = [_filepath path];
+        NSString *inPath = [NSTemporaryDirectory() stringByAppendingPathComponent:[_selectedVoice stringByAppendingPathExtension:@"abc"]];
         NSString *filename = [[[inPath lastPathComponent] substringToIndex:[inPath lastPathComponent].length-4] stringByAppendingPathExtension:@"mid"];
         NSString *outFile = [NSString stringWithFormat:@"%@", [docsPath stringByAppendingPathComponent: filename]];
         char *open = strdup([@"-o" UTF8String]);
@@ -653,12 +802,10 @@ BOOL alertShown;
         abc2midiMain(4, args);
         
         if (_mp == nil) {
-            _mp = [[midiPlayer alloc] initWithMidiFile:outFile];
+            _mp = [[midiPlayer alloc] initWithSoundFontURL:_soundfontUrl];
             _mp.delegate = self;
         }
-        else {
-            [_mp loadMidiFileFromUrl:[NSURL fileURLWithPath:outFile]];
-        }
+        [_mp loadMidiFileFromUrl:[[NSURL alloc] initFileURLWithPath:outFile]];
         [_mp startMidiPlayer];
         
         _playButton.selected = YES;
@@ -666,12 +813,113 @@ BOOL alertShown;
     else {
         [_mp stopMidiPlayer];
         _playButton.selected = NO;
+        _mp = nil;
     }
 }
 
 - (void) midiPlayerReachedEnd:(midiPlayer *)player {
     if (_playButton.isSelected) {
         _playButton.selected = NO;
+        _mp = nil;
+    }
+}
+
+- (void) loadSf2Documents {
+    NSFileManager *fileManager = [[NSFileManager alloc] init];
+    NSArray *directory = [fileManager contentsOfDirectoryAtPath:docsPath error:nil];
+    NSPredicate *fltr = [NSPredicate predicateWithFormat:@"self ENDSWITH '.sf2'"];
+    _userSoundfonts = [directory filteredArrayUsingPredicate:fltr];
+}
+
+- (IBAction)loadUserSoundFont:(id)sender {
+    _loadSFs = YES;
+    [self loadSf2Documents];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"load soundfont-Tune:" message:@"to use your own sf2-files put them in the apps Shared Folder with iTunes." preferredStyle:UIAlertControllerStyleAlert];
+    UIViewController *controller = [[UIViewController alloc]init];
+    UITableView *alertTableView;
+    CGRect rect;
+    if (_userSoundfonts.count < 4) {
+        rect = CGRectMake(0, 0, 272, 100);
+        [controller setPreferredContentSize:rect.size];
+        
+    }
+    else if (_userSoundfonts.count < 6){
+        rect = CGRectMake(0, 0, 272, 150);
+        [controller setPreferredContentSize:rect.size];
+    }
+    else if (_userSoundfonts.count < 8){
+        rect = CGRectMake(0, 0, 272, 200);
+        [controller setPreferredContentSize:rect.size];
+        
+    }
+    else {
+        rect = CGRectMake(0, 0, 272, 250);
+        [controller setPreferredContentSize:rect.size];
+    }
+    
+    alertTableView  = [[UITableView alloc]initWithFrame:rect];
+    alertTableView.delegate = self;
+    alertTableView.dataSource = self;
+    alertTableView.tableFooterView = [[UIView alloc]initWithFrame:CGRectZero];
+    [alertTableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
+    [controller.view addSubview:alertTableView];
+    [controller.view bringSubviewToFront:alertTableView];
+    [controller.view setUserInteractionEnabled:YES];
+    [alertTableView setUserInteractionEnabled:YES];
+    [alertTableView setAllowsSelection:YES];
+    [alertTableView setEditing:YES];
+    alertTableView.allowsSelectionDuringEditing = YES;
+    [alert setValue:controller forKey:@"contentViewController"];
+    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
+    [alert addAction:cancel];
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+int printf(const char * __restrict format, ...) {
+    va_list args;
+    va_start(args,format);
+    ViewController *controller =  (ViewController*) APP.window.rootViewController;
+    [controller logText:[[NSString alloc] initWithFormat:[NSString stringWithUTF8String:format] arguments:args]];
+    va_end(args);
+    return 1;
+}
+
+- (void) logText:(NSString *)log {
+    NSLog(@"redirected printf: %@", log);
+    _logString = [log stringByAppendingString:[NSString stringWithFormat:@"%@", _logString]];
+    NSArray *lines = [_logString componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+    if (lines.count > 50) {
+        NSString *cut = @"";
+        for (int i = (int) lines.count - 50; i < lines.count; i++) {
+            cut = [cut stringByAppendingString:[NSString stringWithFormat:@"\n%@", lines[i]]];
+        }
+        _logString = cut;
+    }
+    if (_logEnabled) {
+        _logLabel.text = _logString;
+    }
+}
+
+- (IBAction)enableLog:(UISwitch*)sender {
+    _logEnabled = sender.isOn;
+    _logSwitchLabel.text = _logEnabled ? @"log enabled" :  @"enable log";
+    [UIView animateWithDuration:0.5 animations:^{
+        self->_logHeight.constant = self->_logEnabled ? 80 : 0;
+        if (self->_logEnabled) {
+            self->_logLabel.text = self->_logString;
+        }
+        [self.view layoutIfNeeded];
+    } completion:^(BOOL finished) {
+        if (!self->_logEnabled) {
+                self->_logLabel.text = @"";
+        }
+    }];
+}
+
+- (void)textViewDidChange:(UITextView *)textView
+{
+    if (_codeHighlighting) {
+        [self setColouredCodeFromString:_abcView.textView.text];
     }
 }
 

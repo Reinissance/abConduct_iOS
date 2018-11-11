@@ -17,12 +17,16 @@ AUGraph   procGraph;
 AudioUnit sampler;
 AudioUnit io;
 
-
-- (instancetype) initWithMidiFile: (NSString*) midiFilePath {
-    NSURL *midiFileURL = [NSURL fileURLWithPath:midiFilePath];
+- (instancetype) init {
     [self createAudioUnitGraph];
     [self configureAudioProcessingGraphAndStart:procGraph];
-    [self loadMidiFileFromUrl:midiFileURL];
+    return self;
+}
+
+- (instancetype) initWithSoundFontURL: (NSURL*) sfURL {
+    [self createAudioUnitGraph];
+    [self configureAudioProcessingGraphAndStart:procGraph];
+    [self loadSoundFont:sfURL];
     return self;
 }
 
@@ -31,9 +35,6 @@ AudioUnit io;
     NewMusicPlayer(&(_player));
     MusicSequenceSetAUGraph(seq, procGraph);
     MusicSequenceFileLoad(seq, (__bridge CFURLRef _Nonnull)(midiFileURL), 0, kMusicSequenceLoadSMF_PreserveTracks);
-    NSString *sfPath = [[NSBundle mainBundle] pathForResource:@"GeneralUser_GS_SoftSynth_v144" ofType:@"sf2" inDirectory:@"DefaultFiles"];
-    NSURL *url = [[NSURL alloc] initFileURLWithPath:sfPath];
-    [self loadSoundFont:url];
     MusicPlayerSetSequence(_player, seq);
     MusicPlayerPreroll(_player);
 }
@@ -93,7 +94,8 @@ AudioUnit io;
     }
 }
 
--(OSStatus) loadSoundFont: (NSURL *)bankURL {
+- (OSStatus) loadSoundFont: (NSURL *)bankURL {
+    AudioUnitReset(sampler, kMusicDeviceProperty_SoundBankURL, 0);
     OSStatus result = noErr;
     const char *soundBankPath = bankURL.path.UTF8String;
     CFURLRef soundBankURL = CFURLCreateFromFileSystemRepresentation(kCFAllocatorDefault, (const UInt8 *)soundBankPath, strlen(soundBankPath), false);

@@ -46,6 +46,9 @@
 		4A7425292163F282001C7466 /* svg.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A7425192163F281001C7466 /* svg.c */; };
 		4A7A5050215117A900B01095 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7A504E215117A900B01095 /* Reachability.m */; };
 		4A8C198B2164071F00134416 /* voiceHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C198A2164071F00134416 /* voiceHandler.m */; };
+		4A8F411A21964217004B3C81 /* LineNumberLayoutManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8F411521964216004B3C81 /* LineNumberLayoutManager.m */; };
+		4A8F411B21964217004B3C81 /* LineNumberTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8F411721964216004B3C81 /* LineNumberTextView.m */; };
+		4A8F411C21964217004B3C81 /* LineNumberTextViewWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8F411921964216004B3C81 /* LineNumberTextViewWrapper.m */; };
 		4ABD9E0B2150736C00CA5CD4 /* HTTPErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9DC92150736B00CA5CD4 /* HTTPErrorResponse.m */; };
 		4ABD9E0C2150736C00CA5CD4 /* HTTPDataResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9DCA2150736B00CA5CD4 /* HTTPDataResponse.m */; };
 		4ABD9E0D2150736C00CA5CD4 /* HTTPDynamicFileResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9DCC2150736B00CA5CD4 /* HTTPDynamicFileResponse.m */; };
@@ -174,6 +177,12 @@
 		4A7A504F215117A900B01095 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		4A8C198A2164071F00134416 /* voiceHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = voiceHandler.m; sourceTree = "<group>"; };
 		4A8C198C2164072C00134416 /* voiceHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = voiceHandler.h; sourceTree = "<group>"; };
+		4A8F411421964216004B3C81 /* LineNumberLayoutManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineNumberLayoutManager.h; sourceTree = "<group>"; };
+		4A8F411521964216004B3C81 /* LineNumberLayoutManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LineNumberLayoutManager.m; sourceTree = "<group>"; };
+		4A8F411621964216004B3C81 /* LineNumberTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineNumberTextView.h; sourceTree = "<group>"; };
+		4A8F411721964216004B3C81 /* LineNumberTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LineNumberTextView.m; sourceTree = "<group>"; };
+		4A8F411821964216004B3C81 /* LineNumberTextViewWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineNumberTextViewWrapper.h; sourceTree = "<group>"; };
+		4A8F411921964216004B3C81 /* LineNumberTextViewWrapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LineNumberTextViewWrapper.m; sourceTree = "<group>"; };
 		4A9FD8FD218A431E00DF03D1 /* store.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = store.h; sourceTree = "<group>"; };
 		4A9FD8FF218A43D800DF03D1 /* abcm2ps.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = abcm2ps.h; sourceTree = "<group>"; };
 		4ABCD482215BDBDE000A6A53 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -339,6 +348,7 @@
 		4A2D7DB8214EBBCE005FB580 /* abConduct_iOS */ = {
 			isa = PBXGroup;
 			children = (
+				4A8F411321964216004B3C81 /* LineNumberTextView */,
 				4A2125FD218A10EE007EFE1D /* abc2midi */,
 				4A7425042163F281001C7466 /* abc2ps_iOS */,
 				4A2B94042152EB2E00AA3F7A /* Classes */,
@@ -411,6 +421,19 @@
 				4A7425192163F281001C7466 /* svg.c */,
 			);
 			path = abc2ps_iOS;
+			sourceTree = "<group>";
+		};
+		4A8F411321964216004B3C81 /* LineNumberTextView */ = {
+			isa = PBXGroup;
+			children = (
+				4A8F411421964216004B3C81 /* LineNumberLayoutManager.h */,
+				4A8F411521964216004B3C81 /* LineNumberLayoutManager.m */,
+				4A8F411621964216004B3C81 /* LineNumberTextView.h */,
+				4A8F411721964216004B3C81 /* LineNumberTextView.m */,
+				4A8F411821964216004B3C81 /* LineNumberTextViewWrapper.h */,
+				4A8F411921964216004B3C81 /* LineNumberTextViewWrapper.m */,
+			);
+			path = LineNumberTextView;
 			sourceTree = "<group>";
 		};
 		4ABD9DC02150736B00CA5CD4 /* CocoaHTTPServer */ = {
@@ -751,13 +774,16 @@
 				4ABD9E112150736C00CA5CD4 /* HTTPMessage.m in Sources */,
 				4A7425212163F282001C7466 /* subs.c in Sources */,
 				4ABD9E0F2150736C00CA5CD4 /* HTTPAsyncFileResponse.m in Sources */,
+				4A8F411A21964217004B3C81 /* LineNumberLayoutManager.m in Sources */,
 				4ABD9E102150736C00CA5CD4 /* HTTPRedirectResponse.m in Sources */,
 				4ABD9E172150736C00CA5CD4 /* HTTPAuthenticationRequest.m in Sources */,
 				4A212608218A11AE007EFE1D /* store.c in Sources */,
+				4A8F411C21964217004B3C81 /* LineNumberTextViewWrapper.m in Sources */,
 				4A21260F218A13D3007EFE1D /* queues.c in Sources */,
 				4A74251F2163F282001C7466 /* glyph.c in Sources */,
 				4A74251A2163F282001C7466 /* abcparse.c in Sources */,
 				4ABD9E242150736C00CA5CD4 /* DispatchQueueLogFormatter.m in Sources */,
+				4A8F411B21964217004B3C81 /* LineNumberTextView.m in Sources */,
 				4ABD9E1D2150736C00CA5CD4 /* DELETEResponse.m in Sources */,
 				4ABD9E232150736C00CA5CD4 /* ContextFilterLogFormatter.m in Sources */,
 				4A212607218A11AE007EFE1D /* parseabc.c in Sources */,
@@ -941,6 +967,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = abConduct_iOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -968,6 +995,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = abConduct_iOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
