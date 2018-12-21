@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <AudioToolbox/MusicPlayer.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 @class midiPlayer;
@@ -25,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void) loadMidiFileFromUrl: (NSURL*) midiFileURL;
 - (void) startMidiPlayer;
 - (void) stopMidiPlayer;
+- (void) skip: (float) foreward;
+@property UIProgressView *progressView;
 
 @end
 

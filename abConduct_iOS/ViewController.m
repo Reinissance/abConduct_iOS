@@ -13,7 +13,6 @@
 #import "voiceHandler.h"
 #import "store.h"
 
-
 #define APP ((AppDelegate *)[[UIApplication sharedApplication] delegate])
 #define docsPath [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]
 
@@ -24,6 +23,7 @@
 @property NSURL *filepath;
 @property NSMutableArray *allVoices;
 @property NSString *selectedVoice;
+@property NSURL *exportFile;
 @property voiceHandler *voiceSVGpaths;
 @property BOOL buttonViewExpanded;
 @property NSMutableArray *potentialVoices;
@@ -41,6 +41,9 @@
 @property BOOL logEnabled;
 @property NSStringEncoding encoding;
 @property NSString *logString;
+@property CGFloat fontSize;
+@property BOOL keyboard;
+@property BOOL skipping;
 
 @end
 
@@ -54,6 +57,7 @@
     NSString *content = [NSString stringWithContentsOfFile:[_filepath path]  encoding:NSUTF8StringEncoding error:NULL];
     _logString = @"";
     _codeHighlighting = YES;
+    _fontSize = 12.0;
     [self setColouredCodeFromString:content];
     _allVoices = [NSMutableArray array];
     _allVoices = [self getVoicesWithHeader];
@@ -78,7 +82,7 @@
     UIToolbar *toolBar = [[UIToolbar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, self.view.window.frame.size.width, 44.0f)];
     toolBar.tintColor = [UIColor blackColor];
     toolBar.translucent = YES;
-    toolBar.items =   @[[[UIBarButtonItem alloc] initWithTitle: @"|" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+    toolBar.items = @[[[UIBarButtonItem alloc] initWithTitle: @"|" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                          [[UIBarButtonItem alloc] initWithTitle: @"/" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
@@ -96,9 +100,9 @@
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                          [[UIBarButtonItem alloc] initWithTitle: @":" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
-                         [[UIBarButtonItem alloc] initWithTitle: @">" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithTitle: @"[" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
-                         [[UIBarButtonItem alloc] initWithTitle: @"<" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithTitle: @"]" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                          [[UIBarButtonItem alloc] initWithTitle: @"(" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
@@ -110,6 +114,49 @@
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                          ];
     _abcView.textView.inputAccessoryView = toolBar;
+    _playbackProgress.progress = 0.0;
+    
+    NSMutableArray *items = [[[UIMenuController sharedMenuController] menuItems] mutableCopy];
+    if (!items) items = [[NSMutableArray alloc] init];
+    UIMenuItem *menuItem;
+    menuItem = [[UIMenuItem alloc] initWithTitle:@"transpose" action:@selector(transpose:)];
+    [items addObject:menuItem];
+    [[UIMenuController sharedMenuController] setMenuItems:items];
+}
+
+- (void) viewWillAppear:(BOOL)animated {
+    [self.view layoutIfNeeded];
+}
+
+- (void) transpose: (NSString *) menuController {
+    UITextRange *selectedRange = [_abcView.textView selectedTextRange];
+//    NSString *abcCode = [_abcView.textView textInRange:selectedRange];
+    NSString *tmpFile = [[NSTemporaryDirectory() stringByAppendingPathComponent:@"transpose"] stringByAppendingPathExtension:@"abc"];
+    [_voiceSVGpaths cleanTempFolder];
+    NSError *error;
+    if (![_abcView.textView.text writeToFile:tmpFile atomically:YES encoding:_encoding error:&error]) {
+        NSLog(@"couldn't write tempFile to tranpose: %@, %@", error.localizedDescription, error.localizedFailureReason);
+    }
+    else {
+//        NSLog(@"code to transpose: %@", abcCode);
+//        char *transp = strdup([@"-t" UTF8String]);
+//        char *transpose = strdup([@"-2" UTF8String]);
+//        NSString *transpFile = [[NSTemporaryDirectory() stringByAppendingPathComponent:@"transposed"] stringByAppendingPathComponent:@"abc"];
+//        char *open = strdup([@"-v" UTF8String]);
+//        const char *outPath = strdup([transpFile UTF8String]);
+//        char *duppedOut = strdup(outPath);
+//        char *duppedInPath = strdup([tmpFile UTF8String]);
+//        char *args[] = {open, NULL };
+//        fileprogram = ABC2ABC;
+//        abc2midiMain(1, args);
+    }
+}
+
+- (BOOL) canPerformAction:(SEL)action withSender:(id)sender {
+    if (action == @selector(copy:) || action == @selector(cut:) || action == @selector(transpose:) || action == @selector(select:) || action == @selector(selectAll:) || action == @selector(paste:)) {
+        return YES;
+    }
+    else return NO;
 }
 
 - (void) enterSpecialKeyFromBarButtonItem: (UIBarButtonItem*) item {
@@ -119,12 +166,11 @@
 
 - (void)keyboardWillShow:(NSNotification*)notification {
     if (!alertShown) {
-        CGFloat keyboardHeight = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size.height;
+        CGFloat keyboardHeight = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size.height + 44.0;
         CGFloat keyboardAnimationDuration = [[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
         if (_displayHeight.constant + 25 > keyboardHeight) {
             [UIView animateWithDuration:keyboardAnimationDuration*1.5 animations:^{
                 self->_displayHeight.constant = self->_displayHeight.constant - keyboardHeight;
-                [self.view layoutIfNeeded];
             }];
         }
         else {
@@ -132,12 +178,15 @@
             [_abcView.textView setContentOffset:newContentOffset animated:YES];
         }
         _abcView.frame = CGRectMake(_abcView.frame.origin.x, _abcView.frame.origin.y, _abcView.frame.size.width, _abcView.frame.size.height-keyboardHeight);
+        [self.view layoutIfNeeded];
+        [self.view layoutSubviews];
     }
+    _keyboard = YES;
 }
 
 
 - (void)keyboardWillHide:(NSNotification*)notification {
-    CGFloat keyboardHeight = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size.height;
+    CGFloat keyboardHeight = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size.height + 44.0;
     if (_displayHeight.constant + keyboardHeight < self.view.frame.size.height) {
         CGFloat keyboardAnimationDuration = [[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
         [UIView animateWithDuration:keyboardAnimationDuration*1.5 animations:^{
@@ -145,6 +194,7 @@
             [self.view layoutIfNeeded];
         }];
     }
+    _keyboard = NO;
 }
 
 - (void) loadSvgImage: (NSString*) image {
@@ -153,10 +203,11 @@
     NSArray *directory = [fileManager contentsOfDirectoryAtPath:webFolder error:nil];
     NSString *imagePath = [_selectedVoice stringByAppendingPathExtension:@"svg"];
     int index = (int) [directory indexOfObject:imagePath];
-    NSURL *file = [NSURL fileURLWithPath:[webFolder stringByAppendingPathComponent:directory[index]]];
-    NSURLRequest *request = [NSURLRequest requestWithURL:file];
+    _exportFile = [NSURL fileURLWithPath:[webFolder stringByAppendingPathComponent:directory[index]]];
+    NSURLRequest *request = [NSURLRequest requestWithURL:_exportFile];
     [_displayView setScalesPageToFit:YES];
     [_displayView loadRequest:request];
+    
 }
 
 - (void) setColouredCodeFromString: (NSString*) code {
@@ -165,8 +216,9 @@
         
         string = [[NSMutableAttributedString alloc]initWithString:code];
         NSArray *lines = [code componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-        __block BOOL quote = NO;
         for (NSString *line in lines) {
+            __block BOOL quote = NO;
+            __block BOOL marked = NO;
             if ([line hasPrefix:@"V:"]) {
                 //voices
                 NSRange range=[code rangeOfString:line];
@@ -197,11 +249,21 @@
                                          if ([substring isEqualToString:@"|"] || [substring isEqualToString:@"]"] || [substring isEqualToString:@"["]) {
                                              [string addAttribute:NSForegroundColorAttributeName value: [UIColor greenColor] range:substringRange];
                                          }
+                                         BOOL dequote = NO;
                                          if ([substring isEqualToString:@"\""]) {
                                              quote = !quote;
+                                             dequote = YES;
                                          }
-                                         if (quote) {
+                                         if (quote || dequote) {
                                              [string addAttribute:NSForegroundColorAttributeName value: [UIColor blueColor] range:substringRange];
+                                         }
+                                         BOOL demark = NO;
+                                         if ([substring isEqualToString:@"!"]) {
+                                             marked = !marked;
+                                             demark = YES;
+                                         }
+                                         if (marked || demark) {
+                                             [string addAttribute:NSForegroundColorAttributeName value: [UIColor orangeColor] range:substringRange];
                                          }
                                      }];
         }
@@ -215,6 +277,7 @@
         _abcView.textView.textColor = [UIColor darkGrayColor];
         _abcView.textView.text = code;
     }
+    _abcView.textView.font = [UIFont systemFontOfSize:_fontSize];
     [_abcView.textView setSelectedRange:cursorPosition];
     [_abcView setTintColor:[UIColor whiteColor]];
     [_abcView.textView setScrollEnabled:YES];
@@ -327,10 +390,22 @@
 
 
 - (IBAction)moveHorizontalStack:(UIPanGestureRecognizer *)sender {
-    if ( [sender locationInView:self.view].y < 23 || [sender locationInView:self.view].y > self.view.frame.size.height-24) {
-        return;
+    if (!_skipping) {
+        if ( [sender locationInView:self.view].y < 23 || [sender locationInView:self.view].y > self.view.frame.size.height-24) {
+            return;
+        }
+        else _displayHeight.constant = [sender locationInView:self.view].y - _logHeight.constant;
     }
-    else _displayHeight.constant = [sender locationInView:self.view].y;
+    else {
+        float skipper = [sender locationInView:self.view].x / self.view.frame.size.width;
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(endSkip) object: nil];
+        [self performSelector:@selector(endSkip) withObject:nil afterDelay:0.5];
+        [_mp skip:skipper];
+    }
+}
+
+- (void) endSkip {
+    _skipping = NO;
 }
 
 - (IBAction)toggleLogExpansion:(id)sender {
@@ -346,7 +421,7 @@
 
 - (IBAction)buttonViewSizeToggle:(id)sender {
     _buttonViewExpanded = !_buttonViewExpanded;
-    _buttonViewHeight.constant = (_buttonViewExpanded) ? 100 : 24;
+    _buttonViewHeight.constant = (_buttonViewExpanded) ? 110 : 24;
     [UIView animateWithDuration:0.3 animations:^{
         [self.view layoutIfNeeded];
     }];
@@ -393,6 +468,9 @@
 }
 
 - (void) enterFullScoreAndOrParts {
+    if ([_abcView.textView.text isEqualToString:@""]) {
+        return;
+    }
     NSArray *buttons = [NSArray arrayWithObjects:@"create full score only", @"create parts only", @"create full score and parts", nil];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"no rule to create parts or a full score found!" message:@"choose to add full score, parts or both:" preferredStyle:UIAlertControllerStyleAlert];
     for (NSString *title in buttons) {
@@ -411,6 +489,10 @@
             [self setColouredCodeFromString:inserted];
             [self->_allVoices removeAllObjects];
             self->_allVoices = [self getVoicesWithHeader];
+            [self->_voiceSVGpaths createVoices:self->_allVoices];
+            NSArray *Voice = self->_allVoices[0];
+            self->_selectedVoice = Voice[0];
+            [self loadSvgImage:self->_selectedVoice];
         }];
         [alert addAction:action];
     }
@@ -571,7 +653,7 @@ BOOL alertShown;
     alert.textFields[2].tag = 2;
     UIAlertAction *create = [UIAlertAction actionWithTitle:@"create File" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
         BOOL extension = ((self->_createFileName.length > 4) && [[self->_createFileName substringFromIndex:self->_createFileName.length-4] isEqualToString:@".abc"]);
-        NSString *createAbcFileString = [NSString stringWithFormat:@"X:1\nT:%@\n", (extension) ? [self->_createFileName substringToIndex:self->_createFileName.length-4] : self->_createFileName];
+        NSString *createAbcFileString = [NSString stringWithFormat:@"X:1\n%@\nT:%@\n", [NSString stringWithFormat:@"%@ Voice1 %@ scale=0.7", @"\%\%staves", @"\%Voice1"], (extension) ? [self->_createFileName substringToIndex:self->_createFileName.length-4] : self->_createFileName];
         if (![self->_createFileComposer isEqualToString:@""]) {
             createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"C:%@\n", self->_createFileComposer]];
         }
@@ -596,6 +678,12 @@ BOOL alertShown;
         else {
             self->_refreshButton.enabled = YES;
             self->_saveButton.enabled = YES;
+            [self->_allVoices removeAllObjects];
+            self->_allVoices = [self getVoicesWithHeader];
+            [self->_voiceSVGpaths createVoices:self->_allVoices];
+            NSArray *Voice = self->_allVoices[0];
+            self->_selectedVoice = Voice[0];
+            [self loadSvgImage:self->_selectedVoice];
         }
         [self cleanUpAlert];
     }];
@@ -634,9 +722,9 @@ BOOL alertShown;
 
 - (IBAction)zoomText:(UIPinchGestureRecognizer *)sender {
     float scale = ((sender.scale <=2) ? sender.scale : 2) - 1;
-    CGFloat size = _abcView.textView.font.pointSize + (scale * 0.5);
-    _abcView.textView.font = [UIFont systemFontOfSize:size];
-    _abcView.textView.lineNumberFont = [UIFont systemFontOfSize:size*0.7];
+    _fontSize = _abcView.textView.font.pointSize + (scale * 0.5);
+    _abcView.textView.font = [UIFont systemFontOfSize:_fontSize];
+    _abcView.textView.lineNumberFont = [UIFont systemFontOfSize:_fontSize*0.7];
 }
 
 - (IBAction)startHTTPserver:(UISwitch *)sender {
@@ -669,10 +757,13 @@ BOOL alertShown;
 - (void) viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
         [_measurePicker.pickerView removeFromSuperview];
         [_keyPicker.pickerView removeFromSuperview];
+    if (_keyboard)
+        [_abcView endEditing:YES];
 }
 
 - (void)orientationChanged:(NSNotification *)notification{
     [self adjustViewsForOrientation:[[UIApplication sharedApplication] statusBarOrientation]];
+    [[self view] setNeedsLayout];
 }
 
 - (void) adjustViewsForOrientation:(UIInterfaceOrientation) orientation {
@@ -743,6 +834,7 @@ BOOL alertShown;
         else sfFile = [docsPath stringByAppendingPathComponent: _userSoundfonts[indexPath.row-1]];
         _soundfontUrl = [[NSURL alloc] initFileURLWithPath:sfFile];
         _mp = [[midiPlayer alloc] initWithSoundFontURL:_soundfontUrl];
+        _mp.progressView = _playbackProgress;
         _mp.delegate = self;
     }
 }
@@ -751,13 +843,19 @@ BOOL alertShown;
     if (editingStyle == UITableViewCellEditingStyleDelete) {
         NSFileManager *fileManager = [NSFileManager defaultManager];
         NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-        NSString *filePath = [documentsPath stringByAppendingPathComponent:_abcDocuments[indexPath.row]];
+        NSString *filePath = [documentsPath stringByAppendingPathComponent: (!_loadSFs) ? _abcDocuments[indexPath.row] : _userSoundfonts[indexPath.row-1]];
         NSError *error;
         BOOL success = [fileManager removeItemAtPath:filePath error:&error];
         if (!success) {
             NSLog(@"Could not delete file -:%@ ",[error localizedDescription]);
         }
         else if (!_loadSFs) {
+            if ([_abcDocuments[indexPath.row] isEqualToString:[_filepath lastPathComponent]]) {
+                _abcView.textView.text = @"";
+                [_displayView loadHTMLString:@"" baseURL:nil];
+                _refreshButton.enabled = NO;
+                _saveButton.enabled = NO;
+            }
             [self loadABCdocuments];
             if (_abcDocuments.count == 0) {
                 [self dismissViewControllerAnimated:YES completion:nil];
@@ -765,14 +863,14 @@ BOOL alertShown;
             }
             [tableView reloadData];
         }
-//        else {
-//            [self loadSf2Documents];
-//            if (_userSoundfonts.count == 0) {
-//                [self dismissViewControllerAnimated:YES completion:nil];
-//                return;
-//            }
-//            [tableView reloadData];
-//        }
+        else {
+            [self loadSf2Documents];
+            if (_userSoundfonts.count == 0) {
+                [self dismissViewControllerAnimated:YES completion:nil];
+                return;
+            }
+            [tableView reloadData];
+        }
     }
 }
 
@@ -799,11 +897,13 @@ BOOL alertShown;
         char *duppedOut = strdup(outPath);
         char *duppedInPath = strdup([inPath UTF8String]);
         char *args[] = {open, duppedInPath, open, duppedOut, NULL };
+//        fileprogram = ABC2MIDI;
         abc2midiMain(4, args);
         
         if (_mp == nil) {
             _mp = [[midiPlayer alloc] initWithSoundFontURL:_soundfontUrl];
             _mp.delegate = self;
+            _mp.progressView = _playbackProgress;
         }
         [_mp loadMidiFileFromUrl:[[NSURL alloc] initFileURLWithPath:outFile]];
         [_mp startMidiPlayer];
@@ -888,7 +988,7 @@ int printf(const char * __restrict format, ...) {
     NSLog(@"redirected printf: %@", log);
     _logString = [log stringByAppendingString:[NSString stringWithFormat:@"%@", _logString]];
     NSArray *lines = [_logString componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-    if (lines.count > 50) {
+    if (lines.count > 500) {
         NSString *cut = @"";
         for (int i = (int) lines.count - 50; i < lines.count; i++) {
             cut = [cut stringByAppendingString:[NSString stringWithFormat:@"\n%@", lines[i]]];
@@ -896,7 +996,7 @@ int printf(const char * __restrict format, ...) {
         _logString = cut;
     }
     if (_logEnabled) {
-        _logLabel.text = _logString;
+        _logView.text = _logString;
     }
 }
 
@@ -906,12 +1006,12 @@ int printf(const char * __restrict format, ...) {
     [UIView animateWithDuration:0.5 animations:^{
         self->_logHeight.constant = self->_logEnabled ? 80 : 0;
         if (self->_logEnabled) {
-            self->_logLabel.text = self->_logString;
+            self->_logView.text = self->_logString;
         }
         [self.view layoutIfNeeded];
     } completion:^(BOOL finished) {
         if (!self->_logEnabled) {
-                self->_logLabel.text = @"";
+                self->_logView.text = @"";
         }
     }];
 }
@@ -923,4 +1023,71 @@ int printf(const char * __restrict format, ...) {
     }
 }
 
+- (IBAction)exportDocument:(id)sender {
+    UIActionSheet *actionSheet = [[UIActionSheet alloc]
+                                   initWithTitle:@""
+                                   delegate:self
+                                   cancelButtonTitle:@"Cancel"
+                                   destructiveButtonTitle:nil
+                                   otherButtonTitles:@"Export via File Sharing", @"Export via Email", nil];
+    [actionSheet showInView:self.view];
+}
+
+- (IBAction)skip:(UISegmentedControl *)sender {
+    _skipping = YES;
+    [_mp skip:sender.selectedSegmentIndex-1];
+}
+
+// Add new methods
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
+    
+    NSOperationQueue *_queue = [[NSOperationQueue alloc] init];
+    
+//    if (buttonIndex == actionSheet.firstOtherButtonIndex + 0) {
+//
+//        [DSBezelActivityView newActivityViewForView:self.navigationController.navigationBar.superview withLabel:@"Exporting Bug..." width:160];
+//        [_queue addOperationWithBlock: ^{
+//            BOOL exported = [_bugDoc exportToDiskWithForce:FALSE];
+//            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+//                [DSBezelActivityView removeViewAnimated:YES];
+//                if (!exported) {
+//                    UIAlertView *alertView = [[[UIAlertView alloc]
+//                                               initWithTitle:@"File Already Exists!"
+//                                               message:@"An exported bug with this name already exists.  Overwrite?"
+//                                               delegate:self
+//                                               cancelButtonTitle:@"Cancel"
+//                                               otherButtonTitles:@"Overwrite", nil] autorelease];
+//                    [alertView show];
+//                }
+//            }];
+//        }];
+//
+//    } else
+    if (buttonIndex == actionSheet.firstOtherButtonIndex + 1) {
+        [_queue addOperationWithBlock: ^{
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                    MFMailComposeViewController *picker = [[MFMailComposeViewController alloc] init];
+                    [picker setSubject:@"abConduct-sheet"];
+                NSData *data = [NSData dataWithContentsOfFile:[self->_exportFile path]];
+                    [picker addAttachmentData:data mimeType:@"application/abConduct" fileName:[[self->_exportFile path] lastPathComponent]];
+                    [picker setToRecipients:[NSArray array]];
+                    [picker setMessageBody:@"Hi,\nThis sheet is an export of the awesome abConduct_iOS-app" isHTML:NO];
+                    [picker setMailComposeDelegate:self];
+                    [self presentModalViewController:picker animated:YES];
+//                }
+                
+            }];
+        }];
+        
+    }
+    
+}
+
+- (void)mailComposeController:(MFMailComposeViewController *)controller
+          didFinishWithResult:(MFMailComposeResult)result
+                        error:(NSError *)error {
+    [self dismissModalViewControllerAnimated:YES];
+}
+
 @end
+

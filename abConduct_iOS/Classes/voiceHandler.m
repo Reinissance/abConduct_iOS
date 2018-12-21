@@ -12,17 +12,27 @@
 
 @implementation voiceHandler
 
+NSFileManager *fileManager;
+
+- (void) cleanTempFolder {
+    if (!fileManager) {
+        fileManager = [[NSFileManager alloc] init];
+    }
+    NSString *tmpDir = NSTemporaryDirectory();
+    NSArray *wasDirectory = [fileManager contentsOfDirectoryAtPath:tmpDir error:nil];
+    NSError *error;
+    for (NSString *file in wasDirectory) {
+        if (![fileManager removeItemAtPath:[tmpDir stringByAppendingPathComponent:file] error:&error]) {
+            NSLog(@"couldn´t remove file: %@, reason: %@", error.localizedDescription, error.localizedFailureReason);
+        }
+    }
+}
+
 - (void) createVoices:(NSMutableArray *)voices {
     if (self) {
-        NSFileManager *fileManager = [[NSFileManager alloc] init];
-        NSString *tmpDir = NSTemporaryDirectory();
-        NSArray *wasDirectory = [fileManager contentsOfDirectoryAtPath:tmpDir error:nil];
+        fileManager = [[NSFileManager alloc] init];
+        [self cleanTempFolder];
         NSError *error;
-        for (NSString *file in wasDirectory) {
-            if (![fileManager removeItemAtPath:[tmpDir stringByAppendingPathComponent:file] error:&error]) {
-                NSLog(@"couldn´t remove file: %@, reason: %@", error.localizedDescription, error.localizedFailureReason);
-            }
-        }
         NSString *webFolder = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:@"webDAV"];
         NSArray *wasWebDirectory = [fileManager contentsOfDirectoryAtPath:webFolder error:nil];
         for (NSString *file in wasWebDirectory) {
@@ -30,6 +40,7 @@
                 NSLog(@"couldn´t remove file: %@, reason: %@", error.localizedDescription, error.localizedFailureReason);
             }
         }
+        NSString *tmpDir = NSTemporaryDirectory();
         for (NSArray *voice in voices) {
             if (![voice[1] writeToFile:[[tmpDir stringByAppendingPathComponent:voice[0]] stringByAppendingPathExtension:@"abc"] atomically:YES encoding:NSUTF8StringEncoding error:&error]) {
                 NSLog(@"couln't write file: %@, reason: %@", error.localizedDescription, error.localizedFailureReason);

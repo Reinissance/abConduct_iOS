@@ -10,5 +10,5 @@
 
 @property NSMutableArray *voicePaths;
 - (void) createVoices:(NSMutableArray *)voices;
-
+- (void) cleanTempFolder;
 @end

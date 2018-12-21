@@ -16,6 +16,7 @@ MusicSequence seq;
 AUGraph   procGraph;
 AudioUnit sampler;
 AudioUnit io;
+MusicTimeStamp trackLen;
 
 - (instancetype) init {
     [self createAudioUnitGraph];
@@ -43,19 +44,49 @@ AudioUnit io;
     
     MusicPlayerStart(_player);
     MusicTrack track;
-    MusicTimeStamp length;
-    UInt32 size = sizeof(MusicTimeStamp);
-    MusicSequenceGetIndTrack(seq, 1, &track);
-    MusicTrackGetProperty(track, kSequenceTrackProperty_TrackLength, &length, &size);
-    [self performSelector:@selector(stopMidiPlayer) withObject:nil afterDelay:length];
+    trackLen = 0;
+    UInt32 trackLenLen = sizeof(trackLen);
+    MusicSequenceGetIndTrack(seq, 0, &track);
+    MusicTrackGetProperty(track, kSequenceTrackProperty_TrackLength, &trackLen, &trackLenLen);
+    static MusicEventUserData userData = {1, 0x09};
+    MusicTrackNewUserEvent(track, trackLen, &userData);
+    MusicSequenceSetUserCallback(seq, sequenceUserCallback, _player);
+    [self performSelector:@selector(observePlayer) withObject:nil afterDelay:0.1];
+}
+
+static void sequenceUserCallback(void *inClientData,
+                                 MusicSequence             inSequence,
+                                 MusicTrack                inTrack,
+                                 MusicTimeStamp            inEventTime,
+                                 const MusicEventUserData *inEventData,
+                                 MusicTimeStamp            inStartSliceBeat,
+                                 MusicTimeStamp            inEndSliceBeat)
+{
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^ {
+        MusicPlayerStop((MusicPlayer) inClientData);
+    }];
+}
+
+- (void) observePlayer {
+    Boolean playing;
+    MusicPlayerIsPlaying(_player, &playing);
+    if (playing) {
+        [self performSelector:@selector(observePlayer) withObject:nil afterDelay:0.1];
+        MusicTimeStamp position;
+        MusicPlayerGetTime(_player, &position);
+        float div = position / trackLen;
+        _progressView.progress = div;
+    }
+    else [self stopMidiPlayer];
 }
 
 - (void) stopMidiPlayer {
     [self.delegate midiPlayerReachedEnd:self];
+    _progressView.progress = 0.0;
     MusicPlayerStop(_player);
     DisposeMusicSequence(seq);
     DisposeMusicPlayer(_player);
-    
+    DisposeAUGraph(procGraph);
 }
 
 - (BOOL) createAudioUnitGraph {
@@ -107,6 +138,15 @@ AudioUnit io;
     if (soundBankURL) CFRelease(soundBankURL);
     if (result) printf("AudioUnitSetProperty failed %d\n", result);
     return result;
+}
+
+- (void) skip: (float) foreward {
+    MusicTimeStamp position;
+    MusicPlayerGetTime(_player, &position);
+    if (foreward > 0)
+        position = (foreward * trackLen);
+    else position = (foreward == -1) ? position - 10.0 : position + 10.0;
+    MusicPlayerSetTime(_player, position);
 }
 
 @end

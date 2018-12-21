@@ -10,10 +10,11 @@
 #import <WebKit/WebKit.h>
 #import "midiPlayer.h"
 #import "LineNumberTextViewWrapper.h"
+#import <MessageUI/MessageUI.h>
 
 @class WebServer;
 
-@interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, midiPlayerDelegate, UITextViewDelegate>
+@interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, midiPlayerDelegate, UITextViewDelegate, UIActionSheetDelegate, MFMailComposeViewControllerDelegate>
 
 @property (weak, nonatomic) IBOutlet UIButton *refreshButton;
 @property (weak, nonatomic) IBOutlet UIButton *saveButton;
@@ -43,7 +44,12 @@
 - (void) logText: (NSString *) log;
 @property (weak, nonatomic) IBOutlet UILabel *logSwitchLabel;
 - (IBAction)enableLog:(UISwitch*)sender;
-@property (weak, nonatomic) IBOutlet UILabel *logLabel;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *logHeight;
+@property (weak, nonatomic) IBOutlet UITextView *logView;
+@property (weak, nonatomic) IBOutlet UISwitch *codeHighlightingSwitch;
+@property (weak, nonatomic) IBOutlet UIProgressView *playbackProgress;
+- (IBAction)exportDocument:(id)sender;
+
+- (IBAction)skip:(UISegmentedControl *)sender;
 
 @end

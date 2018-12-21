@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 47;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4A01846921A73E20008455BF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A2D7DBF214EBBCE005FB580 /* Main.storyboard */; };
 		4A15A514215C2C9D00688610 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3A9B332150081E009757BC /* WebKit.framework */; };
 		4A20DCA5218B3DA600EC3765 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A20DCA4218B3DA600EC3765 /* CoreAudio.framework */; };
 		4A20DCA7218B3DB100EC3765 /* CoreMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A20DCA6218B3DB100EC3765 /* CoreMIDI.framework */; };
@@ -21,7 +22,6 @@
 		4A2B940A2152EDD300AA3F7A /* arrayPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2B94092152EDD300AA3F7A /* arrayPicker.m */; };
 		4A2D7DBB214EBBCE005FB580 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DBA214EBBCE005FB580 /* AppDelegate.m */; };
 		4A2D7DBE214EBBCE005FB580 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DBD214EBBCE005FB580 /* ViewController.m */; };
-		4A2D7DC1214EBBCE005FB580 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A2D7DBF214EBBCE005FB580 /* Main.storyboard */; };
 		4A2D7DC3214EBBCE005FB580 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A2D7DC2214EBBCE005FB580 /* Assets.xcassets */; };
 		4A2D7DC6214EBBCE005FB580 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A2D7DC4214EBBCE005FB580 /* LaunchScreen.storyboard */; };
 		4A2D7DC9214EBBCE005FB580 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DC8214EBBCE005FB580 /* main.m */; };
@@ -84,6 +84,7 @@
 		4ABD9E2E2150739800CA5CD4 /* WebServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9E2D2150739700CA5CD4 /* WebServer.m */; };
 		4AD31CEB215C357400D3A910 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4ABCD482215BDBDE000A6A53 /* UIKit.framework */; };
 		4ADEC5712163D2CB0069274B /* libxml2.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4ADEC5702163D2CB0069274B /* libxml2.2.dylib */; };
+		4AFD1E3021A59566009924F4 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AFD1E2F21A59566009924F4 /* MessageUI.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -171,7 +172,6 @@
 		4A7425132163F281001C7466 /* utilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = utilities.m; sourceTree = "<group>"; };
 		4A7425142163F281001C7466 /* parse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = parse.c; sourceTree = "<group>"; };
 		4A7425172163F281001C7466 /* syms.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = syms.c; sourceTree = "<group>"; };
-		4A7425182163F281001C7466 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A7425192163F281001C7466 /* svg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = svg.c; sourceTree = "<group>"; };
 		4A7A504E215117A900B01095 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
 		4A7A504F215117A900B01095 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
@@ -254,6 +254,7 @@
 		4ABD9E2D2150739700CA5CD4 /* WebServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebServer.m; sourceTree = "<group>"; };
 		4ABD9EAB21508BE200CA5CD4 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		4ADEC5702163D2CB0069274B /* libxml2.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.2.dylib; path = ../../../../../../../usr/lib/libxml2.2.dylib; sourceTree = "<group>"; };
+		4AFD1E2F21A59566009924F4 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -261,6 +262,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4AFD1E3021A59566009924F4 /* MessageUI.framework in Frameworks */,
 				4A20DCA9218B3DBE00EC3765 /* AudioToolbox.framework in Frameworks */,
 				4A20DCA7218B3DB100EC3765 /* CoreMIDI.framework in Frameworks */,
 				4A20DCA5218B3DA600EC3765 /* CoreAudio.framework in Frameworks */,
@@ -388,6 +390,7 @@
 		4A3A9B322150081E009757BC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4AFD1E2F21A59566009924F4 /* MessageUI.framework */,
 				4A20DCA8218B3DBE00EC3765 /* AudioToolbox.framework */,
 				4A20DCA6218B3DB100EC3765 /* CoreMIDI.framework */,
 				4A20DCA4218B3DA600EC3765 /* CoreAudio.framework */,
@@ -417,7 +420,6 @@
 				4A7425112163F281001C7466 /* front.c */,
 				4A7425142163F281001C7466 /* parse.c */,
 				4A7425172163F281001C7466 /* syms.c */,
-				4A7425182163F281001C7466 /* Info.plist */,
 				4A7425192163F281001C7466 /* svg.c */,
 			);
 			path = abc2ps_iOS;
@@ -659,19 +661,25 @@
 				TargetAttributes = {
 					4A2D7DB5214EBBCE005FB580 = {
 						CreatedOnToolsVersion = 9.4.1;
+						DevelopmentTeam = CGK42Y67HV;
+						ProvisioningStyle = Automatic;
 					};
 					4A2D7DCD214EBBCE005FB580 = {
 						CreatedOnToolsVersion = 9.4.1;
+						DevelopmentTeam = CGK42Y67HV;
+						ProvisioningStyle = Automatic;
 						TestTargetID = 4A2D7DB5214EBBCE005FB580;
 					};
 					4A2D7DD8214EBBCF005FB580 = {
 						CreatedOnToolsVersion = 9.4.1;
+						DevelopmentTeam = CGK42Y67HV;
+						ProvisioningStyle = Automatic;
 						TestTargetID = 4A2D7DB5214EBBCE005FB580;
 					};
 				};
 			};
 			buildConfigurationList = 4A2D7DB1214EBBCE005FB580 /* Build configuration list for PBXProject "abConduct_iOS" */;
-			compatibilityVersion = "Xcode 9.3";
+			compatibilityVersion = "Xcode 6.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -695,13 +703,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A01846921A73E20008455BF /* Main.storyboard in Resources */,
 				4ABD9E2B2150736C00CA5CD4 /* About.txt in Resources */,
 				4ABD9E202150736C00CA5CD4 /* LICENSE.txt in Resources */,
 				4A6743822150012400886D97 /* DefaultFiles in Resources */,
 				4A2D7DC6214EBBCE005FB580 /* LaunchScreen.storyboard in Resources */,
 				4A2D7DC3214EBBCE005FB580 /* Assets.xcassets in Resources */,
 				4ABD9E252150736C00CA5CD4 /* README.txt in Resources */,
-				4A2D7DC1214EBBCE005FB580 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -967,11 +975,8 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = abConduct_iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/abConduct_iOS",
@@ -995,11 +1000,8 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = abConduct_iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/abConduct_iOS",
@@ -1018,11 +1020,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = CGK42Y67HV;
 				INFOPLIST_FILE = abConduct_iOSTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.reinissance.abConduct-iOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1037,11 +1035,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = CGK42Y67HV;
 				INFOPLIST_FILE = abConduct_iOSTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.reinissance.abConduct-iOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1055,11 +1049,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = CGK42Y67HV;
 				INFOPLIST_FILE = abConduct_iOSUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.reinissance.abConduct-iOSUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1073,11 +1063,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = CGK42Y67HV;
 				INFOPLIST_FILE = abConduct_iOSUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.reinissance.abConduct-iOSUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
