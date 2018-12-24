@@ -32,6 +32,7 @@
 @property arrayPicker *measurePicker;
 @property NSArray *abcDocuments;
 @property NSArray *userSoundfonts;
+@property NSMutableArray *decorations;
 @property NSString *createFileName;
 @property NSString *createFileComposer;
 @property NSString *createFileLength;
@@ -79,10 +80,10 @@
     [_abcView.textView setTintColor:[UIColor whiteColor]];
     _abcView.textView.backgroundColor = [UIColor colorWithHue:41.0/360.0 saturation:11.0/360.0 brightness:84.0/360.0 alpha:0.0];
     _abcView.textView.autocorrectionType = UITextAutocorrectionTypeNo;
-    UIToolbar *toolBar = [[UIToolbar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, self.view.window.frame.size.width, 44.0f)];
-    toolBar.tintColor = [UIColor blackColor];
-    toolBar.translucent = YES;
-    toolBar.items = @[[[UIBarButtonItem alloc] initWithTitle: @"|" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+    UIToolbar *toolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, self.view.window.frame.size.width, 44.0f)];
+    toolbar.tintColor = [UIColor blackColor];
+    toolbar.translucent = YES;
+    toolbar.items = @[[[UIBarButtonItem alloc] initWithTitle: @"|" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                          [[UIBarButtonItem alloc] initWithTitle: @"/" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
@@ -92,11 +93,13 @@
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                          [[UIBarButtonItem alloc] initWithTitle: @"=" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
-                         [[UIBarButtonItem alloc] initWithTitle: @"-" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
-                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
-                         [[UIBarButtonItem alloc] initWithTitle: @"." style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
-                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                      [[UIBarButtonItem alloc] initWithTitle: @"'" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                      [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                          [[UIBarButtonItem alloc] initWithTitle: @"," style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                      [[UIBarButtonItem alloc] initWithTitle: @"-" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                      [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                         [[UIBarButtonItem alloc] initWithTitle: @"." style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                          [[UIBarButtonItem alloc] initWithTitle: @":" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
@@ -112,8 +115,25 @@
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                          [[UIBarButtonItem alloc] initWithTitle: @"\"" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
-                         ];
-    _abcView.textView.inputAccessoryView = toolBar;
+                      [[UIBarButtonItem alloc] initWithTitle: @"%" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                      [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                      [[UIBarButtonItem alloc] initWithTitle: @"<" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                      [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                      [[UIBarButtonItem alloc] initWithTitle: @">" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                      [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                        [[UIBarButtonItem alloc] initWithTitle: @"decorations" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                        [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                        [[UIBarButtonItem alloc] initWithTitle: @"undo" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                        [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                      [[UIBarButtonItem alloc] initWithTitle: @"redo" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                      [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                      ];
+    toolbar.frame = CGRectMake(0, 0, self.view.frame.size.height, 44);
+    toolbar.autoresizingMask = UIViewAutoresizingNone;
+    UIScrollView *toolScroll = [[UIScrollView alloc] initWithFrame:toolbar.frame];
+    toolScroll.contentSize = toolbar.frame.size;
+    [toolScroll addSubview:toolbar];
+    _abcView.textView.inputAccessoryView = toolScroll;
     _playbackProgress.progress = 0.0;
     
     NSMutableArray *items = [[[UIMenuController sharedMenuController] menuItems] mutableCopy];
@@ -129,7 +149,7 @@
 }
 
 - (void) transpose: (NSString *) menuController {
-    UITextRange *selectedRange = [_abcView.textView selectedTextRange];
+//    UITextRange *selectedRange = [_abcView.textView selectedTextRange];
 //    NSString *abcCode = [_abcView.textView textInRange:selectedRange];
     NSString *tmpFile = [[NSTemporaryDirectory() stringByAppendingPathComponent:@"transpose"] stringByAppendingPathExtension:@"abc"];
     [_voiceSVGpaths cleanTempFolder];
@@ -159,41 +179,88 @@
     else return NO;
 }
 
+BOOL decorationController;
+
 - (void) enterSpecialKeyFromBarButtonItem: (UIBarButtonItem*) item {
-    NSString *character = [[NSString alloc] initWithUTF8String:item.title.UTF8String];
-    [_abcView.textView replaceRange:_abcView.textView.selectedTextRange withText:character];
+    if ([item.title isEqualToString:@"undo"]) {
+        [_abcView.textView.undoManager undo];
+    }
+    else if ([item.title isEqualToString:@"redo"]) {
+        [_abcView.textView.undoManager redo];
+    }
+    else if ([item.title isEqualToString:@"decorations"]) {
+        //        TODO: special musical symbols
+        if (!_decorations) {
+            _decorations = [NSMutableArray array];
+            NSError *error = nil;
+            NSString *decos = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"decorations" ofType:@"txt"] encoding:NSUTF8StringEncoding error:&error];
+            if (error) {
+                NSLog(@"couldn't read decorationsFile: %@", error.localizedFailureReason);
+            }
+            NSArray *lines = [decos componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+            for (NSString *line in lines) {
+                if ([line isEqualToString:@""]) return;
+                NSArray *split = [line componentsSeparatedByString:@";"];
+                [_decorations addObject:split];
+            }
+        }
+        decorationController = YES;
+        UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:@"Decorations:" message:@"chose a musical symbol to insert." preferredStyle:UIAlertControllerStyleAlert];
+        UIViewController *controller = [self controllerWithTableViewEditable:NO];
+        [actionSheet setValue:controller forKey:@"contentViewController"];
+        UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
+        [actionSheet addAction:cancel];
+        [self presentViewController:actionSheet animated:YES completion:nil];
+    }
+    else {
+        NSString *character = [[NSString alloc] initWithUTF8String:item.title.UTF8String];
+        [_abcView.textView replaceRange:_abcView.textView.selectedTextRange withText:character];
+    }
 }
 
 - (void)keyboardWillShow:(NSNotification*)notification {
     if (!alertShown) {
-        CGFloat keyboardHeight = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size.height + 44.0;
+        NSDictionary *info = [notification userInfo];
+        NSValue *keyBoardEndFrame = [info objectForKey:UIKeyboardFrameEndUserInfoKey];
+        CGSize keyboardSize = [keyBoardEndFrame CGRectValue].size;
+        CGFloat keyboardHeight = keyboardSize.height;
         CGFloat keyboardAnimationDuration = [[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
-        if (_displayHeight.constant + 25 > keyboardHeight) {
+        if (_displayHeight.constant + 28 > keyboardHeight) {
             [UIView animateWithDuration:keyboardAnimationDuration*1.5 animations:^{
                 self->_displayHeight.constant = self->_displayHeight.constant - keyboardHeight;
             }];
+            buttonViewMoved = YES;
         }
         else {
-            CGPoint newContentOffset = CGPointMake(_abcView.textView.contentOffset.x, _abcView.textView.contentOffset.y + keyboardHeight);
-            [_abcView.textView setContentOffset:newContentOffset animated:YES];
-        }
-        _abcView.frame = CGRectMake(_abcView.frame.origin.x, _abcView.frame.origin.y, _abcView.frame.size.width, _abcView.frame.size.height-keyboardHeight);
+            [UIView animateWithDuration:keyboardAnimationDuration*1.5 animations:^{
+                CGPoint newContentOffset = CGPointMake(self->_abcView.textView.contentOffset.x, self->_abcView.textView.contentOffset.y + keyboardHeight);
+                [self->_abcView.textView setContentOffset:newContentOffset animated:YES];
+//                self->_abcView.frame = CGRectMake(self->_abcView.frame.origin.x ,self->_abcView.frame.origin.y, self->_abcView.frame.size.width, self->_abcView.frame.size.height-keyboardHeight);
+            }];
+        }_abcViewBottom.constant = keyboardHeight + 2;
         [self.view layoutIfNeeded];
         [self.view layoutSubviews];
     }
     _keyboard = YES;
 }
 
+BOOL buttonViewMoved;
 
 - (void)keyboardWillHide:(NSNotification*)notification {
-    CGFloat keyboardHeight = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size.height + 44.0;
-    if (_displayHeight.constant + keyboardHeight < self.view.frame.size.height) {
+    NSDictionary *info = [notification userInfo];
+    NSValue *keyBoardEndFrame = [info objectForKey:UIKeyboardFrameEndUserInfoKey];
+    CGSize keyboardSize = [keyBoardEndFrame CGRectValue].size;
+    CGFloat keyboardHeight = keyboardSize.height;
+    if (_displayHeight.constant + keyboardHeight < self.view.frame.size.height && buttonViewMoved) {
         CGFloat keyboardAnimationDuration = [[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
         [UIView animateWithDuration:keyboardAnimationDuration*1.5 animations:^{
             self->_displayHeight.constant = self->_displayHeight.constant + keyboardHeight;
-            [self.view layoutIfNeeded];
         }];
+        [self.view layoutIfNeeded];
+        [self.view layoutSubviews];
+        buttonViewMoved = NO;
     }
+    _abcViewBottom.constant = 2;
     _keyboard = NO;
 }
 
@@ -391,7 +458,7 @@
 
 - (IBAction)moveHorizontalStack:(UIPanGestureRecognizer *)sender {
     if (!_skipping) {
-        if ( [sender locationInView:self.view].y < 23 || [sender locationInView:self.view].y > self.view.frame.size.height-24) {
+        if ( [sender locationInView:self.view].y < 28 || [sender locationInView:self.view].y > self.view.frame.size.height-28) {
             return;
         }
         else _displayHeight.constant = [sender locationInView:self.view].y - _logHeight.constant;
@@ -423,6 +490,17 @@
     _buttonViewExpanded = !_buttonViewExpanded;
     _buttonViewHeight.constant = (_buttonViewExpanded) ? 110 : 24;
     [UIView animateWithDuration:0.3 animations:^{
+        self->_sfButton.hidden = !self->_buttonViewExpanded;
+        self->_playButton.hidden = !self->_buttonViewExpanded;
+        self->_skipControl.hidden = !self->_buttonViewExpanded;
+        self->_serverLabel.hidden = !self->_buttonViewExpanded;
+        self->_serverSwitch.hidden = !self->_buttonViewExpanded;
+        self->_exportButton.hidden = !self->_buttonViewExpanded;
+        self->_logSwitchLabel.hidden = !self->_buttonViewExpanded;
+        self->_logSwitch.hidden = !self->_buttonViewExpanded;
+        self->_codeHighlightingLabel.hidden = !self->_buttonViewExpanded;
+        self->_codeHighlightingSwitch.hidden = !self->_buttonViewExpanded;
+        self->_playbackProgress.hidden = !self->_buttonViewExpanded;
         [self.view layoutIfNeeded];
     }];
 }
@@ -520,42 +598,10 @@
     if (sender.tag == 0) {
         //load
         _loadSFs = NO;
+        decorationController = NO;
         [self loadABCdocuments];
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"load abc-Tune:" message:@"to add tunes put them in the apps Shared Folder with iTunes." preferredStyle:UIAlertControllerStyleAlert];
-        UIViewController *controller = [[UIViewController alloc]init];
-        UITableView *alertTableView;
-        CGRect rect;
-        if (_abcDocuments.count < 4) {
-            rect = CGRectMake(0, 0, 272, 100);
-            [controller setPreferredContentSize:rect.size];
-            
-        }
-        else if (_abcDocuments.count < 6){
-            rect = CGRectMake(0, 0, 272, 150);
-            [controller setPreferredContentSize:rect.size];
-        }
-        else if (_abcDocuments.count < 8){
-            rect = CGRectMake(0, 0, 272, 200);
-            [controller setPreferredContentSize:rect.size];
-            
-        }
-        else {
-            rect = CGRectMake(0, 0, 272, 250);
-            [controller setPreferredContentSize:rect.size];
-        }
-        
-        alertTableView  = [[UITableView alloc]initWithFrame:rect];
-        alertTableView.delegate = self;
-        alertTableView.dataSource = self;
-        alertTableView.tableFooterView = [[UIView alloc]initWithFrame:CGRectZero];
-        [alertTableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
-        [controller.view addSubview:alertTableView];
-        [controller.view bringSubviewToFront:alertTableView];
-        [controller.view setUserInteractionEnabled:YES];
-        [alertTableView setUserInteractionEnabled:YES];
-        [alertTableView setAllowsSelection:YES];
-        [alertTableView setEditing:YES];
-        alertTableView.allowsSelectionDuringEditing = YES;
+        UIViewController *controller = [self controllerWithTableViewEditable:YES];
         [alert setValue:controller forKey:@"contentViewController"];
         UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
         [alert addAction:cancel];
@@ -725,6 +771,9 @@ BOOL alertShown;
     _fontSize = _abcView.textView.font.pointSize + (scale * 0.5);
     _abcView.textView.font = [UIFont systemFontOfSize:_fontSize];
     _abcView.textView.lineNumberFont = [UIFont systemFontOfSize:_fontSize*0.7];
+    if (_logEnabled) {
+        _logView.font = [UIFont systemFontOfSize:_fontSize];
+    }
 }
 
 - (IBAction)startHTTPserver:(UISwitch *)sender {
@@ -757,13 +806,14 @@ BOOL alertShown;
 - (void) viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
         [_measurePicker.pickerView removeFromSuperview];
         [_keyPicker.pickerView removeFromSuperview];
-    if (_keyboard)
-        [_abcView endEditing:YES];
+//    if (_keyboard)
+//        [_abcView endEditing:YES];
 }
 
 - (void)orientationChanged:(NSNotification *)notification{
     [self adjustViewsForOrientation:[[UIApplication sharedApplication] statusBarOrientation]];
     [[self view] setNeedsLayout];
+    [[self view] layoutSubviews];
 }
 
 - (void) adjustViewsForOrientation:(UIInterfaceOrientation) orientation {
@@ -793,49 +843,69 @@ BOOL alertShown;
     static NSString *cellIdentifier = @"cellIdentifier";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     if(cell == nil) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+        cell = [[UITableViewCell alloc] initWithStyle: (!decorationController) ? UITableViewCellStyleDefault : UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
     }
-    if (!_loadSFs) {
-        cell.textLabel.text = _abcDocuments[indexPath.row];
+    if (!decorationController) {
+        
+        if (!_loadSFs) {
+            cell.textLabel.text = _abcDocuments[indexPath.row];
+        }
+        else {
+            if (indexPath.row == 0) {
+                cell.textLabel.text = @"Default";
+            }
+            else cell.textLabel.text = _userSoundfonts[indexPath.row-1];
+        }
+        cell.textLabel.font = [UIFont systemFontOfSize:16];
     }
     else {
-        if (indexPath.row == 0) {
-            cell.textLabel.text = @"Default";
-        }
-        else cell.textLabel.text = _userSoundfonts[indexPath.row-1];
+        cell.textLabel.font=[UIFont boldSystemFontOfSize:10];
+        cell.detailTextLabel.font=[UIFont systemFontOfSize:5];
+        NSArray *decor = _decorations[indexPath.row];
+        cell.textLabel.text = decor[0];
+        cell.detailTextLabel.text = decor[1];
     }
-    cell.textLabel.font = [UIFont systemFontOfSize:16];
     return cell;
 }
 
 - (NSInteger)tableView:(nonnull UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if (!_loadSFs) {
-        return _abcDocuments.count;
+    if (!decorationController) {
+        if (!_loadSFs) {
+            return _abcDocuments.count;
+        }
+        else return _userSoundfonts.count + 1;
     }
-    else return _userSoundfonts.count + 1;
+    else return _decorations.count;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (!_loadSFs) {
-        [self dismissViewControllerAnimated:YES completion:nil];
-        _refreshButton.enabled = YES;
-        _saveButton.enabled = YES;
-        NSString *fileName = _abcDocuments[indexPath.row];
-        _logString = @"";
-        [self loadABCfileFromPath:[docsPath stringByAppendingPathComponent:fileName]];
+    if (!decorationController) {
+        if (!_loadSFs) {
+            [self dismissViewControllerAnimated:YES completion:nil];
+            _refreshButton.enabled = YES;
+            _saveButton.enabled = YES;
+            NSString *fileName = _abcDocuments[indexPath.row];
+            _logString = @"";
+            [self loadABCfileFromPath:[docsPath stringByAppendingPathComponent:fileName]];
+        }
+        else {
+            [self dismissViewControllerAnimated:YES completion:nil];
+            _mp = nil;
+            NSString *sfFile = [[NSString alloc] init];
+            if (indexPath.row == 0) {
+                sfFile = [[NSBundle mainBundle] pathForResource:@"32MbGMStereo" ofType:@"sf2" inDirectory:@"DefaultFiles"];
+            }
+            else sfFile = [docsPath stringByAppendingPathComponent: _userSoundfonts[indexPath.row-1]];
+            _soundfontUrl = [[NSURL alloc] initFileURLWithPath:sfFile];
+            _mp = [[midiPlayer alloc] initWithSoundFontURL:_soundfontUrl];
+            _mp.progressView = _playbackProgress;
+            _mp.delegate = self;
+        }
     }
     else {
+        NSArray *split = _decorations[indexPath.row];
+        [_abcView.textView replaceRange:_abcView.textView.selectedTextRange withText:split[0]];
         [self dismissViewControllerAnimated:YES completion:nil];
-        _mp = nil;
-        NSString *sfFile = [[NSString alloc] init];
-        if (indexPath.row == 0) {
-            sfFile = [[NSBundle mainBundle] pathForResource:@"32MbGMStereo" ofType:@"sf2" inDirectory:@"DefaultFiles"];
-        }
-        else sfFile = [docsPath stringByAppendingPathComponent: _userSoundfonts[indexPath.row-1]];
-        _soundfontUrl = [[NSURL alloc] initFileURLWithPath:sfFile];
-        _mp = [[midiPlayer alloc] initWithSoundFontURL:_soundfontUrl];
-        _mp.progressView = _playbackProgress;
-        _mp.delegate = self;
     }
 }
 
@@ -931,10 +1001,8 @@ BOOL alertShown;
     _userSoundfonts = [directory filteredArrayUsingPredicate:fltr];
 }
 
-- (IBAction)loadUserSoundFont:(id)sender {
-    _loadSFs = YES;
-    [self loadSf2Documents];
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"load soundfont-Tune:" message:@"to use your own sf2-files put them in the apps Shared Folder with iTunes." preferredStyle:UIAlertControllerStyleAlert];
+- (UIViewController *) controllerWithTableViewEditable: (BOOL) editable {
+    
     UIViewController *controller = [[UIViewController alloc]init];
     UITableView *alertTableView;
     CGRect rect;
@@ -967,8 +1035,18 @@ BOOL alertShown;
     [controller.view setUserInteractionEnabled:YES];
     [alertTableView setUserInteractionEnabled:YES];
     [alertTableView setAllowsSelection:YES];
-    [alertTableView setEditing:YES];
+    [alertTableView setEditing:editable];
     alertTableView.allowsSelectionDuringEditing = YES;
+    
+    return controller;
+}
+
+- (IBAction)loadUserSoundFont:(id)sender {
+    _loadSFs = YES;
+    decorationController = NO;
+    [self loadSf2Documents];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"load soundfont-Tune:" message:@"to use your own sf2-files put them in the apps Shared Folder with iTunes." preferredStyle:UIAlertControllerStyleAlert];
+    UIViewController *controller = [self controllerWithTableViewEditable:YES];
     [alert setValue:controller forKey:@"contentViewController"];
     UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
     [alert addAction:cancel];
@@ -988,7 +1066,7 @@ int printf(const char * __restrict format, ...) {
     NSLog(@"redirected printf: %@", log);
     _logString = [log stringByAppendingString:[NSString stringWithFormat:@"%@", _logString]];
     NSArray *lines = [_logString componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-    if (lines.count > 500) {
+    if (lines.count > 999) {
         NSString *cut = @"";
         for (int i = (int) lines.count - 50; i < lines.count; i++) {
             cut = [cut stringByAppendingString:[NSString stringWithFormat:@"\n%@", lines[i]]];
@@ -996,9 +1074,36 @@ int printf(const char * __restrict format, ...) {
         _logString = cut;
     }
     if (_logEnabled) {
-        _logView.text = _logString;
+        if (setLogString) {
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(endSkip) object: nil];
+        }
+        [self performSelector:@selector(setMutableLogString) withObject:nil afterDelay:0.2];
+        setLogString = YES;
     }
 }
+
+- (void) setMutableLogString {
+    NSMutableAttributedString *string;
+    string = [[NSMutableAttributedString alloc]initWithString:_logString];
+    NSArray *lines = [_logString componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+    for (NSString *line in lines) {
+        if ([line hasPrefix:@"error"]) {
+            //voices
+            NSRange range=[_logString rangeOfString:line];
+            [string addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:range];
+        }
+        else if ([line hasPrefix:@"warning"] || [line hasPrefix:@"Warning"]) {
+                //voices
+                NSRange range=[_logString rangeOfString:line];
+                [string addAttribute:NSForegroundColorAttributeName value:[UIColor orangeColor] range:range];
+            }
+    }
+    [_logView setAttributedText:string];
+    _logView.font = [UIFont systemFontOfSize:_fontSize];
+    setLogString = NO;
+}
+
+BOOL setLogString;
 
 - (IBAction)enableLog:(UISwitch*)sender {
     _logEnabled = sender.isOn;
@@ -1006,7 +1111,7 @@ int printf(const char * __restrict format, ...) {
     [UIView animateWithDuration:0.5 animations:^{
         self->_logHeight.constant = self->_logEnabled ? 80 : 0;
         if (self->_logEnabled) {
-            self->_logView.text = self->_logString;
+            [self setMutableLogString];
         }
         [self.view layoutIfNeeded];
     } completion:^(BOOL finished) {
@@ -1031,6 +1136,13 @@ int printf(const char * __restrict format, ...) {
                                    destructiveButtonTitle:nil
                                    otherButtonTitles:@"Export via File Sharing", @"Export via Email", nil];
     [actionSheet showInView:self.view];
+}
+
+- (IBAction)clearLog:(id)sender {
+    _logString = @"";
+    if (_logEnabled) {
+        [self setMutableLogString];
+    }
 }
 
 - (IBAction)skip:(UISegmentedControl *)sender {

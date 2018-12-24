@@ -28,6 +28,7 @@
 		4A2D7DD3214EBBCE005FB580 /* abConduct_iOSTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DD2214EBBCE005FB580 /* abConduct_iOSTests.m */; };
 		4A2D7DDE214EBBCF005FB580 /* abConduct_iOSUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DDD214EBBCF005FB580 /* abConduct_iOSUITests.m */; };
 		4A3C598C218A18AE00AD9A62 /* stresspat.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A3C598B218A18AE00AD9A62 /* stresspat.c */; };
+		4A4C07FB21CFA6AD00FCF89B /* decorations.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4A4C07FA21CFA6AD00FCF89B /* decorations.txt */; };
 		4A596582215C300300F226A5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A596581215C300300F226A5 /* Foundation.framework */; };
 		4A6743822150012400886D97 /* DefaultFiles in Resources */ = {isa = PBXBuildFile; fileRef = 4A6743812150012400886D97 /* DefaultFiles */; };
 		4A74251A2163F282001C7466 /* abcparse.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A7425052163F281001C7466 /* abcparse.c */; };
@@ -155,6 +156,7 @@
 		4A2D7DDF214EBBCF005FB580 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A3A9B332150081E009757BC /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		4A3C598B218A18AE00AD9A62 /* stresspat.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = stresspat.c; sourceTree = "<group>"; };
+		4A4C07FA21CFA6AD00FCF89B /* decorations.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = decorations.txt; sourceTree = "<group>"; };
 		4A596581215C300300F226A5 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		4A6743812150012400886D97 /* DefaultFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = DefaultFiles; sourceTree = "<group>"; };
 		4A7425052163F281001C7466 /* abcparse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = abcparse.c; sourceTree = "<group>"; };
@@ -365,6 +367,7 @@
 				4A2D7DC4214EBBCE005FB580 /* LaunchScreen.storyboard */,
 				4A2D7DC7214EBBCE005FB580 /* Info.plist */,
 				4A2D7DC8214EBBCE005FB580 /* main.m */,
+				4A4C07FA21CFA6AD00FCF89B /* decorations.txt */,
 			);
 			path = abConduct_iOS;
 			sourceTree = "<group>";
@@ -703,6 +706,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A4C07FB21CFA6AD00FCF89B /* decorations.txt in Resources */,
 				4A01846921A73E20008455BF /* Main.storyboard in Resources */,
 				4ABD9E2B2150736C00CA5CD4 /* About.txt in Resources */,
 				4ABD9E202150736C00CA5CD4 /* LICENSE.txt in Resources */,

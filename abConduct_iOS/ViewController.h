@@ -20,6 +20,7 @@
 @property (weak, nonatomic) IBOutlet UIButton *saveButton;
 @property (weak, nonatomic) IBOutlet UIWebView *displayView;
 @property (assign, nonatomic) IBOutlet LineNumberTextViewWrapper* abcView;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *abcViewBottom;
 - (IBAction)moveHorizontalStack:(UIPanGestureRecognizer *)sender;
 - (IBAction)toggleLogExpansion:(id)sender;
 - (IBAction)expandLog:(UIPanGestureRecognizer *)sender;
@@ -49,6 +50,10 @@
 @property (weak, nonatomic) IBOutlet UISwitch *codeHighlightingSwitch;
 @property (weak, nonatomic) IBOutlet UIProgressView *playbackProgress;
 - (IBAction)exportDocument:(id)sender;
+- (IBAction)clearLog:(id)sender;
+@property (weak, nonatomic) IBOutlet UIButton *sfButton;
+@property (weak, nonatomic) IBOutlet UISegmentedControl *skipControl;
+@property (weak, nonatomic) IBOutlet UIButton *exportButton;
 
 - (IBAction)skip:(UISegmentedControl *)sender;
 

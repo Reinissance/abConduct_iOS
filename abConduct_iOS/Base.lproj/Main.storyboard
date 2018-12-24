@@ -24,6 +24,7 @@
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OAB-hr-G1X">
                                 <rect key="frame" x="2" y="2" width="371" height="0.0"/>
                                 <color key="backgroundColor" red="0.8505141058100989" green="0.85322810913705582" blue="0.6809825985964908" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <gestureRecognizers/>
                                 <constraints>
                                     <constraint firstAttribute="height" id="fta-ha-AR5"/>
                                 </constraints>
@@ -34,6 +35,7 @@
                                 <connections>
                                     <outletCollection property="gestureRecognizers" destination="PLz-N6-Yi7" appends="YES" id="dFE-ZT-Tbk"/>
                                     <outletCollection property="gestureRecognizers" destination="FoD-hb-i6Z" appends="YES" id="NFZ-Ih-cVq"/>
+                                    <outletCollection property="gestureRecognizers" destination="jTa-hB-nuo" appends="YES" id="tZc-oA-9Wm"/>
                                 </connections>
                             </textView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FEd-eI-mc2" customClass="UIWebView">
@@ -119,7 +121,7 @@
                                             <action selector="buttonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="dle-sd-3AV"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kgb-p4-1FJ">
+                                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kgb-p4-1FJ">
                                         <rect key="frame" x="0.0" y="36" width="62" height="31"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
@@ -130,7 +132,7 @@
                                             <action selector="loadUserSoundFont:" destination="BYZ-38-t0r" eventType="touchUpInside" id="wZe-N5-41q"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XL2-IQ-aWj">
+                                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XL2-IQ-aWj">
                                         <rect key="frame" x="70" y="36" width="42" height="31"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -145,7 +147,7 @@
                                             <action selector="exportMIDI:" destination="BYZ-38-t0r" eventType="touchUpInside" id="G5Y-0l-v1h"/>
                                         </connections>
                                     </button>
-                                    <segmentedControl opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" momentary="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xFA-BN-ybe">
+                                    <segmentedControl hidden="YES" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" momentary="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xFA-BN-ybe">
                                         <rect key="frame" x="120" y="36" width="54" height="29"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <segments>
@@ -157,14 +159,14 @@
                                             <action selector="skip:" destination="BYZ-38-t0r" eventType="valueChanged" id="F3h-az-054"/>
                                         </connections>
                                     </segmentedControl>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="httpServer: " textAlignment="right" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RVD-w4-2a0" userLabel="httpServer:">
+                                    <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="httpServer: " textAlignment="right" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RVD-w4-2a0" userLabel="httpServer:">
                                         <rect key="frame" x="176" y="36" width="132" height="31"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="10"/>
                                         <color key="textColor" red="0.59087597150259064" green="0.083706301694732241" blue="0.00083540938891586355" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="ehj-Sv-QLz">
+                                    <switch hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="ehj-Sv-QLz">
                                         <rect key="frame" x="316" y="36" width="49" height="31"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <color key="onTintColor" red="0.59087597150000004" green="0.083706301689999998" blue="0.00083540938890000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -173,7 +175,7 @@
                                             <action selector="startHTTPserver:" destination="BYZ-38-t0r" eventType="valueChanged" id="STp-aR-IHc"/>
                                         </connections>
                                     </switch>
-                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nHV-hQ-74Z">
+                                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nHV-hQ-74Z">
                                         <rect key="frame" x="8" y="75" width="48" height="31"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
@@ -184,14 +186,14 @@
                                             <action selector="exportDocument:" destination="BYZ-38-t0r" eventType="touchUpInside" id="HTX-Zf-U2z"/>
                                         </connections>
                                     </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" fixedFrame="YES" text="enable Log" textAlignment="right" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IR0-i0-scg">
+                                    <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" fixedFrame="YES" text="enable Log" textAlignment="right" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IR0-i0-scg">
                                         <rect key="frame" x="64" y="75" width="49" height="31"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="10"/>
                                         <color key="textColor" red="0.68776311528497414" green="0.39774619150305374" blue="0.0061131145703777166" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="bka-uE-hla">
+                                    <switch hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="bka-uE-hla">
                                         <rect key="frame" x="121" y="75" width="49" height="31"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <color key="onTintColor" red="0.68776311530000001" green="0.39774619150000001" blue="0.0061131145699999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -200,14 +202,14 @@
                                             <action selector="enableLog:" destination="BYZ-38-t0r" eventType="valueChanged" id="cg0-Lg-9XE"/>
                                         </connections>
                                     </switch>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="abc-code highlighting enabled" textAlignment="right" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nBJ-Cx-Qga" userLabel="codeHighlighting">
+                                    <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="abc-code highlighting enabled" textAlignment="right" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nBJ-Cx-Qga" userLabel="codeHighlighting">
                                         <rect key="frame" x="176" y="75" width="132" height="31"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="10"/>
                                         <color key="textColor" red="0.13451833504162855" green="0.13303502236709197" blue="0.59087597150000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HLm-kM-Uuk" userLabel="codeHighlighting">
+                                    <switch hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HLm-kM-Uuk" userLabel="codeHighlighting">
                                         <rect key="frame" x="316" y="75" width="49" height="31"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <color key="onTintColor" red="0.13451833499999999" green="0.13303502240000001" blue="0.59087597150000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -216,7 +218,7 @@
                                             <action selector="codeHighlightingEnabled:" destination="BYZ-38-t0r" eventType="valueChanged" id="rnK-Az-LaJ"/>
                                         </connections>
                                     </switch>
-                                    <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CUu-St-wLP">
+                                    <progressView hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CUu-St-wLP">
                                         <rect key="frame" x="8" y="28" width="355" height="2"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <color key="progressTintColor" red="1" green="0.14913141730000001" blue="0.0" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
@@ -233,7 +235,7 @@
                                 </connections>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pIA-gg-GSJ" customClass="LineNumberTextViewWrapper">
-                                <rect key="frame" x="0.0" y="518" width="375" height="149"/>
+                                <rect key="frame" x="0.0" y="518" width="375" height="147"/>
                                 <color key="backgroundColor" red="0.84449886659999995" green="0.81380043570000005" blue="0.74954892949999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <connections>
@@ -245,28 +247,29 @@
                         <constraints>
                             <constraint firstItem="6n9-9r-dO9" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="2" id="1pn-dT-HF3"/>
                             <constraint firstAttribute="trailing" secondItem="FEd-eI-mc2" secondAttribute="trailing" constant="2" id="5Bu-hU-2KF"/>
-                            <constraint firstItem="bSk-EN-ZS8" firstAttribute="top" secondItem="pIA-gg-GSJ" secondAttribute="bottom" id="8Gg-Al-8AQ"/>
                             <constraint firstItem="OAB-hr-G1X" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="2" id="CnQ-xa-VvS"/>
                             <constraint firstItem="pIA-gg-GSJ" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="FAB-eH-ekM"/>
                             <constraint firstItem="FEd-eI-mc2" firstAttribute="top" secondItem="OAB-hr-G1X" secondAttribute="bottom" constant="2" id="FkX-O0-1ao"/>
                             <constraint firstItem="OAB-hr-G1X" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" constant="2" id="JPH-25-SWH"/>
                             <constraint firstItem="pIA-gg-GSJ" firstAttribute="top" secondItem="6n9-9r-dO9" secondAttribute="bottom" constant="2" id="Jjz-Z5-zCx"/>
-                            <constraint firstItem="FEd-eI-mc2" firstAttribute="top" secondItem="OAB-hr-G1X" secondAttribute="bottom" constant="2" id="OdI-I7-wPc"/>
                             <constraint firstAttribute="trailing" secondItem="pIA-gg-GSJ" secondAttribute="trailing" id="PKj-OU-sN7"/>
                             <constraint firstAttribute="trailing" secondItem="OAB-hr-G1X" secondAttribute="trailing" constant="2" id="aGy-Ew-lG7"/>
                             <constraint firstAttribute="trailing" secondItem="6n9-9r-dO9" secondAttribute="trailing" constant="2" id="cth-Bw-cZo"/>
                             <constraint firstItem="FEd-eI-mc2" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="2" id="j31-B3-pGC"/>
-                            <constraint firstItem="6n9-9r-dO9" firstAttribute="top" secondItem="FEd-eI-mc2" secondAttribute="bottom" constant="2" id="k6O-hL-sJe"/>
                             <constraint firstItem="6n9-9r-dO9" firstAttribute="top" secondItem="FEd-eI-mc2" secondAttribute="bottom" constant="2" id="uJO-3A-GEf"/>
+                            <constraint firstItem="bSk-EN-ZS8" firstAttribute="top" secondItem="pIA-gg-GSJ" secondAttribute="bottom" constant="2" id="vWz-es-2b9"/>
                         </constraints>
                     </view>
+                    <extendedEdge key="edgesForExtendedLayout" top="YES"/>
                     <connections>
                         <outlet property="abcView" destination="pIA-gg-GSJ" id="1f4-bE-U1n"/>
+                        <outlet property="abcViewBottom" destination="vWz-es-2b9" id="grp-uU-SxS"/>
                         <outlet property="buttonViewHeight" destination="19Z-L1-mKM" id="9SG-n3-sH7"/>
                         <outlet property="codeHighlightingLabel" destination="nBJ-Cx-Qga" id="5HF-QL-Kj7"/>
                         <outlet property="codeHighlightingSwitch" destination="HLm-kM-Uuk" id="wwK-UT-FOa"/>
                         <outlet property="displayHeight" destination="bac-Ef-hLX" id="6Jx-j6-JNI"/>
                         <outlet property="displayView" destination="FEd-eI-mc2" id="SLA-yG-dZK"/>
+                        <outlet property="exportButton" destination="nHV-hQ-74Z" id="uhR-4N-wvr"/>
                         <outlet property="logHeight" destination="fta-ha-AR5" id="3rk-7E-wJP"/>
                         <outlet property="logSwitch" destination="bka-uE-hla" id="Ecl-JU-OE3"/>
                         <outlet property="logSwitchLabel" destination="IR0-i0-scg" id="g8S-B0-I4O"/>
@@ -277,6 +280,8 @@
                         <outlet property="saveButton" destination="5W3-nD-gap" id="nRn-9m-Cdt"/>
                         <outlet property="serverLabel" destination="RVD-w4-2a0" id="HXT-wM-f5N"/>
                         <outlet property="serverSwitch" destination="ehj-Sv-QLz" id="xrM-br-LsR"/>
+                        <outlet property="sfButton" destination="kgb-p4-1FJ" id="OsJ-3n-wx8"/>
+                        <outlet property="skipControl" destination="xFA-BN-ybe" id="4xh-R0-c7u"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -308,6 +313,11 @@
                 <tapGestureRecognizer numberOfTapsRequired="2" id="zcZ-me-i1g">
                     <connections>
                         <action selector="buttonViewSizeToggle:" destination="BYZ-38-t0r" id="Q7j-u6-aeZ"/>
+                    </connections>
+                </tapGestureRecognizer>
+                <tapGestureRecognizer numberOfTapsRequired="2" numberOfTouchesRequired="2" id="jTa-hB-nuo">
+                    <connections>
+                        <action selector="clearLog:" destination="BYZ-38-t0r" id="28l-vF-PGP"/>
                     </connections>
                 </tapGestureRecognizer>
             </objects>
