@@ -1,3 +1,8 @@
+!>!; accent (> mark)
+!accent!; same as !>!
+!emphasis!; same as !>!
+!^!; marcato (inverted V)
+!marcato!; same as !^!
 !trill!; "tr" (trill mark)
 !trill(!; start of an extended trill
 !trill)!; end of an extended trill
@@ -11,14 +16,6 @@
 !invertedturn!; an inverted turn mark
 !invertedturnx!; an inverted turn mark with a line through it
 !arpeggio!; vertical squiggle
-!>!; accent (> mark)
-!accent!; same as !>!
-!emphasis!; same as !>!
-!^!; marcato (inverted V)
-!marcato!; same as !^!
-!fermata!; fermata or hold (arc above dot)
-!invertedfermata!; upside down fermata
-!tenuto!; horizontal line to indicate holding note for full duration
 !0!; fingerings
 !1!; fingerings
 !2!; fingerings
@@ -35,36 +32,6 @@
 !open!; small circle above note indicating open string or harmonic
 !thumb!; cello thumb symbol
 !breath!; a breath mark (apostrophe-like) after note
-!pppp!; dynamics mark
-!ppp!; dynamics mark
-!pp!; dynamics mark
-!p!; dynamics mark
-!mp!; dynamics mark
-!mf!; dynamics mark
-!f!; dynamics mark
-!ff!; dynamics mark
-!fff!; dynamics mark
-!ffff!; dynamics mark
-!sfz!; dynamics mark
-!crescendo(!; start of a < crescendo mark
-!<(!; same as !crescendo(!
-!crescendo)!; end of a < crescendo mark, placed after the last note
-!<)!; same as !crescendo)!
-!diminuendo(!; start of a > diminuendo mark
-!>(!; same as !diminuendo(!
-!diminuendo)!; end of a > diminuendo mark, placed after the last note
-!>)!; same as !diminuendo)!
-!segno!; 2 ornate s-like symbols separated by a diagonal line
-!coda!; a ring with a cross in it
-!D.S.!; the letters D.S. (=Da Segno)
-!D.S.alcoda!; the words "D.S. al coda"
-!D.S.alfine!; the words "D.S. al fine"
-!D.C.!; the letters D.C. (=either Da Coda or Da Capo)
-!D.C.alcoda!; the words "D.C. al coda"
-!D.C.alfine!; the words "D.C. al fine"
-!dacoda!; the word "Da" followed by a Coda sign
-!dacapo!; the words "Da Capo"
-!fine!; the word "fine"
 !shortphrase!; vertical line on the upper part of the staff
 !mediumphrase!; same, but extending down to the centre line
 !longphrase!; same, but extending 3/4 of the way down

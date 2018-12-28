@@ -30,12 +30,14 @@
 @property BOOL codeHighlighting;
 @property arrayPicker *keyPicker;
 @property arrayPicker *measurePicker;
+@property arrayPicker *instrumentsPicker;
 @property NSArray *abcDocuments;
 @property NSArray *userSoundfonts;
 @property NSMutableArray *decorations;
 @property NSString *createFileName;
 @property NSString *createFileComposer;
 @property NSString *createFileLength;
+@property NSString *createFileVoices;
 @property midiPlayer *mp;
 @property NSURL *soundfontUrl;
 @property BOOL loadSFs;
@@ -123,12 +125,16 @@
                       [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                         [[UIBarButtonItem alloc] initWithTitle: @"decorations" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                      [[UIBarButtonItem alloc] initWithTitle: @"dynamics" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                      [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                      [[UIBarButtonItem alloc] initWithTitle: @"structure" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                      [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                         [[UIBarButtonItem alloc] initWithTitle: @"undo" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                       [[UIBarButtonItem alloc] initWithTitle: @"redo" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                       [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                       ];
-    toolbar.frame = CGRectMake(0, 0, self.view.frame.size.height, 44);
+    toolbar.frame = CGRectMake(0, 0, 1000, 44);
     toolbar.autoresizingMask = UIViewAutoresizingNone;
     UIScrollView *toolScroll = [[UIScrollView alloc] initWithFrame:toolbar.frame];
     toolScroll.contentSize = toolbar.frame.size;
@@ -138,14 +144,131 @@
     
     NSMutableArray *items = [[[UIMenuController sharedMenuController] menuItems] mutableCopy];
     if (!items) items = [[NSMutableArray alloc] init];
-    UIMenuItem *menuItem;
-    menuItem = [[UIMenuItem alloc] initWithTitle:@"transpose" action:@selector(transpose:)];
-    [items addObject:menuItem];
+//    UIMenuItem *transposeItem;
+//    transposeItem = [[UIMenuItem alloc] initWithTitle:@"transpose" action:@selector(transpose:)];
+//    [items addObject:transposeItem];
+    UIMenuItem *instItem;
+    instItem = [[UIMenuItem alloc] initWithTitle:@"change program" action:@selector(changeProgram: inRange:)];
+    [items addObject:instItem];
+    UIMenuItem *drummapItem;
+    drummapItem = [[UIMenuItem alloc] initWithTitle:@"drummap" action:@selector(changeDrummap: inRange:)];
+    [items addObject:drummapItem];
     [[UIMenuController sharedMenuController] setMenuItems:items];
+}
+
+- (void) changeProgram: (NSString *) lineString inRange: (NSRange) lineRange  {
+    NSLog(@"Now show the instrumentWheel");
+    NSArray *words;
+    float number = 0;
+    if (lineString.class != UIMenuController.class) {
+        words = [lineString componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        NSNumberFormatter *nf = [[NSNumberFormatter alloc] init];
+        if (words.count > 2 && [nf numberFromString:words[2]] != nil) {
+            number = [words[2] floatValue];
+        }
+    }
+    else lineRange = _abcView.textView.selectedRange;
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Select instrument:" message:@"\n\n\n\n\n" preferredStyle:UIAlertControllerStyleAlert];
+    NSError *error = nil;
+    NSString *insts = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"midiInstruments" ofType:@"txt"] encoding:NSUTF8StringEncoding error:&error];
+    if (error) {
+        NSLog(@"couldn't read instrumentFile: %@", error.localizedFailureReason);
+    }
+    NSArray *instruments = [insts componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+    _instrumentsPicker = [[arrayPicker alloc] initWithArray:instruments frame:CGRectMake(40, 50, 200, 80) andTextColour:[UIColor brownColor]];
+    [alertController.view addSubview:_instrumentsPicker.pickerView];
+    UIAlertAction *selectAction = [UIAlertAction actionWithTitle:@"select" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        NSString *instName = instruments[[self->_instrumentsPicker.pickerView selectedRowInComponent:0]];
+        NSString *replaceString = [@"\%\%" stringByAppendingString:[NSString stringWithFormat:@"MIDI program %ld", (long)[self->_instrumentsPicker.pickerView selectedRowInComponent:0]]];
+        replaceString = [[replaceString stringByAppendingString:@" \%"] stringByAppendingString:instName];
+        [self setColouredCodeFromString:[self->_abcView.textView.text stringByReplacingCharactersInRange:lineRange withString:replaceString]];
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }];
+    [_instrumentsPicker.pickerView selectRow:number inComponent:0 animated:NO];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {}];
+    [alertController addAction:selectAction];
+    [alertController addAction:cancelAction];
+    [self presentViewController:alertController animated:YES completion:nil];
+}
+
+
+- (void) changeDrummap: (NSString *) lineString inRange: (NSRange) lineRange  {
+    NSLog(@"Now show the drummap");
+    NSArray *words;
+    float number = 0;
+    NSString *note = @"F";
+    if (lineString.class != UIMenuController.class) {
+        words = [lineString componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        NSNumberFormatter *nf = [[NSNumberFormatter alloc] init];
+        if (words.count > 3 && [nf numberFromString:words[3]] != nil) {
+            number = [words[3] floatValue]-36;
+            note = words[2];
+        }
+    }
+    else lineRange = _abcView.textView.selectedRange;
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"add drummap:" message:@"select note and drumsound:\n\n\n\n" preferredStyle:UIAlertControllerStyleAlert];
+    NSError *error = nil;
+    NSString *snds = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"drummapSounds" ofType:@"txt"] encoding:NSUTF8StringEncoding error:&error];
+    if (error) {
+        NSLog(@"couldn't read instrumentFile: %@", error.localizedFailureReason);
+    }
+    NSArray *notes = [[NSArray alloc] initWithObjects:@"_C", @"C", @"^C", @"_D", @"D", @"^D", @"_E", @"E", @"^E", @"_F", @"F", @"^F", @"_G", @"G", @"^G", @"_A", @"A", @"^A", @"_B", @"B", @"^B", @"_c", @"c", @"^c", @"_d", @"d", @"^d", @"_e", @"e", @"^e", @"_f", @"f", @"^f", @"_g", @"g", @"^g", @"_a", @"a", @"^a", @"_b", @"b", @"^b", @"_c'", @"c'", @"^c'", nil];
+    NSArray *sounds = [snds componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+    _instrumentsPicker = [[arrayPicker alloc] initWithFirstArray:notes secondArray:sounds frame:CGRectMake(40, 50, 200, 80) andTextColour:[UIColor brownColor]];
+    [alertController.view addSubview:_instrumentsPicker.pickerView];
+    UIAlertAction *selectAction = [UIAlertAction actionWithTitle:@"done" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        NSString *selectedNote = notes[[self->_instrumentsPicker.pickerView selectedRowInComponent:0]];
+        NSString *soundName = sounds[[self->_instrumentsPicker.pickerView selectedRowInComponent:1]];
+        NSString *replaceString = [@"\%\%" stringByAppendingString:[NSString stringWithFormat:@"MIDI drummap %@ %ld", selectedNote, (long)[self->_instrumentsPicker.pickerView selectedRowInComponent:1]+36]];
+        replaceString = [[replaceString stringByAppendingString:@" \%"] stringByAppendingString:soundName];
+        [self setColouredCodeFromString:[self->_abcView.textView.text stringByReplacingCharactersInRange:lineRange withString:replaceString]];
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }];
+    [_instrumentsPicker.pickerView selectRow:[notes indexOfObject:note] inComponent:0 animated:NO];
+    [_instrumentsPicker.pickerView selectRow:number inComponent:1 animated:NO];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {}];
+    [alertController addAction:selectAction];
+    [alertController addAction:cancelAction];
+    [self presentViewController:alertController animated:YES completion:nil];
 }
 
 - (void) viewWillAppear:(BOOL)animated {
     [self.view layoutIfNeeded];
+    [_abcView.textView addObserver:self forKeyPath:@"selectedTextRange" options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld context:nil];
+}
+
+- (void) observeValueForKeyPath: (NSString*) keyPath ofObject: (id) object change: (NSDictionary *) change context: (void *) context {
+    if ([keyPath isEqualToString:@"selectedTextRange"] && _abcView.textView == object) {
+        NSRange lineRange = [self selectedLineRange];
+        NSString *selectedLine = [_abcView.textView.text substringWithRange:lineRange];
+        if (selectedLine.length >= 14) {
+            if ([[selectedLine substringToIndex:14] isEqualToString:@"%%MIDI program"]) {
+                [self changeProgram:selectedLine inRange: lineRange];
+            }
+            else if ([[selectedLine substringToIndex:14] isEqualToString:@"%%MIDI control"]) {
+//            TODO: show controlSlider
+            }
+            else if ([[selectedLine substringToIndex:14] isEqualToString:@"%%MIDI drummap"]) {
+                //            TODO: show drumMap selector
+                [self changeDrummap:selectedLine inRange:lineRange];
+            }
+        }
+    }
+}
+
+- (NSRange) selectedLineRange {
+    UITextRange *caretPositionRange = _abcView.textView.selectedTextRange;
+    UITextPosition *pos = caretPositionRange.start;
+    id<UITextInputTokenizer> tokenizer = [_abcView.textView tokenizer];
+    UITextPosition *startOfLine = [tokenizer positionFromPosition:pos toBoundary:UITextGranularityLine inDirection:UITextStorageDirectionBackward];
+    UITextPosition *endOfLine = [tokenizer positionFromPosition:pos toBoundary:UITextGranularityLine inDirection:UITextStorageDirectionForward];
+    NSRange lineRange = _abcView.textView.selectedRange;
+    if (startOfLine != nil && endOfLine != nil && startOfLine != endOfLine) {
+        NSUInteger startPosition = [_abcView.textView offsetFromPosition:_abcView.textView.beginningOfDocument toPosition:startOfLine];
+        NSUInteger endPosition = [_abcView.textView offsetFromPosition:_abcView.textView.beginningOfDocument toPosition:endOfLine];
+        lineRange = NSMakeRange(startPosition, endPosition-startPosition);
+    }
+    return lineRange;
 }
 
 - (void) transpose: (NSString *) menuController {
@@ -173,7 +296,7 @@
 }
 
 - (BOOL) canPerformAction:(SEL)action withSender:(id)sender {
-    if (action == @selector(copy:) || action == @selector(cut:) || action == @selector(transpose:) || action == @selector(select:) || action == @selector(selectAll:) || action == @selector(paste:)) {
+    if (action == @selector(copy:) || action == @selector(cut:) || action == @selector(transpose:) || action == @selector(select:) || action == @selector(selectAll:) || action == @selector(paste:) || action == @selector(changeProgram:inRange:) || action == @selector(changeDrummap:inRange:)) {
         return YES;
     }
     else return NO;
@@ -188,24 +311,25 @@ BOOL decorationController;
     else if ([item.title isEqualToString:@"redo"]) {
         [_abcView.textView.undoManager redo];
     }
-    else if ([item.title isEqualToString:@"decorations"]) {
-        //        TODO: special musical symbols
+    else if ([item.title isEqualToString:@"decorations"] || [item.title isEqualToString:@"dynamics"] || [item.title isEqualToString:@"structure"]) {
         if (!_decorations) {
             _decorations = [NSMutableArray array];
-            NSError *error = nil;
-            NSString *decos = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"decorations" ofType:@"txt"] encoding:NSUTF8StringEncoding error:&error];
-            if (error) {
-                NSLog(@"couldn't read decorationsFile: %@", error.localizedFailureReason);
-            }
-            NSArray *lines = [decos componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-            for (NSString *line in lines) {
-                if ([line isEqualToString:@""]) return;
+        }
+        else [_decorations removeAllObjects];
+        NSError *error = nil;
+        NSString *decos = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:[NSString stringWithFormat:@"%@", item.title] ofType:@"txt"] encoding:NSUTF8StringEncoding error:&error];
+        if (error) {
+            NSLog(@"couldn't read decorationsFile: %@", error.localizedFailureReason);
+        }
+        NSArray *lines = [decos componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+        for (NSString *line in lines) {
+            if (![line isEqualToString:@""]) {
                 NSArray *split = [line componentsSeparatedByString:@";"];
                 [_decorations addObject:split];
             }
         }
         decorationController = YES;
-        UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:@"Decorations:" message:@"chose a musical symbol to insert." preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat:@"%@", item.title] message:@"chose a musical symbol to insert." preferredStyle:UIAlertControllerStyleAlert];
         UIViewController *controller = [self controllerWithTableViewEditable:NO];
         [actionSheet setValue:controller forKey:@"contentViewController"];
         UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
@@ -235,7 +359,6 @@ BOOL decorationController;
             [UIView animateWithDuration:keyboardAnimationDuration*1.5 animations:^{
                 CGPoint newContentOffset = CGPointMake(self->_abcView.textView.contentOffset.x, self->_abcView.textView.contentOffset.y + keyboardHeight);
                 [self->_abcView.textView setContentOffset:newContentOffset animated:YES];
-//                self->_abcView.frame = CGRectMake(self->_abcView.frame.origin.x ,self->_abcView.frame.origin.y, self->_abcView.frame.size.width, self->_abcView.frame.size.height-keyboardHeight);
             }];
         }_abcViewBottom.constant = keyboardHeight + 2;
         [self.view layoutIfNeeded];
@@ -664,6 +787,7 @@ BOOL alertShown;
 - (void) createNewFile {
     _createFileComposer = @"";
     _createFileLength = @"";
+    _createFileVoices = @"";
     BOOL landscape = [[UIDevice currentDevice] orientation] == UIDeviceOrientationLandscapeLeft || [[UIDevice currentDevice] orientation] == UIDeviceOrientationLandscapeRight;
     alert = [UIAlertController alertControllerWithTitle:@"create new abc-Code file:" message:(!landscape) ? @"please specify at least file-name (used as title) and key for your new tune.\n\n\n\n\n" :@"please specify at least the file-name (used as title) for your new tune (rotate device to change default key of 'C')\n" preferredStyle:UIAlertControllerStyleAlert];
     NSArray *Keys = @[@"C#", @"F#", @"B", @"E", @"A", @"D", @"G", @"C", @"F", @"Bb", @"Eb", @"Ab", @"Db", @"Gb"];
@@ -697,9 +821,16 @@ BOOL alertShown;
         [noteLength addTarget:self action:@selector(textDidChange:) forControlEvents:UIControlEventEditingChanged];
     }];
     alert.textFields[2].tag = 2;
+    [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull voices) {
+        voices.placeholder = @"enter voicenames here";
+        voices.clearButtonMode = UITextFieldViewModeWhileEditing;
+        voices.borderStyle = UITextBorderStyleRoundedRect;
+        [voices addTarget:self action:@selector(textDidChange:) forControlEvents:UIControlEventEditingChanged];
+    }];
+    alert.textFields[3].tag = 3;
     UIAlertAction *create = [UIAlertAction actionWithTitle:@"create File" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
         BOOL extension = ((self->_createFileName.length > 4) && [[self->_createFileName substringFromIndex:self->_createFileName.length-4] isEqualToString:@".abc"]);
-        NSString *createAbcFileString = [NSString stringWithFormat:@"X:1\n%@\nT:%@\n", [NSString stringWithFormat:@"%@ Voice1 %@ scale=0.7", @"\%\%staves", @"\%Voice1"], (extension) ? [self->_createFileName substringToIndex:self->_createFileName.length-4] : self->_createFileName];
+        NSString *createAbcFileString = [NSString stringWithFormat:@"X:1\n%@\nT:%@\n", [NSString stringWithFormat:@"%@ %@ %@ scale=0.7", @"\%\%staves", self->_createFileVoices, @"\%Partitur"], (extension) ? [self->_createFileName substringToIndex:self->_createFileName.length-4] : self->_createFileName];
         if (![self->_createFileComposer isEqualToString:@""]) {
             createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"C:%@\n", self->_createFileComposer]];
         }
@@ -709,7 +840,10 @@ BOOL alertShown;
         createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"M:%@\n", Measures[[self->_measurePicker.pickerView selectedRowInComponent:0]]]];
         createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"K:%@\n", Keys[[self->_keyPicker.pickerView selectedRowInComponent:0]]]];
         NSLog(@"file created: %@", createAbcFileString);
-        createAbcFileString = [createAbcFileString stringByAppendingString: @"V:Voice1\n\%start writing your tune here:\n"];
+        NSArray *createVoices = [self->_createFileVoices componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        for (NSString *createVoice in createVoices) {
+            createAbcFileString = [[[[createAbcFileString stringByAppendingString: @"V:"] stringByAppendingString:[NSString stringWithFormat:@"%@\n", createVoice]] stringByAppendingString:@"\%start writing voice "] stringByAppendingString:[NSString stringWithFormat:@"%@ here:\n", createVoice]];
+        }
         [self setColouredCodeFromString: createAbcFileString];
         NSError *error;
         NSString *path = [docsPath stringByAppendingPathComponent:[self->_createFileName stringByReplacingOccurrencesOfString:@" " withString:@"_"]];
@@ -763,6 +897,9 @@ BOOL alertShown;
             textField.text = [textField.text stringByAppendingString:@"/"];
         }
         _createFileLength = textField.text;
+    }
+    else if (textField.tag == 3) {
+        _createFileVoices = textField.text;
     }
 }
 

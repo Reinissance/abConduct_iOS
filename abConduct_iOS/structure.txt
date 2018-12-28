@@ -1,0 +1,14 @@
+!fermata!; fermata or hold (arc above dot)
+!invertedfermata!; upside down fermata
+!tenuto!; horizontal line to indicate holding note for full duration
+!segno!; 2 ornate s-like symbols separated by a diagonal line
+!coda!; a ring with a cross in it
+!D.S.!; the letters D.S. (=Da Segno)
+!D.S.alcoda!; the words "D.S. al coda"
+!D.S.alfine!; the words "D.S. al fine"
+!D.C.!; the letters D.C. (=either Da Coda or Da Capo)
+!D.C.alcoda!; the words "D.C. al coda"
+!D.C.alfine!; the words "D.C. al fine"
+!dacoda!; the word "Da" followed by a Coda sign
+!dacapo!; the words "Da Capo"
+!fine!; the word "fine"

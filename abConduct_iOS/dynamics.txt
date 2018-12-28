@@ -1,0 +1,19 @@
+!pppp!; dynamics mark
+!ppp!; dynamics mark
+!pp!; dynamics mark
+!p!; dynamics mark
+!mp!; dynamics mark
+!mf!; dynamics mark
+!f!; dynamics mark
+!ff!; dynamics mark
+!fff!; dynamics mark
+!ffff!; dynamics mark
+!sfz!; dynamics mark
+!crescendo(!; start of a < crescendo mark
+!<(!; same as !crescendo(!
+!crescendo)!; end of a < crescendo mark, placed after the last note
+!<)!; same as !crescendo)!
+!diminuendo(!; start of a > diminuendo mark
+!>(!; same as !diminuendo(!
+!diminuendo)!; end of a > diminuendo mark, placed after the last note
+!>)!; same as !diminuendo)!

@@ -28,9 +28,11 @@
 		4A2D7DD3214EBBCE005FB580 /* abConduct_iOSTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DD2214EBBCE005FB580 /* abConduct_iOSTests.m */; };
 		4A2D7DDE214EBBCF005FB580 /* abConduct_iOSUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DDD214EBBCF005FB580 /* abConduct_iOSUITests.m */; };
 		4A3C598C218A18AE00AD9A62 /* stresspat.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A3C598B218A18AE00AD9A62 /* stresspat.c */; };
+		4A47A8CB21D2BC0400B33A51 /* midiInstruments.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4A47A8CA21D2BC0400B33A51 /* midiInstruments.txt */; };
 		4A4C07FB21CFA6AD00FCF89B /* decorations.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4A4C07FA21CFA6AD00FCF89B /* decorations.txt */; };
 		4A596582215C300300F226A5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A596581215C300300F226A5 /* Foundation.framework */; };
 		4A6743822150012400886D97 /* DefaultFiles in Resources */ = {isa = PBXBuildFile; fileRef = 4A6743812150012400886D97 /* DefaultFiles */; };
+		4A70C12021D3B4B5002A41F3 /* drummapSounds.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4A70C11F21D3B4B5002A41F3 /* drummapSounds.txt */; };
 		4A74251A2163F282001C7466 /* abcparse.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A7425052163F281001C7466 /* abcparse.c */; };
 		4A74251B2163F282001C7466 /* buffer.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A7425062163F281001C7466 /* buffer.c */; };
 		4A74251C2163F282001C7466 /* format.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A7425082163F281001C7466 /* format.c */; };
@@ -50,6 +52,8 @@
 		4A8F411A21964217004B3C81 /* LineNumberLayoutManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8F411521964216004B3C81 /* LineNumberLayoutManager.m */; };
 		4A8F411B21964217004B3C81 /* LineNumberTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8F411721964216004B3C81 /* LineNumberTextView.m */; };
 		4A8F411C21964217004B3C81 /* LineNumberTextViewWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8F411921964216004B3C81 /* LineNumberTextViewWrapper.m */; };
+		4A9DBD7221D0F9DF000B3307 /* dynamics.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4A9DBD7121D0F9DF000B3307 /* dynamics.txt */; };
+		4A9DBD7421D0FAFA000B3307 /* structure.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4A9DBD7321D0FAFA000B3307 /* structure.txt */; };
 		4ABD9E0B2150736C00CA5CD4 /* HTTPErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9DC92150736B00CA5CD4 /* HTTPErrorResponse.m */; };
 		4ABD9E0C2150736C00CA5CD4 /* HTTPDataResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9DCA2150736B00CA5CD4 /* HTTPDataResponse.m */; };
 		4ABD9E0D2150736C00CA5CD4 /* HTTPDynamicFileResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABD9DCC2150736B00CA5CD4 /* HTTPDynamicFileResponse.m */; };
@@ -156,9 +160,11 @@
 		4A2D7DDF214EBBCF005FB580 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A3A9B332150081E009757BC /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		4A3C598B218A18AE00AD9A62 /* stresspat.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = stresspat.c; sourceTree = "<group>"; };
+		4A47A8CA21D2BC0400B33A51 /* midiInstruments.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = midiInstruments.txt; sourceTree = "<group>"; };
 		4A4C07FA21CFA6AD00FCF89B /* decorations.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = decorations.txt; sourceTree = "<group>"; };
 		4A596581215C300300F226A5 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		4A6743812150012400886D97 /* DefaultFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = DefaultFiles; sourceTree = "<group>"; };
+		4A70C11F21D3B4B5002A41F3 /* drummapSounds.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = drummapSounds.txt; sourceTree = "<group>"; };
 		4A7425052163F281001C7466 /* abcparse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = abcparse.c; sourceTree = "<group>"; };
 		4A7425062163F281001C7466 /* buffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = buffer.c; sourceTree = "<group>"; };
 		4A7425072163F281001C7466 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
@@ -185,6 +191,8 @@
 		4A8F411721964216004B3C81 /* LineNumberTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LineNumberTextView.m; sourceTree = "<group>"; };
 		4A8F411821964216004B3C81 /* LineNumberTextViewWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineNumberTextViewWrapper.h; sourceTree = "<group>"; };
 		4A8F411921964216004B3C81 /* LineNumberTextViewWrapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LineNumberTextViewWrapper.m; sourceTree = "<group>"; };
+		4A9DBD7121D0F9DF000B3307 /* dynamics.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = dynamics.txt; sourceTree = "<group>"; };
+		4A9DBD7321D0FAFA000B3307 /* structure.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = structure.txt; sourceTree = "<group>"; };
 		4A9FD8FD218A431E00DF03D1 /* store.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = store.h; sourceTree = "<group>"; };
 		4A9FD8FF218A43D800DF03D1 /* abcm2ps.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = abcm2ps.h; sourceTree = "<group>"; };
 		4ABCD482215BDBDE000A6A53 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -368,6 +376,10 @@
 				4A2D7DC7214EBBCE005FB580 /* Info.plist */,
 				4A2D7DC8214EBBCE005FB580 /* main.m */,
 				4A4C07FA21CFA6AD00FCF89B /* decorations.txt */,
+				4A9DBD7121D0F9DF000B3307 /* dynamics.txt */,
+				4A9DBD7321D0FAFA000B3307 /* structure.txt */,
+				4A47A8CA21D2BC0400B33A51 /* midiInstruments.txt */,
+				4A70C11F21D3B4B5002A41F3 /* drummapSounds.txt */,
 			);
 			path = abConduct_iOS;
 			sourceTree = "<group>";
@@ -706,13 +718,17 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A9DBD7421D0FAFA000B3307 /* structure.txt in Resources */,
 				4A4C07FB21CFA6AD00FCF89B /* decorations.txt in Resources */,
+				4A9DBD7221D0F9DF000B3307 /* dynamics.txt in Resources */,
 				4A01846921A73E20008455BF /* Main.storyboard in Resources */,
 				4ABD9E2B2150736C00CA5CD4 /* About.txt in Resources */,
+				4A70C12021D3B4B5002A41F3 /* drummapSounds.txt in Resources */,
 				4ABD9E202150736C00CA5CD4 /* LICENSE.txt in Resources */,
 				4A6743822150012400886D97 /* DefaultFiles in Resources */,
 				4A2D7DC6214EBBCE005FB580 /* LaunchScreen.storyboard in Resources */,
 				4A2D7DC3214EBBCE005FB580 /* Assets.xcassets in Resources */,
+				4A47A8CB21D2BC0400B33A51 /* midiInstruments.txt in Resources */,
 				4ABD9E252150736C00CA5CD4 /* README.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
