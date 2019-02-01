@@ -132,7 +132,7 @@
                       [[UIBarButtonItem alloc] initWithTitle: @"redo" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                       [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                       ];
-    toolbar.frame = CGRectMake(0, 0, 1000, 44);
+    toolbar.frame = CGRectMake(0, 0, 1200, 44);
     toolbar.autoresizingMask = UIViewAutoresizingNone;
     UIScrollView *toolScroll = [[UIScrollView alloc] initWithFrame:toolbar.frame];
     toolScroll.contentSize = toolbar.frame.size;
@@ -142,16 +142,56 @@
     
     NSMutableArray *items = [[[UIMenuController sharedMenuController] menuItems] mutableCopy];
     if (!items) items = [[NSMutableArray alloc] init];
-    UIMenuItem *transposeItem;
-    transposeItem = [[UIMenuItem alloc] initWithTitle:@"transpose" action:@selector(transpose:)];
-    [items addObject:transposeItem];
+//    UIMenuItem *transposeItem;
+//    transposeItem = [[UIMenuItem alloc] initWithTitle:@"transpose" action:@selector(transpose:)];
+//    [items addObject:transposeItem];
     UIMenuItem *instItem;
     instItem = [[UIMenuItem alloc] initWithTitle:@"change program" action:@selector(changeProgram: inRange:)];
     [items addObject:instItem];
+    UIMenuItem *panItem;
+    panItem = [[UIMenuItem alloc] initWithTitle:@"panning" action:@selector(changeControl:inRange:)];
+    [items addObject:panItem];
     UIMenuItem *drummapItem;
     drummapItem = [[UIMenuItem alloc] initWithTitle:@"drummap" action:@selector(changeDrummap: inRange:)];
     [items addObject:drummapItem];
     [[UIMenuController sharedMenuController] setMenuItems:items];
+}
+
+- (void) changeControl: (NSString *) lineString inRange: (NSRange) lineRange  {
+    NSLog(@"Now show the controlSlider");
+    NSArray *words;
+    float number = 10;
+    float value = 64;
+    if (lineString.class != UIMenuController.class) {
+        words = [lineString componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        NSNumberFormatter *nf = [[NSNumberFormatter alloc] init];
+        if (words.count > 3) {
+            if ([nf numberFromString:words[3]] != nil) {
+                value = [words[3] floatValue];
+            }
+            if ([nf numberFromString:words[2]] != nil) {
+                number = [words[2] floatValue];
+            }
+        }
+    }
+    else lineRange = _abcView.textView.selectedRange;
+    NSString *control = [NSString stringWithFormat:@"%@", (number == 10) ? @"panning" : (number == 7) ? @"volume" : @"control"];
+    NSString *title = [NSString stringWithFormat:@"set the %@:", control];
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:@"\n\n" preferredStyle:UIAlertControllerStyleAlert];
+    //            TODO: show controlSlider
+    UISlider *slider = [[UISlider alloc] initWithFrame:CGRectMake(20, 60, 230, 20)];
+    slider.maximumValue = 127;
+    [slider setValue:value];
+    [alertController.view addSubview:slider];
+    UIAlertAction *selectAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat: @"set %@", control] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        NSString *replaceString = [[[@"\%\%" stringByAppendingString:[NSString stringWithFormat:@"MIDI control %d %d", (int)number, (int)roundf(slider.value)]] stringByAppendingString:@" \%"] stringByAppendingString:control];
+        [self setColouredCodeFromString:[self->_abcView.textView.text stringByReplacingCharactersInRange:lineRange withString:replaceString]];
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {}];
+    [alertController addAction:selectAction];
+    [alertController addAction:cancelAction];
+    [self presentViewController:alertController animated:YES completion:nil];
 }
 
 - (void) changeProgram: (NSString *) lineString inRange: (NSRange) lineRange  {
@@ -244,7 +284,7 @@
                 [self changeProgram:selectedLine inRange: lineRange];
             }
             else if ([[selectedLine substringToIndex:14] isEqualToString:@"%%MIDI control"]) {
-//            TODO: show controlSlider
+                [self changeControl:selectedLine inRange:lineRange];
             }
             else if ([[selectedLine substringToIndex:14] isEqualToString:@"%%MIDI drummap"]) {
                 //            TODO: show drumMap selector
@@ -297,7 +337,7 @@
 }
 
 - (BOOL) canPerformAction:(SEL)action withSender:(id)sender {
-    if (action == @selector(copy:) || action == @selector(cut:) || action == @selector(transpose:) || action == @selector(select:) || action == @selector(selectAll:) || action == @selector(paste:) || action == @selector(changeProgram:inRange:) || action == @selector(changeDrummap:inRange:)) {
+    if (action == @selector(copy:) || action == @selector(cut:) || action == @selector(changeControl:inRange:) || action == @selector(select:) || action == @selector(selectAll:) || action == @selector(paste:) || action == @selector(changeProgram:inRange:) || action == @selector(changeDrummap:inRange:)) {
         return YES;
     }
     else return NO;
