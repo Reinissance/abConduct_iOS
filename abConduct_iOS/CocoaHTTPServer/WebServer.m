@@ -74,7 +74,7 @@
     }
     
 	// create DAV server
-	[server setConnectionClass:[DAVConnection class]];
+    [server setConnectionClass:[DAVConnection class]];
 	
 	// enable Bonjour
 	[server setType:@"_http._tcp."];

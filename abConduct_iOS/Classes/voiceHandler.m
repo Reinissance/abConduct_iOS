@@ -60,6 +60,31 @@ NSFileManager *fileManager;
             NSString *abcFile = voiceAbcFiles[i];
             [self createSVGFileFromFilePath:abcFile forArrayindex:i inDirectory:tmpDir];
         }
+        [self createIndexHTML];
+    }
+}
+
+- (void) createIndexHTML {
+    NSError *error;
+    NSString *createHTMLfile = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"index" ofType:@"html" inDirectory: @"DefaultFiles"]  encoding:NSUTF8StringEncoding error:&error];
+    NSString *tuneName = @"";
+    NSString *files = @"";
+    for (NSString *path in _voicePaths) {
+        NSString *name = [path lastPathComponent];
+        NSArray *nameAndVoice = [name componentsSeparatedByString:@"_"];
+        if ([tuneName isEqualToString:@""]) {
+            for (int i = 0; i < nameAndVoice.count-1; i++) {
+                NSString *namePart = nameAndVoice[i];
+                tuneName = [[tuneName stringByAppendingString:namePart] stringByAppendingString:@" "];
+            }
+        }
+        NSString *voiceName = nameAndVoice[nameAndVoice.count-1];
+        files = [[[files stringByAppendingString:@"<a href=\"/"] stringByAppendingString:name] stringByAppendingString:[NSString stringWithFormat:@"\">%@</a>\n</br>\n", voiceName]];
+    }
+    createHTMLfile = [[createHTMLfile stringByReplacingOccurrencesOfString:@"TITLENAME" withString:tuneName] stringByReplacingOccurrencesOfString:@"VOICELINKS" withString:files];
+    NSString *webFolder = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:@"webDAV"];
+    if (![createHTMLfile writeToFile:[[webFolder stringByAppendingPathComponent:@"index"] stringByAppendingPathExtension:@"html"] atomically:YES encoding:NSUTF8StringEncoding error:&error]) {
+        NSLog(@"couldn't write indexHTML: %@, %@", error.localizedDescription, error.localizedFailureReason);
     }
 }
 
