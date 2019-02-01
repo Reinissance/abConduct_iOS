@@ -10,8 +10,10 @@
 #import "AppDelegate.h"
 #import "arrayPicker.h"
 #include <string.h>
-#import "voiceHandler.h"
 #import "store.h"
+#import "toabc.h"
+#import <STPopup/STPopup.h>
+#import "createFileViewController.h"
 
 #define APP ((AppDelegate *)[[UIApplication sharedApplication] delegate])
 #define docsPath [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]
@@ -20,39 +22,31 @@
 
 }
 
-@property NSURL *filepath;
-@property NSMutableArray *allVoices;
-@property NSString *selectedVoice;
 @property NSURL *exportFile;
-@property voiceHandler *voiceSVGpaths;
 @property BOOL buttonViewExpanded;
 @property NSMutableArray *potentialVoices;
 @property BOOL codeHighlighting;
-@property arrayPicker *keyPicker;
-@property arrayPicker *measurePicker;
 @property arrayPicker *instrumentsPicker;
 @property NSArray *abcDocuments;
 @property NSArray *userSoundfonts;
 @property NSMutableArray *decorations;
-@property NSString *createFileName;
-@property NSString *createFileComposer;
-@property NSString *createFileLength;
-@property NSString *createFileVoices;
 @property midiPlayer *mp;
 @property NSURL *soundfontUrl;
 @property BOOL loadSFs;
 @property BOOL logEnabled;
-@property NSStringEncoding encoding;
 @property NSString *logString;
 @property CGFloat fontSize;
 @property BOOL keyboard;
 @property BOOL skipping;
+@property STPopupController *createFilePopup;
+@property BOOL createFileController;
 
 @end
 
 @implementation ViewController
 
 - (void)viewDidLoad {
+    _createFileController = YES;
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     NSString *file = [[NSBundle mainBundle] pathForResource:@"Hallelujah" ofType:@"abc" inDirectory: @"DefaultFiles"];
@@ -72,8 +66,6 @@
     self.server = APP.server;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(orientationChanged:)    name:UIDeviceOrientationDidChangeNotification  object:nil];
     
     NSString *sfPath = [[NSBundle mainBundle] pathForResource:@"32MbGMStereo" ofType:@"sf2" inDirectory:@"DefaultFiles"];
     _soundfontUrl = [[NSURL alloc] initFileURLWithPath:sfPath];
@@ -123,11 +115,17 @@
                       [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                       [[UIBarButtonItem alloc] initWithTitle: @">" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                       [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                      [[UIBarButtonItem alloc] initWithTitle: @"~" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                      [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                      [[UIBarButtonItem alloc] initWithTitle: @"*" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                      [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                         [[UIBarButtonItem alloc] initWithTitle: @"decorations" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                       [[UIBarButtonItem alloc] initWithTitle: @"dynamics" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                       [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                       [[UIBarButtonItem alloc] initWithTitle: @"structure" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
+                      [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                      [[UIBarButtonItem alloc] initWithTitle: @"directives" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                       [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                         [[UIBarButtonItem alloc] initWithTitle: @"undo" style:UIBarButtonItemStylePlain target:self action:@selector(enterSpecialKeyFromBarButtonItem:)],
                         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
@@ -144,9 +142,9 @@
     
     NSMutableArray *items = [[[UIMenuController sharedMenuController] menuItems] mutableCopy];
     if (!items) items = [[NSMutableArray alloc] init];
-//    UIMenuItem *transposeItem;
-//    transposeItem = [[UIMenuItem alloc] initWithTitle:@"transpose" action:@selector(transpose:)];
-//    [items addObject:transposeItem];
+    UIMenuItem *transposeItem;
+    transposeItem = [[UIMenuItem alloc] initWithTitle:@"transpose" action:@selector(transpose:)];
+    [items addObject:transposeItem];
     UIMenuItem *instItem;
     instItem = [[UIMenuItem alloc] initWithTitle:@"change program" action:@selector(changeProgram: inRange:)];
     [items addObject:instItem];
@@ -272,8 +270,8 @@
 }
 
 - (void) transpose: (NSString *) menuController {
-//    UITextRange *selectedRange = [_abcView.textView selectedTextRange];
-//    NSString *abcCode = [_abcView.textView textInRange:selectedRange];
+    UITextRange *selectedRange = [_abcView.textView selectedTextRange];
+    NSString *abcCode = [_abcView.textView textInRange:selectedRange];
     NSString *tmpFile = [[NSTemporaryDirectory() stringByAppendingPathComponent:@"transpose"] stringByAppendingPathExtension:@"abc"];
     [_voiceSVGpaths cleanTempFolder];
     NSError *error;
@@ -281,17 +279,20 @@
         NSLog(@"couldn't write tempFile to tranpose: %@, %@", error.localizedDescription, error.localizedFailureReason);
     }
     else {
-//        NSLog(@"code to transpose: %@", abcCode);
-//        char *transp = strdup([@"-t" UTF8String]);
-//        char *transpose = strdup([@"-2" UTF8String]);
-//        NSString *transpFile = [[NSTemporaryDirectory() stringByAppendingPathComponent:@"transposed"] stringByAppendingPathComponent:@"abc"];
-//        char *open = strdup([@"-v" UTF8String]);
-//        const char *outPath = strdup([transpFile UTF8String]);
+        NSLog(@"code to transpose: %@", abcCode);
+        char *transp = strdup([@"-t" UTF8String]);
+        char *transpose = strdup([@"-2" UTF8String]);
+        char *open = strdup([@"-v" UTF8String]);
+//        const char *outPath = strdup([tmpFile UTF8String]);
 //        char *duppedOut = strdup(outPath);
-//        char *duppedInPath = strdup([tmpFile UTF8String]);
-//        char *args[] = {open, NULL };
-//        fileprogram = ABC2ABC;
-//        abc2midiMain(1, args);
+        char *duppedInPath = strdup([tmpFile UTF8String]);
+        char *args[] = {open, duppedInPath, transp, transpose, NULL };
+        fileprogram = ABC2ABC;
+//        abc2abcMain(4, args);
+//        _abcView.textView.text = [NSString stringWithContentsOfFile:tmpFile encoding:_encoding error:&error];
+//        if (error) {
+//            NSLog(@"Couldn't read transposed tempFile: %@", error.localizedFailureReason);
+//        }
     }
 }
 
@@ -311,7 +312,7 @@ BOOL decorationController;
     else if ([item.title isEqualToString:@"redo"]) {
         [_abcView.textView.undoManager redo];
     }
-    else if ([item.title isEqualToString:@"decorations"] || [item.title isEqualToString:@"dynamics"] || [item.title isEqualToString:@"structure"]) {
+    else if ([item.title isEqualToString:@"decorations"] || [item.title isEqualToString:@"dynamics"] || [item.title isEqualToString:@"structure"] || [item.title isEqualToString:@"directives"]) {
         if (!_decorations) {
             _decorations = [NSMutableArray array];
         }
@@ -329,7 +330,7 @@ BOOL decorationController;
             }
         }
         decorationController = YES;
-        UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat:@"%@", item.title] message:@"chose a musical symbol to insert." preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat:@"%@", item.title] message:@"chose to insert." preferredStyle:UIAlertControllerStyleAlert];
         UIViewController *controller = [self controllerWithTableViewEditable:NO];
         [actionSheet setValue:controller forKey:@"contentViewController"];
         UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
@@ -414,7 +415,7 @@ BOOL buttonViewMoved;
                 NSRange range=[code rangeOfString:line];
                 [string addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:range];
             }
-            else if ([line hasPrefix:@"w:"]) {
+            else if ([line hasPrefix:@"w:"] || [line hasPrefix:@"W:"]) {
                 //lyrics
                 NSRange range=[code rangeOfString:line];
                 [string addAttribute:NSForegroundColorAttributeName value:[UIColor darkGrayColor] range:range];
@@ -785,122 +786,23 @@ UIAlertController *alert;
 BOOL alertShown;
 
 - (void) createNewFile {
-    _createFileComposer = @"";
-    _createFileLength = @"";
-    _createFileVoices = @"";
-    BOOL landscape = [[UIDevice currentDevice] orientation] == UIDeviceOrientationLandscapeLeft || [[UIDevice currentDevice] orientation] == UIDeviceOrientationLandscapeRight;
-    alert = [UIAlertController alertControllerWithTitle:@"create new abc-Code file:" message:(!landscape) ? @"please specify at least file-name (used as title) and key for your new tune.\n\n\n\n\n" :@"please specify at least the file-name (used as title) for your new tune (rotate device to change default key of 'C')\n" preferredStyle:UIAlertControllerStyleAlert];
-    NSArray *Keys = @[@"C#", @"F#", @"B", @"E", @"A", @"D", @"G", @"C", @"F", @"Bb", @"Eb", @"Ab", @"Db", @"Gb"];
-    _keyPicker = [[arrayPicker alloc] initWithArray:Keys frame:CGRectMake(30, 80, 100, 100) andTextColour:[UIColor redColor]];
-    if (!landscape)
-        [alert.view addSubview:_keyPicker.pickerView];
-    NSArray *Measures = @[@"2/4", @"3/4", @"4/4", @"2/2", @"3/8", @"6/8", @"12/8", @"5/8", @"5/4", @"6/4", @"7/4", @"9/8", @"7/8"];
-    _measurePicker = [[arrayPicker alloc] initWithArray:Measures frame:CGRectMake(140, 80, 100, 100) andTextColour:[UIColor darkTextColor]];if (!landscape)
-    [alert.view addSubview:_measurePicker.pickerView];
-    [_keyPicker.pickerView selectRow:7 inComponent:0 animated:NO];
-    [_measurePicker.pickerView selectRow:2 inComponent:0 animated:NO];
-    [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull title) {
-        UIColor *lightRed = [UIColor colorWithRed:256 green:0 blue:0 alpha:0.5];
-        title.attributedPlaceholder = [[NSAttributedString alloc] initWithString:@"enter a file-name (title) here" attributes:@{NSForegroundColorAttributeName: lightRed}];
-        title.clearButtonMode = UITextFieldViewModeWhileEditing;
-        title.borderStyle = UITextBorderStyleRoundedRect;
-        [title addTarget:self action:@selector(textDidChange:) forControlEvents:UIControlEventEditingChanged];
-    }];
-    [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull composer) {
-        composer.placeholder = @"enter composer name here";
-        composer.clearButtonMode = UITextFieldViewModeWhileEditing;
-        composer.borderStyle = UITextBorderStyleRoundedRect;
-        [composer addTarget:self action:@selector(textDidChange:) forControlEvents:UIControlEventEditingChanged];
-    }];
-    alert.textFields[1].tag = 1;
-    [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull noteLength) {
-        noteLength.placeholder = @"enter default note length (L:1/8)";
-        noteLength.clearButtonMode = UITextFieldViewModeWhileEditing;
-        noteLength.borderStyle = UITextBorderStyleRoundedRect;
-        noteLength.keyboardType = UIKeyboardTypeNumberPad;
-        [noteLength addTarget:self action:@selector(textDidChange:) forControlEvents:UIControlEventEditingChanged];
-    }];
-    alert.textFields[2].tag = 2;
-    [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull voices) {
-        voices.placeholder = @"enter voicenames here";
-        voices.clearButtonMode = UITextFieldViewModeWhileEditing;
-        voices.borderStyle = UITextBorderStyleRoundedRect;
-        [voices addTarget:self action:@selector(textDidChange:) forControlEvents:UIControlEventEditingChanged];
-    }];
-    alert.textFields[3].tag = 3;
-    UIAlertAction *create = [UIAlertAction actionWithTitle:@"create File" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-        BOOL extension = ((self->_createFileName.length > 4) && [[self->_createFileName substringFromIndex:self->_createFileName.length-4] isEqualToString:@".abc"]);
-        NSString *createAbcFileString = [NSString stringWithFormat:@"X:1\n%@\nT:%@\n", [NSString stringWithFormat:@"%@ %@ %@ scale=0.7", @"\%\%staves", self->_createFileVoices, @"\%Partitur"], (extension) ? [self->_createFileName substringToIndex:self->_createFileName.length-4] : self->_createFileName];
-        if (![self->_createFileComposer isEqualToString:@""]) {
-            createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"C:%@\n", self->_createFileComposer]];
-        }
-        if (![self->_createFileLength isEqualToString:@""]) {
-            createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"L:%@\n", self->_createFileLength]];
-        }
-        createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"M:%@\n", Measures[[self->_measurePicker.pickerView selectedRowInComponent:0]]]];
-        createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"K:%@\n", Keys[[self->_keyPicker.pickerView selectedRowInComponent:0]]]];
-        NSLog(@"file created: %@", createAbcFileString);
-        NSArray *createVoices = [self->_createFileVoices componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-        for (NSString *createVoice in createVoices) {
-            createAbcFileString = [[[[createAbcFileString stringByAppendingString: @"V:"] stringByAppendingString:[NSString stringWithFormat:@"%@\n", createVoice]] stringByAppendingString:@"\%start writing voice "] stringByAppendingString:[NSString stringWithFormat:@"%@ here:\n", createVoice]];
-        }
-        [self setColouredCodeFromString: createAbcFileString];
-        NSError *error;
-        NSString *path = [docsPath stringByAppendingPathComponent:[self->_createFileName stringByReplacingOccurrencesOfString:@" " withString:@"_"]];
-        if (!extension) {
-            path = [path stringByAppendingPathExtension:@"abc"];
-        }
-        self->_filepath = [NSURL fileURLWithPath:path];
-        BOOL write = [self->_abcView.textView.text writeToURL:self->_filepath atomically:NO encoding:self->_encoding error:&error];
-        if (!write) {
-            NSLog(@"could not write file %@: %@", self->_filepath, error);
-        }
-        else {
-            self->_refreshButton.enabled = YES;
-            self->_saveButton.enabled = YES;
-            [self->_allVoices removeAllObjects];
-            self->_allVoices = [self getVoicesWithHeader];
-            [self->_voiceSVGpaths createVoices:self->_allVoices];
-            NSArray *Voice = self->_allVoices[0];
-            self->_selectedVoice = Voice[0];
-            [self loadSvgImage:self->_selectedVoice];
-        }
-        [self cleanUpAlert];
-    }];
-    create.enabled = NO;
-    [alert addAction:create];
-    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * action) {
-        [self cleanUpAlert];
-    }];
-    [alert addAction:cancel];
-    alertShown = YES;
-    [self presentViewController:alert animated:YES completion:nil];
-    
+    _createFilePopup = [[STPopupController alloc] initWithRootViewController:[[UIStoryboard storyboardWithName: @"Main" bundle:nil] instantiateViewControllerWithIdentifier:@"createNewFileController"]];
+    _createFilePopup.containerView.layer.cornerRadius = 4;
+    [_createFilePopup setNavigationBarHidden:YES];
+    if (NSClassFromString(@"UIBlurEffect")) {
+        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+        _createFilePopup.backgroundView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+    }
+    [_createFilePopup.backgroundView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dropPopup)]];
+    [_createFilePopup presentInViewController:self];
 }
 
-- (void) cleanUpAlert {
-    _measurePicker = nil;
-    _keyPicker = nil;
-    alertShown = NO;
-}
 
--(void)textDidChange:(UITextField *)textField {
-    if (textField.tag == 0) {
-        alert.actions[0].enabled = (textField.text.length > 0);
-        _createFileName = textField.text;
-    }
-    else if (textField.tag == 1) {
-        _createFileComposer = textField.text;
-    }
-    else if (textField.tag == 2) {
-        if (![textField.text isEqualToString:@"/"] && textField.text.length == 1) {
-            textField.text = [textField.text stringByAppendingString:@"/"];
-        }
-        _createFileLength = textField.text;
-    }
-    else if (textField.tag == 3) {
-        _createFileVoices = textField.text;
-    }
+- (void) dropPopup {
+//    createFileViewController *pop = (createFileViewController*) [_createFilePopup topViewController];
+//    [pop disMiss:nil];
+    [_createFilePopup dismiss];
+    _createFilePopup = nil;
 }
 
 - (IBAction)zoomText:(UIPinchGestureRecognizer *)sender {
@@ -939,43 +841,13 @@ BOOL alertShown;
 - (IBAction)hideKeyboard:(id)sender {
     [_abcView endEditing:YES];
 }
+//
+//- (void)orientationChanged:(NSNotification *)notification{
+//    [self adjustViewsForOrientation:[[UIApplication sharedApplication] statusBarOrientation]];
+//    [[self view] setNeedsLayout];
+//    [[self view] layoutSubviews];
+//}
 
-- (void) viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
-        [_measurePicker.pickerView removeFromSuperview];
-        [_keyPicker.pickerView removeFromSuperview];
-//    if (_keyboard)
-//        [_abcView endEditing:YES];
-}
-
-- (void)orientationChanged:(NSNotification *)notification{
-    [self adjustViewsForOrientation:[[UIApplication sharedApplication] statusBarOrientation]];
-    [[self view] setNeedsLayout];
-    [[self view] layoutSubviews];
-}
-
-- (void) adjustViewsForOrientation:(UIInterfaceOrientation) orientation {
-    switch (orientation)
-    {
-        case UIInterfaceOrientationPortrait:
-        case UIInterfaceOrientationPortraitUpsideDown:
-        {
-            if (alertShown) {
-                [alert.view addSubview:_measurePicker.pickerView];
-                [alert.view addSubview:_keyPicker.pickerView];
-                alert.message = @"please specify at least file-name (used as title) and key for your new tune.\n\n\n\n\n";
-            }
-        }
-            break;
-        case UIInterfaceOrientationLandscapeLeft:
-        case UIInterfaceOrientationLandscapeRight:
-        {
-            [_keyPicker.pickerView removeFromSuperview];
-            [_measurePicker.pickerView removeFromSuperview];
-            alert.message = @"please specify at least the file-name (used as title) for your new tune (rotate device to change default key of 'C')\n";
-        }            break;
-        case UIInterfaceOrientationUnknown:break;
-    }
-}
 - (nonnull UITableViewCell *)tableView:(nonnull UITableView *)tableView cellForRowAtIndexPath:(nonnull NSIndexPath *)indexPath {
     static NSString *cellIdentifier = @"cellIdentifier";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
@@ -1104,7 +976,7 @@ BOOL alertShown;
         char *duppedOut = strdup(outPath);
         char *duppedInPath = strdup([inPath UTF8String]);
         char *args[] = {open, duppedInPath, open, duppedOut, NULL };
-//        fileprogram = ABC2MIDI;
+        fileprogram = ABC2MIDI;
         abc2midiMain(4, args);
         
         if (_mp == nil) {

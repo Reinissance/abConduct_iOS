@@ -212,6 +212,8 @@ int abc2midiMain()
 #include <string.h>
 #include <ctype.h>
 
+#import "utilities.h"
+
 #ifdef __MWERKS__
 #define __MACINTOSH__ 1
 #endif /* __MWERKS__ */
@@ -250,7 +252,7 @@ FILE *fp;
 FILE *fc53; /* for debugging */
 #endif
 
-programname fileprogram = ABC2MIDI;
+//programname fileprogram = ABC2MIDI;
 extern int oldchordconvention; /* for handling +..+ chords */
 
 /* parsing stage */

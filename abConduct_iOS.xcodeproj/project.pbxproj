@@ -27,11 +27,16 @@
 		4A2D7DC9214EBBCE005FB580 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DC8214EBBCE005FB580 /* main.m */; };
 		4A2D7DD3214EBBCE005FB580 /* abConduct_iOSTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DD2214EBBCE005FB580 /* abConduct_iOSTests.m */; };
 		4A2D7DDE214EBBCF005FB580 /* abConduct_iOSUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DDD214EBBCF005FB580 /* abConduct_iOSUITests.m */; };
+		4A30E55221F5A569000E4625 /* directives.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4A30E55121F5A569000E4625 /* directives.txt */; };
 		4A3C598C218A18AE00AD9A62 /* stresspat.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A3C598B218A18AE00AD9A62 /* stresspat.c */; };
 		4A47A8CB21D2BC0400B33A51 /* midiInstruments.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4A47A8CA21D2BC0400B33A51 /* midiInstruments.txt */; };
 		4A4C07FB21CFA6AD00FCF89B /* decorations.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4A4C07FA21CFA6AD00FCF89B /* decorations.txt */; };
+		4A566EBC21E7F5DC00BEC3B0 /* STPopup.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A566EBB21E7F5DC00BEC3B0 /* STPopup.framework */; };
+		4A566EBD21E7F9A900BEC3B0 /* STPopup.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A566EBB21E7F5DC00BEC3B0 /* STPopup.framework */; };
+		4A566EBE21E7F9A900BEC3B0 /* STPopup.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4A566EBB21E7F5DC00BEC3B0 /* STPopup.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		4A596582215C300300F226A5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A596581215C300300F226A5 /* Foundation.framework */; };
 		4A6743822150012400886D97 /* DefaultFiles in Resources */ = {isa = PBXBuildFile; fileRef = 4A6743812150012400886D97 /* DefaultFiles */; };
+		4A6B2AAF21EFBAE6007F9CEA /* createFileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6B2AAE21EFBAE6007F9CEA /* createFileViewController.m */; };
 		4A70C12021D3B4B5002A41F3 /* drummapSounds.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4A70C11F21D3B4B5002A41F3 /* drummapSounds.txt */; };
 		4A74251A2163F282001C7466 /* abcparse.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A7425052163F281001C7466 /* abcparse.c */; };
 		4A74251B2163F282001C7466 /* buffer.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A7425062163F281001C7466 /* buffer.c */; };
@@ -116,6 +121,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				4A566EBE21E7F9A900BEC3B0 /* STPopup.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -158,12 +164,16 @@
 		4A2D7DD9214EBBCF005FB580 /* abConduct_iOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = abConduct_iOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A2D7DDD214EBBCF005FB580 /* abConduct_iOSUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = abConduct_iOSUITests.m; sourceTree = "<group>"; };
 		4A2D7DDF214EBBCF005FB580 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4A30E55121F5A569000E4625 /* directives.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = directives.txt; sourceTree = "<group>"; };
 		4A3A9B332150081E009757BC /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		4A3C598B218A18AE00AD9A62 /* stresspat.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = stresspat.c; sourceTree = "<group>"; };
 		4A47A8CA21D2BC0400B33A51 /* midiInstruments.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = midiInstruments.txt; sourceTree = "<group>"; };
 		4A4C07FA21CFA6AD00FCF89B /* decorations.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = decorations.txt; sourceTree = "<group>"; };
+		4A566EBB21E7F5DC00BEC3B0 /* STPopup.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = STPopup.framework; sourceTree = "<group>"; };
 		4A596581215C300300F226A5 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		4A6743812150012400886D97 /* DefaultFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = DefaultFiles; sourceTree = "<group>"; };
+		4A6B2AAD21EFBAE6007F9CEA /* createFileViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = createFileViewController.h; sourceTree = "<group>"; };
+		4A6B2AAE21EFBAE6007F9CEA /* createFileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = createFileViewController.m; sourceTree = "<group>"; };
 		4A70C11F21D3B4B5002A41F3 /* drummapSounds.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = drummapSounds.txt; sourceTree = "<group>"; };
 		4A7425052163F281001C7466 /* abcparse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = abcparse.c; sourceTree = "<group>"; };
 		4A7425062163F281001C7466 /* buffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = buffer.c; sourceTree = "<group>"; };
@@ -183,6 +193,7 @@
 		4A7425192163F281001C7466 /* svg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = svg.c; sourceTree = "<group>"; };
 		4A7A504E215117A900B01095 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
 		4A7A504F215117A900B01095 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
+		4A83B2A221DF984A0029EF0E /* toabc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = toabc.c; sourceTree = "<group>"; };
 		4A8C198A2164071F00134416 /* voiceHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = voiceHandler.m; sourceTree = "<group>"; };
 		4A8C198C2164072C00134416 /* voiceHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = voiceHandler.h; sourceTree = "<group>"; };
 		4A8F411421964216004B3C81 /* LineNumberLayoutManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineNumberLayoutManager.h; sourceTree = "<group>"; };
@@ -264,6 +275,7 @@
 		4ABD9E2D2150739700CA5CD4 /* WebServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebServer.m; sourceTree = "<group>"; };
 		4ABD9EAB21508BE200CA5CD4 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		4ADEC5702163D2CB0069274B /* libxml2.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.2.dylib; path = ../../../../../../../usr/lib/libxml2.2.dylib; sourceTree = "<group>"; };
+		4AEE9E6121E0A89900287C0A /* toabc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = toabc.h; sourceTree = "<group>"; };
 		4AFD1E2F21A59566009924F4 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -272,6 +284,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A566EBD21E7F9A900BEC3B0 /* STPopup.framework in Frameworks */,
+				4A566EBC21E7F5DC00BEC3B0 /* STPopup.framework in Frameworks */,
 				4AFD1E3021A59566009924F4 /* MessageUI.framework in Frameworks */,
 				4A20DCA9218B3DBE00EC3765 /* AudioToolbox.framework in Frameworks */,
 				4A20DCA7218B3DB100EC3765 /* CoreMIDI.framework in Frameworks */,
@@ -303,6 +317,8 @@
 		4A2125FD218A10EE007EFE1D /* abc2midi */ = {
 			isa = PBXGroup;
 			children = (
+				4A83B2A221DF984A0029EF0E /* toabc.c */,
+				4AEE9E6121E0A89900287C0A /* toabc.h */,
 				4A3C598B218A18AE00AD9A62 /* stresspat.c */,
 				4A21260C218A11D0007EFE1D /* abc.h */,
 				4A212605218A11AE007EFE1D /* genmidi.c */,
@@ -378,8 +394,11 @@
 				4A4C07FA21CFA6AD00FCF89B /* decorations.txt */,
 				4A9DBD7121D0F9DF000B3307 /* dynamics.txt */,
 				4A9DBD7321D0FAFA000B3307 /* structure.txt */,
+				4A30E55121F5A569000E4625 /* directives.txt */,
 				4A47A8CA21D2BC0400B33A51 /* midiInstruments.txt */,
 				4A70C11F21D3B4B5002A41F3 /* drummapSounds.txt */,
+				4A6B2AAD21EFBAE6007F9CEA /* createFileViewController.h */,
+				4A6B2AAE21EFBAE6007F9CEA /* createFileViewController.m */,
 			);
 			path = abConduct_iOS;
 			sourceTree = "<group>";
@@ -405,6 +424,7 @@
 		4A3A9B322150081E009757BC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4A566EBB21E7F5DC00BEC3B0 /* STPopup.framework */,
 				4AFD1E2F21A59566009924F4 /* MessageUI.framework */,
 				4A20DCA8218B3DBE00EC3765 /* AudioToolbox.framework */,
 				4A20DCA6218B3DB100EC3765 /* CoreMIDI.framework */,
@@ -725,6 +745,7 @@
 				4ABD9E2B2150736C00CA5CD4 /* About.txt in Resources */,
 				4A70C12021D3B4B5002A41F3 /* drummapSounds.txt in Resources */,
 				4ABD9E202150736C00CA5CD4 /* LICENSE.txt in Resources */,
+				4A30E55221F5A569000E4625 /* directives.txt in Resources */,
 				4A6743822150012400886D97 /* DefaultFiles in Resources */,
 				4A2D7DC6214EBBCE005FB580 /* LaunchScreen.storyboard in Resources */,
 				4A2D7DC3214EBBCE005FB580 /* Assets.xcassets in Resources */,
@@ -806,6 +827,7 @@
 				4ABD9E102150736C00CA5CD4 /* HTTPRedirectResponse.m in Sources */,
 				4ABD9E172150736C00CA5CD4 /* HTTPAuthenticationRequest.m in Sources */,
 				4A212608218A11AE007EFE1D /* store.c in Sources */,
+				4A6B2AAF21EFBAE6007F9CEA /* createFileViewController.m in Sources */,
 				4A8F411C21964217004B3C81 /* LineNumberTextViewWrapper.m in Sources */,
 				4A21260F218A13D3007EFE1D /* queues.c in Sources */,
 				4A74251F2163F282001C7466 /* glyph.c in Sources */,
@@ -924,6 +946,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "";
 				SDKROOT = iphoneos;
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -977,6 +1000,7 @@
 				HEADER_SEARCH_PATHS = "$(SDKROOT)/usr/include/libxml2";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_LDFLAGS = "";
 				SDKROOT = iphoneos;
 				USER_HEADER_SEARCH_PATHS = "";
 				VALIDATE_PRODUCT = YES;

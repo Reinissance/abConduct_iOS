@@ -1,0 +1,59 @@
+%%text; <text string>
+%%center; <text string>
+%%begintext; <text scring start>
+%%endtext; <text scring end>
+%%...; <text string>
+%%pageheight; <length>
+%%pagewidth; <length>
+%%topmargin; <length>
+%%botmargin; <length>
+%%leftmargin; <length>
+%%rightmargin; <length>
+%%indent; <length>
+%%landscape; <logical>
+%%titlefont; <font name>  <size>
+%%subtitlefont; <font name>  <size>
+%%composerfont; <font name>  <size>
+%%partsfont; <font name>  <size>
+%%tempofont; <font name>  <size>
+%%gchordfont; <font name>  <size> % for chords symbols
+%%annotationfont; <font name>  <size> % for "^..." annotations
+%%infofont; <font name>  <size>
+%%textfont; <font name>  <size>
+%%vocalfont; <font name>  <size> % for w:
+%%wordsfont; <font name>  <size> % for W:
+%%topspace; <length>
+%%titlespace; <length>
+%%subtitlespace; <length>
+%%composerspace; <length>
+%%musicspace; <length> % between composer and 1st staff
+%%partsspace; <length>
+%%vocalspace; <length>
+%%wordsspace; <length>
+%%textspace; <length>
+%%infospace; <length>
+%%staffsep; <length> % between systems
+%%sysstaffsep; <length> % between staves in the same system
+%%barsperstaff; <integer>
+%%parskipfac; <number> % space between parts
+%%lineskipfac; <number> % space between lines of text
+%%stretchstaff; <logical>
+%%stretchlast; <logical>
+%%maxshrink; <number> % shrinking notes
+%%scale; <number>
+%%measurefirst; <integer> % number of first measure
+%%barnumbers; <integer> % bar numbers every 'n' measures
+%%measurenb; <integer> % same as %%barnumbers
+%%measurebox; <logical>
+%%setbarnb; <integer> % set measure number
+%%sep; draw a horizontal separator, i.e. a line
+%%vskip; insert some vertical space
+%%newpage; start a new page
+%%exprabove; <logical>
+%%exprbelow; <logical>
+%%graceslurs; <logical> % grace notes slur to main note
+%%infoline; <logical> % rhythm and origin on the same line
+%%oneperpage; <logical>
+%%vocalabove; <logical>
+%%freegchord; <logical> % print '#', 'b' and '=' as they are
+%%printtempo; <logical>

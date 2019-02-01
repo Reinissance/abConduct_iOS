@@ -11,11 +11,17 @@
 #import "midiPlayer.h"
 #import "LineNumberTextViewWrapper.h"
 #import <MessageUI/MessageUI.h>
+#import "voiceHandler.h"
 
 @class WebServer;
 
 @interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, midiPlayerDelegate, UITextViewDelegate, UIActionSheetDelegate, MFMailComposeViewControllerDelegate>
 
+@property NSURL *filepath;
+@property NSStringEncoding encoding;
+@property NSMutableArray *allVoices;
+@property NSString *selectedVoice;
+@property voiceHandler *voiceSVGpaths;
 @property (weak, nonatomic) IBOutlet UIButton *refreshButton;
 @property (weak, nonatomic) IBOutlet UIButton *saveButton;
 @property (weak, nonatomic) IBOutlet UIWebView *displayView;
@@ -55,6 +61,10 @@
 @property (weak, nonatomic) IBOutlet UISegmentedControl *skipControl;
 @property (weak, nonatomic) IBOutlet UIButton *exportButton;
 
+- (void) setColouredCodeFromString: (NSString*) code;
+
 - (IBAction)skip:(UISegmentedControl *)sender;
+- (NSMutableArray*) getVoicesWithHeader;
+- (void) loadSvgImage: (NSString*) image;
 
 @end
