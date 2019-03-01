@@ -332,7 +332,7 @@
                         <viewControllerLayoutGuide type="bottom" id="dZ2-sZ-cR3"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="klg-Wj-GKL">
-                        <rect key="frame" x="0.0" y="0.0" width="275" height="330"/>
+                        <rect key="frame" x="0.0" y="0.0" width="275" height="288"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="create new abc-Code file" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5gG-5x-J9I">
@@ -351,7 +351,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="a0N-EI-y9c">
-                                <rect key="frame" x="0.0" y="66" width="275" height="218"/>
+                                <rect key="frame" x="0.0" y="66" width="275" height="180"/>
                                 <subviews>
                                     <pickerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TRF-nT-7dB">
                                         <rect key="frame" x="8" y="8" width="124" height="127"/>
@@ -443,7 +443,7 @@
                                 </constraints>
                             </scrollView>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7eR-gk-IpZ">
-                                <rect key="frame" x="16" y="296" width="115" height="26"/>
+                                <rect key="frame" x="16" y="254" width="115" height="26"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <state key="normal" title="Cancel">
                                     <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -453,7 +453,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GTR-3g-Zdh">
-                                <rect key="frame" x="139" y="296" width="120" height="26"/>
+                                <rect key="frame" x="139" y="254" width="120" height="26"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                 <state key="normal" title="create File">
                                     <color key="titleColor" red="1" green="0.14913141730000001" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -482,10 +482,13 @@
                         </constraints>
                     </view>
                     <value key="contentSizeForViewInPopover" type="size" width="375" height="467"/>
-                    <size key="freeformSize" width="275" height="330"/>
+                    <size key="freeformSize" width="275" height="288"/>
                     <userDefinedRuntimeAttributes>
                         <userDefinedRuntimeAttribute type="size" keyPath="contentSizeInPopup">
                             <size key="value" width="275" height="330"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="size" keyPath="landscapeContentSizeInPopup">
+                            <size key="value" width="330" height="220"/>
                         </userDefinedRuntimeAttribute>
                     </userDefinedRuntimeAttributes>
                     <connections>
@@ -502,7 +505,26 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bjQ-zo-qTb" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1340" y="187.1064467766117"/>
+            <point key="canvasLocation" x="959" y="-121"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="vmW-vz-PFh">
+            <objects>
+                <viewController id="9sV-SF-Htb" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="zU3-Pc-Bav"/>
+                        <viewControllerLayoutGuide type="bottom" id="Naq-SL-ItD"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="M35-Wh-1be">
+                        <rect key="frame" x="0.0" y="0.0" width="275" height="288"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </view>
+                    <size key="freeformSize" width="275" height="288"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="9Sp-yY-sjc" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1721" y="168"/>
         </scene>
     </scenes>
 </document>

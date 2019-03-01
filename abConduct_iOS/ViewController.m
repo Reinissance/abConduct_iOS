@@ -41,14 +41,12 @@
 @property BOOL keyboard;
 @property BOOL skipping;
 @property STPopupController *createFilePopup;
-@property BOOL createFileController;
 
 @end
 
 @implementation ViewController
 
 - (void)viewDidLoad {
-    _createFileController = YES;
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     NSString *file = [[NSBundle mainBundle] pathForResource:@"Hallelujah" ofType:@"abc" inDirectory: @"DefaultFiles"];
@@ -76,6 +74,9 @@
     [_abcView.textView setTintColor:[UIColor whiteColor]];
     _abcView.textView.backgroundColor = [UIColor colorWithHue:41.0/360.0 saturation:11.0/360.0 brightness:84.0/360.0 alpha:0.0];
     _abcView.textView.autocorrectionType = UITextAutocorrectionTypeNo;
+    if (@available(iOS 11.0, *)) {
+        _abcView.textView.smartQuotesType = UITextSmartQuotesTypeNo;
+    }
     UIToolbar *toolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, self.view.window.frame.size.width, 44.0f)];
     toolbar.tintColor = [UIColor blackColor];
     toolbar.translucent = YES;
