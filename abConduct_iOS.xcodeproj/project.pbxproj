@@ -35,6 +35,7 @@
 		4A566EBD21E7F9A900BEC3B0 /* STPopup.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A566EBB21E7F5DC00BEC3B0 /* STPopup.framework */; };
 		4A566EBE21E7F9A900BEC3B0 /* STPopup.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4A566EBB21E7F5DC00BEC3B0 /* STPopup.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		4A596582215C300300F226A5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A596581215C300300F226A5 /* Foundation.framework */; };
+		4A66AB85222961CB00F5D1D8 /* loadFileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A66AB84222961CB00F5D1D8 /* loadFileViewController.m */; };
 		4A6743822150012400886D97 /* DefaultFiles in Resources */ = {isa = PBXBuildFile; fileRef = 4A6743812150012400886D97 /* DefaultFiles */; };
 		4A6B2AAF21EFBAE6007F9CEA /* createFileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6B2AAE21EFBAE6007F9CEA /* createFileViewController.m */; };
 		4A70C12021D3B4B5002A41F3 /* drummapSounds.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4A70C11F21D3B4B5002A41F3 /* drummapSounds.txt */; };
@@ -171,6 +172,8 @@
 		4A4C07FA21CFA6AD00FCF89B /* decorations.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = decorations.txt; sourceTree = "<group>"; };
 		4A566EBB21E7F5DC00BEC3B0 /* STPopup.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = STPopup.framework; sourceTree = "<group>"; };
 		4A596581215C300300F226A5 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		4A66AB83222961CB00F5D1D8 /* loadFileViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = loadFileViewController.h; sourceTree = "<group>"; };
+		4A66AB84222961CB00F5D1D8 /* loadFileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = loadFileViewController.m; sourceTree = "<group>"; };
 		4A6743812150012400886D97 /* DefaultFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = DefaultFiles; sourceTree = "<group>"; };
 		4A6B2AAD21EFBAE6007F9CEA /* createFileViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = createFileViewController.h; sourceTree = "<group>"; };
 		4A6B2AAE21EFBAE6007F9CEA /* createFileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = createFileViewController.m; sourceTree = "<group>"; };
@@ -344,8 +347,8 @@
 				4A7425132163F281001C7466 /* utilities.m */,
 				4A2B94082152EDD300AA3F7A /* arrayPicker.h */,
 				4A2B94092152EDD300AA3F7A /* arrayPicker.m */,
-				4A8C198A2164071F00134416 /* voiceHandler.m */,
 				4A8C198C2164072C00134416 /* voiceHandler.h */,
+				4A8C198A2164071F00134416 /* voiceHandler.m */,
 				4A20DCAA218B3E0200EC3765 /* midiPlayer.h */,
 				4A20DCAB218B3E0200EC3765 /* midiPlayer.m */,
 			);
@@ -399,6 +402,8 @@
 				4A70C11F21D3B4B5002A41F3 /* drummapSounds.txt */,
 				4A6B2AAD21EFBAE6007F9CEA /* createFileViewController.h */,
 				4A6B2AAE21EFBAE6007F9CEA /* createFileViewController.m */,
+				4A66AB83222961CB00F5D1D8 /* loadFileViewController.h */,
+				4A66AB84222961CB00F5D1D8 /* loadFileViewController.m */,
 			);
 			path = abConduct_iOS;
 			sourceTree = "<group>";
@@ -829,6 +834,7 @@
 				4A212608218A11AE007EFE1D /* store.c in Sources */,
 				4A6B2AAF21EFBAE6007F9CEA /* createFileViewController.m in Sources */,
 				4A8F411C21964217004B3C81 /* LineNumberTextViewWrapper.m in Sources */,
+				4A66AB85222961CB00F5D1D8 /* loadFileViewController.m in Sources */,
 				4A21260F218A13D3007EFE1D /* queues.c in Sources */,
 				4A74251F2163F282001C7466 /* glyph.c in Sources */,
 				4A74251A2163F282001C7466 /* abcparse.c in Sources */,

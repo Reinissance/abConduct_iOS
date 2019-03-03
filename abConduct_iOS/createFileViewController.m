@@ -275,6 +275,9 @@
     createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"M:%@\n", _Measures[[_measurePicker selectedRowInComponent:0]]]];
     createAbcFileString = [createAbcFileString stringByAppendingString: [NSString stringWithFormat: @"K:%@\n", _Keys[[_keyPicker selectedRowInComponent:0]]]];
     NSLog(@"file created: %@", createAbcFileString);
+    if (_voiceSettings.count == 0) {
+        [_voiceSettings addObject:[@[@"Voice1", @"no nothing"] mutableCopy]];
+    }
     for (NSMutableArray *voice in _voiceSettings) {
         createAbcFileString = [[createAbcFileString stringByAppendingString: @"V:"] stringByAppendingString: voice[0]];
         for (int i = 1; i < voice.count; i++) {
@@ -320,7 +323,7 @@
         [controller.voiceSVGpaths createVoices:controller.allVoices];
         NSArray *Voice = controller.allVoices[0];
         controller.selectedVoice = Voice[0];
-        [controller loadSvgImage:controller.selectedVoice];
+        [controller loadSvgImage];
     }
     [self dismiss];
 }

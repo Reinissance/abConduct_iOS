@@ -16,6 +16,7 @@
 #import "toabc.h"
 #import <STPopup/STPopup.h>
 #import "createFileViewController.h"
+#import "loadFileViewController.h"
 
 #define APP ((AppDelegate *)[[UIApplication sharedApplication] delegate])
 #define docsPath [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]
@@ -29,24 +30,25 @@
 @property NSMutableArray *potentialVoices;
 @property BOOL codeHighlighting;
 @property arrayPicker *instrumentsPicker;
-@property NSArray *abcDocuments;
 @property NSArray *userSoundfonts;
 @property NSMutableArray *decorations;
 @property midiPlayer *mp;
 @property NSURL *soundfontUrl;
-@property BOOL loadSFs;
 @property BOOL logEnabled;
-@property NSString *logString;
 @property CGFloat fontSize;
 @property BOOL keyboard;
 @property BOOL skipping;
 @property STPopupController *createFilePopup;
+@property BOOL loadFileController;
+@property STPopupController *loadFilePopup;
 
 @end
 
 @implementation ViewController
 
 - (void)viewDidLoad {
+    _tuneSelected = -1;
+    _loadFileController = YES;
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     NSString *file = [[NSBundle mainBundle] pathForResource:@"Hallelujah" ofType:@"abc" inDirectory: @"DefaultFiles"];
@@ -59,10 +61,12 @@
     _allVoices = [NSMutableArray array];
     _allVoices = [self getVoicesWithHeader];
     _voiceSVGpaths = [[voiceHandler alloc] init];
-    [_voiceSVGpaths createVoices:_allVoices];
-    NSArray *voice = _allVoices[0];
+    NSArray *tune = _allVoices[0];
+    NSMutableArray *tuneArray = tune[1];
+    [_voiceSVGpaths createVoices:tuneArray];
+    NSArray *voice = tuneArray[0];
     _selectedVoice = voice[0];
-    [self loadSvgImage:voice[0]];
+    [self loadSvgImage];
     self.server = APP.server;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
@@ -431,7 +435,7 @@ BOOL buttonViewMoved;
     _keyboard = NO;
 }
 
-- (void) loadSvgImage: (NSString*) image {
+- (void) loadSvgImage {
     NSFileManager *fileManager = [[NSFileManager alloc] init];
     NSString *webFolder = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:@"webDAV"];
     NSArray *directory = [fileManager contentsOfDirectoryAtPath:webFolder error:nil];
@@ -524,11 +528,23 @@ BOOL buttonViewMoved;
     NSString *currentVoice;
     NSMutableArray *currentVoiceString = [NSMutableArray array];
     NSMutableArray *allVoices = [NSMutableArray array];
+    NSMutableArray *totalVoices = [NSMutableArray array];
     NSMutableArray *userScoresAndStaves = [NSMutableArray array];
-    for (NSString *line in allLinedStrings) {
+    NSMutableArray *totalUserScoresAndStaves = [NSMutableArray array];
+    NSMutableArray *combinedVoicesWithName = [NSMutableArray array];
+    NSMutableArray *allTunes = [NSMutableArray array];
+    NSString *tuneTitle;
+    BOOL tuneRead = NO;
+    for (int i = 0 ; i < allLinedStrings.count; i++) {
+        NSString *line = allLinedStrings[i];
+        BOOL lastLine = (i == allLinedStrings.count-1);
+//        lastLine = [line isEqualToString:[allLinedStrings lastObject]];
+        tuneRead = (lastLine || ((line.length > 2 && [[line substringToIndex:2] isEqualToString:@"X:"]) && ![line isEqualToString:[allLinedStrings firstObject]]));
         if (line.length > 2 && ![[line substringToIndex:2] isEqualToString:@"V:"] && !headerRead) {
             [header addObject: line];
-            if ((line.length > 10) && ([[line substringToIndex:8] isEqualToString:@"%%staves"] || [[line substringToIndex:7] isEqualToString:@"%%score"]))
+            if ((line.length > 10) && [[line substringToIndex:8] isEqualToString:@"%%staves"])
+                [userScoresAndStaves addObject:line];
+            if ((line.length > 9) && [[line substringToIndex:7] isEqualToString:@"%%score"])
                 [userScoresAndStaves addObject:line];
         }
         else {
@@ -538,6 +554,7 @@ BOOL buttonViewMoved;
                     if (currentVoiceString.count > 0 && currentVoice != nil) {
                         NSArray *voice = [self voiceStringWithNameFromCleanedHeader:header withData:currentVoiceString];
                         [allVoices addObject:voice];
+                        [totalVoices addObject:voice];
                     }
                     currentVoice = line;
                     [currentVoiceString removeAllObjects];
@@ -545,26 +562,110 @@ BOOL buttonViewMoved;
             }
             [currentVoiceString addObject:line];
         }
-    }
-    NSArray *voice = [self voiceStringWithNameFromCleanedHeader:header withData:currentVoiceString];
-    [allVoices addObject:voice];
-    NSMutableArray *combinedVoicesWithName = [NSMutableArray array];
-    for (int i = 0; i < userScoresAndStaves.count; i++) {
-        NSString *string = userScoresAndStaves[i];
-        NSArray *getStaveOrScoreName = [string componentsSeparatedByString:@"%"];
-        NSString *staveOrScoreName = [getStaveOrScoreName lastObject];
-        NSArray *stavesOrScoreOptions = [staveOrScoreName componentsSeparatedByString:@" "];
-        if (stavesOrScoreOptions.count > 1) {
-            staveOrScoreName = stavesOrScoreOptions[0];
+        if (tuneRead) {
+            NSArray *voice = [self voiceStringWithNameFromCleanedHeader:header withData:currentVoiceString];
+            tuneTitle = voice[3];
+            [allVoices addObject:voice];
+            [totalVoices addObject:voice];
+            BOOL multi = (allTunes.count > 0 && lastLine);
+            if (!multi)
+                combinedVoicesWithName = [self combineVoicesFromUserScoresAndStaves:userScoresAndStaves forArray:allVoices forMultiFile:NO];
+            if (combinedVoicesWithName.count < 1) {
+                _potentialVoices = [NSMutableArray array];
+                for (NSArray *voice in allVoices) {
+                    [_potentialVoices addObject:voice[0]];
+                }
+            }
+            [allTunes addObject:@[tuneTitle, [combinedVoicesWithName mutableCopy]]];
+            [currentVoiceString removeAllObjects];
+            [totalUserScoresAndStaves addObject:[userScoresAndStaves mutableCopy]];
+            headerRead = false;
+            [header removeAllObjects];
+            [userScoresAndStaves removeAllObjects];
+            [allVoices removeAllObjects];
+            tuneRead = false;
         }
-        NSString *combinedVoices;
+        if (lastLine && allTunes.count > 1) {
+            combinedVoicesWithName = [self combineVoicesFromUserScoresAndStaves:totalUserScoresAndStaves forArray:totalVoices forMultiFile:YES];
+            [allTunes removeAllObjects];
+            NSString *name = [_filepath lastPathComponent];
+            [allTunes addObject:@[[name substringToIndex:name.length-4], [combinedVoicesWithName mutableCopy]]];
+        }
+    }
+    return allTunes;
+}
+
+- (NSMutableArray*) combineVoicesFromUserScoresAndStaves: (NSMutableArray*) userScoresAndStaves forArray: (NSMutableArray*) allVoices forMultiFile: (BOOL) multifile {
+    NSMutableArray *combinedVoicesWithName = [NSMutableArray array];
+    NSMutableArray *scoresAndStaves = [NSMutableArray array];
+    NSString *string = @"";
+    NSArray *getStaveOrScoreName = [[NSArray alloc] init];
+    NSString *staveOrScoreName = @"";
+    NSString *staveOrScoreVoices = @"";
+    NSArray *stavesOrScoreOptions = [[NSArray alloc] init];
+    BOOL usualWriting = NO;
+    if (multifile) {;
+        for (NSArray *ma in userScoresAndStaves) {
+            BOOL dobreak = NO;
+            for (NSString *new in ma) {
+                getStaveOrScoreName = [new componentsSeparatedByString:@"%"];
+                staveOrScoreName = [getStaveOrScoreName lastObject];
+                stavesOrScoreOptions = [staveOrScoreName componentsSeparatedByString:@" "];
+                if (![scoresAndStaves containsObject:staveOrScoreName]) {
+                    if ([staveOrScoreName hasPrefix:@"staves"] || [staveOrScoreName hasPrefix:@"score"]) {
+                        usualWriting = YES;
+                        [scoresAndStaves addObject:staveOrScoreName];
+                        NSArray *wantedVoices = [staveOrScoreName componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                        for (int i = 1; i < wantedVoices.count; i++) {
+                            [scoresAndStaves addObject:wantedVoices[i]];
+                        }
+                        staveOrScoreVoices = staveOrScoreName;
+                        dobreak = YES;
+                        break;
+                    }
+                    else [scoresAndStaves addObject:new];
+                }
+            }
+            if (dobreak)
+                break;
+        }
+    }
+    for (int i = 0; i < ((!multifile) ? userScoresAndStaves.count : scoresAndStaves.count); i++) {
+        NSString *filename = [[_filepath path] lastPathComponent];
+        if (!multifile) {
+            string = userScoresAndStaves[i];
+        }
+        else {
+            string = scoresAndStaves[i];
+        }
+        getStaveOrScoreName = [string componentsSeparatedByString:@"%"];
+        staveOrScoreName = [getStaveOrScoreName lastObject];
+        stavesOrScoreOptions = [staveOrScoreName componentsSeparatedByString:@" "];
+        if (stavesOrScoreOptions.count >= 1) {
+            staveOrScoreName = stavesOrScoreOptions[0];
+            if ([staveOrScoreVoices isEqualToString:@""])
+                staveOrScoreVoices = (getStaveOrScoreName.count > 1) ? getStaveOrScoreName[getStaveOrScoreName.count-2] : staveOrScoreName;
+        }
+        if (usualWriting || [staveOrScoreVoices isEqualToString:@""]) staveOrScoreVoices = string;
+        NSString *combinedVoices = @"";
         if (getStaveOrScoreName.count > 0) {
+            NSString *keepTitle = @"";
             for (int j = 0; j < allVoices.count; j++) {
                 NSArray *array = allVoices[j];
                 if (j == 0) {
                     NSString *headerToModify = array[1];
                     int incept = (int) [headerToModify rangeOfString:@"\n"].location;
                     combinedVoices = [[[headerToModify substringToIndex:incept] stringByAppendingString:[NSString stringWithFormat:@"\n%@", string]] stringByAppendingString:[headerToModify substringFromIndex:incept]];
+                    combinedVoices = [[[headerToModify substringToIndex:incept] stringByAppendingString:[NSString stringWithFormat:@"\n%@", [string stringByAppendingString:(multifile) ? @"\n\%\%keywarn 0" : @""]]] stringByAppendingString:[headerToModify substringFromIndex:incept]];
+                    if (multifile) {
+                        NSArray *Header = [combinedVoices componentsSeparatedByString:@"\n"];
+                        for (NSString *line in Header) {
+                            if ([line hasPrefix:@"T:"]) {
+                                combinedVoices = [combinedVoices stringByReplacingOccurrencesOfString:line withString:[NSString stringWithFormat:@"T:%@", [filename substringToIndex:filename.length-4]]];
+                                break;
+                            }
+                        }
+                    }
                     if (stavesOrScoreOptions.count > 1) {
                         for (int k = 1; k < stavesOrScoreOptions.count; k++) {
                             NSString *option = stavesOrScoreOptions[k];
@@ -577,19 +678,35 @@ BOOL buttonViewMoved;
                     }
                 }
                 NSString *name = array[0];
-                if ([string rangeOfString:name].location != NSNotFound) {
-                    combinedVoices = [combinedVoices stringByAppendingString:[@"\n" stringByAppendingString: array[2]]];
+                if ([staveOrScoreVoices rangeOfString:name].location != NSNotFound) {
+                    if (multifile) {
+                        //add new title and stuff
+                        NSArray *newHeader = [array[1] componentsSeparatedByString:@"\n"];
+                        for (NSString *line in newHeader) {
+                            if ([line hasPrefix:@"T:"] && ![[line substringFromIndex:2] isEqualToString:keepTitle]) {
+                                combinedVoices = [combinedVoices stringByAppendingString:[@"\n" stringByAppendingString: line]];
+                                keepTitle = [line substringFromIndex:2];
+                            }
+                            NSCharacterSet *fields = [NSCharacterSet characterSetWithCharactersInString:@"COAGPZNGHRBDSFI"];
+                            if ([[line substringToIndex:2] rangeOfCharacterFromSet:fields].location != NSNotFound) {
+                                combinedVoices = [combinedVoices stringByAppendingString:[@"\n" stringByAppendingString: line]];
+                            }
+                            NSCharacterSet *inlineFields = [NSCharacterSet characterSetWithCharactersInString:@"KLM"];
+                            if ([[line substringToIndex:2] rangeOfCharacterFromSet:inlineFields].location != NSNotFound) {
+                                combinedVoices = [combinedVoices stringByAppendingString:[NSString stringWithFormat:@"\n[%@]", line]];
+                            }
+                        }
+                    }
+                        combinedVoices = [combinedVoices stringByAppendingString:[@"\n" stringByAppendingString: array[2]]];
+//                        NSLog(@"ADDED LINE:\n%@\nTO VOICE:%@ \nVOICESTRING:\n\n%@", array[2], staveOrScoreVoices, combinedVoices);
                 }
             }
         }
-        NSString *filename = [[_filepath path] lastPathComponent];
-        [combinedVoicesWithName addObject:@[[NSString stringWithFormat:@"%@_%@", [filename substringToIndex:filename.length-4], staveOrScoreName], combinedVoices]];
-    }
-    if (combinedVoicesWithName.count < 1) {
-        _potentialVoices = [NSMutableArray array];
-        for (NSArray *voice in allVoices) {
-            [_potentialVoices addObject:voice[0]];
-        }
+        NSString *voiceName = [NSString stringWithFormat:@"%@_%@", [filename substringToIndex:filename.length-4], staveOrScoreName];
+        if (multifile)
+            NSLog(@"created Voice %@: \n\n%@", voiceName, combinedVoices);
+        [combinedVoicesWithName addObject:@[voiceName, combinedVoices]];
+        staveOrScoreVoices = @"";
     }
     return combinedVoicesWithName;
 }
@@ -599,8 +716,11 @@ BOOL buttonViewMoved;
     NSString *cleanedHeader = header[0];
     NSArray *voiceInfo = [currentVoiceString[0] componentsSeparatedByString:@" "];
     NSString *name = [voiceInfo[0] substringFromIndex:2];
-    for (int i = 1; i<header.count; i++) {
+    NSString *title = @"";
+    for (int i = 1; i < header.count; i++) {
         NSString *line = header[i];
+        if ([line hasPrefix:@"T:"])
+            title = [line substringFromIndex:2];
         if (line.length < 8) {
             cleanedHeader = [cleanedHeader stringByAppendingString:[NSString stringWithFormat:@"\n%@", line]];
         }
@@ -611,9 +731,11 @@ BOOL buttonViewMoved;
     NSString *voice = currentVoiceString[0];
     for (int i = 1; i < currentVoiceString.count; i++) {
         NSString *voiceLine = currentVoiceString[i];
+        if ([voiceLine isEqualToString:@""])
+            break;
         voice = [voice stringByAppendingString:[NSString stringWithFormat:@"\n%@", voiceLine]];
     }
-    return @[name, cleanedHeader, voice];
+    return @[name, cleanedHeader, voice, title];
 }
 
 
@@ -672,16 +794,16 @@ BOOL buttonViewMoved;
     }];
 }
 
-- (void) loadABCfileFromPath: (NSString*) path {
-    _filepath = [NSURL fileURLWithPath:path];
+- (NSString *) stringWithContentsOfEncodedFile: (NSString *) file {
+    NSString *content = @"";
     NSError *error = nil;
-    NSString *content = [NSString stringWithContentsOfFile:[_filepath path]  encoding:NSUTF8StringEncoding error:&error];
+    content = [NSString stringWithContentsOfFile:file  encoding:NSUTF8StringEncoding error:&error];
     if (error != nil) {
         error = nil;
-        content = [NSString stringWithContentsOfFile:[_filepath path]  encoding:NSASCIIStringEncoding error:&error];
+        content = [NSString stringWithContentsOfFile:file  encoding:NSASCIIStringEncoding error:&error];
         if (error != nil) {
             error = nil;
-            content = [NSString stringWithContentsOfFile:[_filepath path]  encoding:NSUnicodeStringEncoding error:&error];
+            content = [NSString stringWithContentsOfFile:file  encoding:NSUnicodeStringEncoding error:&error];
             if (error != nil) {
                 UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"could not read file" message:[NSString stringWithFormat:@"unknown encoding of file: : %@", error.localizedFailureReason] preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
@@ -693,10 +815,19 @@ BOOL buttonViewMoved;
         else _encoding = NSASCIIStringEncoding;
     }
     else _encoding = NSUTF8StringEncoding;
-    if (error == nil) {
+    if (!error) {
         content = [content stringByReplacingOccurrencesOfString:@"\r\n" withString:@"\n"];
         content = [content stringByReplacingOccurrencesOfString:@"\\n" withString:@"\n"];
         content = [content stringByReplacingOccurrencesOfString:@"\r" withString:@"\n"];
+    }
+    return content;
+}
+
+- (void) loadABCfileFromPath: (NSString*) path {
+    _filepath = [NSURL fileURLWithPath:path];
+    NSString *content = @"";
+    content = [self stringWithContentsOfEncodedFile:path];
+    if (![content isEqualToString:@""]) {
         [self setColouredCodeFromString:content];
         
         [_allVoices removeAllObjects];
@@ -706,108 +837,132 @@ BOOL buttonViewMoved;
         [_displayView loadHTMLString:@"" baseURL:nil];
         return;
     }
-    [_voiceSVGpaths createVoices:_allVoices];
-    NSArray *voice = _allVoices[0];
-    _selectedVoice = voice[0];
-    [self loadSvgImage:_selectedVoice];
+    NSArray *tune = _allVoices[0];
+    NSMutableArray *tuneArray = tune[1];
+    _tuneTitle = tune[0];
+    if (tuneArray.count > 0) {
+        [_voiceSVGpaths createVoices:tuneArray];
+        NSArray *voice = tuneArray[0];
+        _selectedVoice = voice[0];
+        [self loadSvgImage];
+    }
 }
 
-- (void) enterFullScoreAndOrParts {
-    if ([_abcView.textView.text isEqualToString:@""]) {
-        return;
-    }
-    NSArray *buttons = [NSArray arrayWithObjects:@"create full score only", @"create parts only", @"create full score and parts", nil];
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"no rule to create parts or a full score found!" message:@"choose to add full score, parts or both:" preferredStyle:UIAlertControllerStyleAlert];
-    for (NSString *title in buttons) {
-        UIAlertAction *action = [UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-            NSString *addFullScore = @"\n%%score ";
-            NSString *addParts = @"";
-            for (NSString *name in self->_potentialVoices) {
-                addFullScore = [addFullScore stringByAppendingString:[NSString stringWithFormat:@"%@ ", name]];
-                NSString *part = @"\n%%staves ";
-                addParts = [addParts stringByAppendingString:[[part stringByAppendingString:[NSString stringWithFormat:@"%@ ", name]] stringByAppendingString:[@"%" stringByAppendingString:[NSString stringWithFormat:@"%@ scale=0.7 barsperstaff=8", name]]]];
-            }
-            addFullScore = [addFullScore stringByAppendingString:@"%Partitur scale=0.6 barsperstaff=4"];
-            NSMutableString *orig = [NSMutableString stringWithString:self->_abcView.textView.text];
-            NSRange location = [orig rangeOfString:@"\n"];
-            NSString *inserted = [[[[orig substringToIndex:location.location] stringByAppendingString:([title isEqualToString:@"create full score only"] || [title isEqualToString:@"create full score and parts"]) ? addFullScore : @"" ] stringByAppendingString:([title isEqualToString:@"create parts only"] || [title isEqualToString:@"create full score and parts"]) ? addParts : @""] stringByAppendingString:[orig substringFromIndex:location.location]];
-            [self setColouredCodeFromString:inserted];
-            [self->_allVoices removeAllObjects];
-            self->_allVoices = [self getVoicesWithHeader];
-            [self->_voiceSVGpaths createVoices:self->_allVoices];
-            NSArray *Voice = self->_allVoices[0];
-            self->_selectedVoice = Voice[0];
-            [self loadSvgImage:self->_selectedVoice];
-        }];
-        [alert addAction:action];
-    }
-    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
-    [alert addAction:cancel];
-    [self presentViewController:alert animated:YES completion:nil];
-}
-
-- (void) loadABCdocuments {
-    NSFileManager *fileManager = [[NSFileManager alloc] init];
-    NSArray *directory = [fileManager contentsOfDirectoryAtPath:docsPath error:nil];
-    NSPredicate *fltr = [NSPredicate predicateWithFormat:@"self ENDSWITH '.abc'"];
-    _abcDocuments = [directory filteredArrayUsingPredicate:fltr];
-    for (NSString *file in _abcDocuments) {
-        if ([file containsString:@" "]) {
-            NSError *error;
-            if (![fileManager moveItemAtPath:[docsPath stringByAppendingPathComponent:file] toPath:[docsPath stringByAppendingPathComponent:[[file lastPathComponent] stringByReplacingOccurrencesOfString:@" " withString:@"_"]] error:&error])
-                NSLog(@"couldn´t rename file: %@", error.localizedFailureReason);
-            [self loadABCdocuments];
+- (BOOL) enterFullScoreAndOrParts {
+    NSArray *tune = _allVoices[0];
+    NSMutableArray *tuneArray = tune[1];
+    if (tuneArray.count < 1) {
+        if ([_abcView.textView.text isEqualToString:@""]) {
+            return NO;
         }
+        NSArray *buttons = [NSArray arrayWithObjects:@"create full score only", @"create parts only", @"create full score and parts", nil];
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"no rule to create parts or a full score found!" message:@"choose to add full score, parts or both:" preferredStyle:UIAlertControllerStyleAlert];
+        for (NSString *title in buttons) {
+            UIAlertAction *action = [UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                NSString *addFullScore = @"\n%%score ";
+                NSString *addParts = @"";
+                for (NSString *name in self->_potentialVoices) {
+                    addFullScore = [addFullScore stringByAppendingString:[NSString stringWithFormat:@"%@ ", name]];
+                    NSString *part = @"\n%%staves ";
+                    addParts = [addParts stringByAppendingString:[[part stringByAppendingString:[NSString stringWithFormat:@"%@ ", name]] stringByAppendingString:[@"%" stringByAppendingString:[NSString stringWithFormat:@"%@ scale=0.7 barsperstaff=8", name]]]];
+                }
+                addFullScore = [addFullScore stringByAppendingString:@"%Partitur scale=0.6 barsperstaff=4"];
+                NSMutableString *orig = [NSMutableString stringWithString:self->_abcView.textView.text];
+                NSRange location = [orig rangeOfString:@"\n"];
+                NSString *inserted = [[[[orig substringToIndex:location.location] stringByAppendingString:([title isEqualToString:@"create full score only"] || [title isEqualToString:@"create full score and parts"]) ? addFullScore : @"" ] stringByAppendingString:([title isEqualToString:@"create parts only"] || [title isEqualToString:@"create full score and parts"]) ? addParts : @""] stringByAppendingString:[orig substringFromIndex:location.location]];
+                [self setColouredCodeFromString:inserted];
+                [self->_allVoices removeAllObjects];
+                self->_allVoices = [self getVoicesWithHeader];
+                NSArray *tune = self->_allVoices[0];
+                NSMutableArray *tuneArray = tune[1];
+                [self->_voiceSVGpaths createVoices:tuneArray];
+                self->_tuneTitle = tune[0];
+                NSArray *Voice = tuneArray[0];
+                self->_selectedVoice = Voice[0];
+                [self loadSvgImage];
+            }];
+            [alert addAction:action];
+        }
+        [self presentViewController:alert animated:YES completion:nil];
+        return YES;
     }
+    else return NO;
 }
 
 - (IBAction)buttonPressed:(UIButton *)sender {
     if (sender.tag == 0) {
         //load
-        _loadSFs = NO;
-        decorationController = NO;
-        [self loadABCdocuments];
-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"load abc-Tune:" message:@"to add tunes put them in the apps Shared Folder with iTunes." preferredStyle:UIAlertControllerStyleAlert];
-        UIViewController *controller = [self controllerWithTableViewEditable:YES];
-        [alert setValue:controller forKey:@"contentViewController"];
-        UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
-        [alert addAction:cancel];
-        [self presentViewController:alert animated:YES completion:nil];
+        dropCreate = NO;
+        _loadFilePopup = [[STPopupController alloc] initWithRootViewController:[[UIStoryboard storyboardWithName: @"Main" bundle:nil] instantiateViewControllerWithIdentifier:@"loadNewFileController"]];
+        loadFileViewController *loadFile = (loadFileViewController *) _loadFilePopup.topViewController;
+        loadFile.loadController = YES;
+        if (_tuneSelected != -1) {
+            loadFile.loadTunes = YES;
+            loadFile.multiTuneFile = [_filepath path];
+        }
+        _loadFilePopup.containerView.layer.cornerRadius = 16;
+        [_loadFilePopup setNavigationBarHidden:YES];
+        if (NSClassFromString(@"UIBlurEffect")) {
+            UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+            _loadFilePopup.backgroundView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+            _loadFilePopup.backgroundView.alpha = 0.9;
+        }
+        [_loadFilePopup.backgroundView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dropPopup)]];
+        [_loadFilePopup presentInViewController:self];
     }
     else if (sender.tag == 1) {
             //store
-        NSError *error;
-        BOOL write = [_abcView.textView.text writeToURL:_filepath atomically:NO encoding:_encoding error:&error];
-        if (!write) {
-            write = [_abcView.textView.text writeToURL:_filepath atomically:NO encoding:NSUTF8StringEncoding error:&error];
+        if (_tuneSelected == -1) {
+            NSError *error;
+            BOOL write = [_abcView.textView.text writeToURL:_filepath atomically:NO encoding:_encoding error:&error];
             if (!write) {
-                NSLog(@"could not write file: %@", error);
+                write = [_abcView.textView.text writeToURL:_filepath atomically:NO encoding:NSUTF8StringEncoding error:&error];
+                if (!write) {
+                    NSLog(@"could not write file: %@", error);
+                }
+            }
+            else {
+                _refreshButton.enabled = YES;
+                _saveButton.enabled = YES;
             }
         }
         else {
-            _refreshButton.enabled = YES;
-            _saveButton.enabled = YES;
+            //merge textView content into File
+            NSError *error;
+            NSString *oldFileContent = [NSString stringWithContentsOfURL:_filepath encoding:_encoding error:&error];
+            if (!error) {
+                NSArray *replaceTune = _tuneArray[_tuneSelected];
+                NSValue *rangeObject = replaceTune[1];
+                NSRange range = rangeObject.rangeValue;
+                range.location = range.location-2;
+                range.length = range.length+2;
+                NSString *newFileContent = [oldFileContent stringByReplacingCharactersInRange:range withString:_abcView.textView.text];
+                if (![newFileContent writeToURL:_filepath atomically:YES encoding:_encoding error:&error])
+                    NSLog(@"couldn't write newFileContent: %@", error.localizedFailureReason);
+                else [self updateTuneArray];
+            }
+            else NSLog(@"couldn't read multituneFile: %@", error.localizedFailureReason);
         }
     }
     else if (sender.tag == 2) {
         //display
-        _allVoices = [self getVoicesWithHeader]; //refresh from input
-        if (_allVoices.count < 1) {
-            [self enterFullScoreAndOrParts];
-            return;
+        dropCreate = NO;
+        _loadFilePopup = [[STPopupController alloc] initWithRootViewController:[[UIStoryboard storyboardWithName: @"Main" bundle:nil] instantiateViewControllerWithIdentifier:@"loadNewFileController"]];
+        loadFileViewController *loadFile = (loadFileViewController *) _loadFilePopup.topViewController;
+        loadFile.loadController = NO;
+        if (_tuneSelected != -1) {
+            loadFile.loadTunes = YES;
+            loadFile.multiTuneFile = [_filepath path];
         }
-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"display voice" message:@"choose the voice to display" preferredStyle:UIAlertControllerStyleAlert];
-        for (NSArray *voice in _allVoices) {
-            NSString *voiceName = voice[0];
-            UIAlertAction *action = [UIAlertAction actionWithTitle:voiceName style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                self->_selectedVoice = voiceName;
-                [self loadSvgImage:voiceName];
-            }];
-            [alert addAction:action];
+        _loadFilePopup.containerView.layer.cornerRadius = 16;
+        [_loadFilePopup setNavigationBarHidden:YES];
+        if (NSClassFromString(@"UIBlurEffect")) {
+            UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+            _loadFilePopup.backgroundView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+            _loadFilePopup.backgroundView.alpha = 0.9;
         }
-        UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
-        [alert addAction:cancel];
-        [self presentViewController:alert animated:YES completion:nil];
+        [_loadFilePopup.backgroundView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dropPopup)]];
+        [_loadFilePopup presentInViewController:self];
     }
     else if (sender.tag == 3) {
         //refresh
@@ -816,13 +971,62 @@ BOOL buttonViewMoved;
             [_displayView loadHTMLString:@"" baseURL:nil];
             return;
         }
-        [_voiceSVGpaths createVoices:_allVoices];
-        [self loadSvgImage:_selectedVoice];
+        if (_tuneSelected < 0) {
+            NSArray *tune = self->_allVoices[0];
+            NSMutableArray *tuneArray = tune[1];
+            [_voiceSVGpaths createVoices:tuneArray];
+        }
+        else {
+            NSString *currentTune = [NSTemporaryDirectory() stringByAppendingPathComponent:@"currentTune.abc"];
+            NSError *error;
+            if (![_abcView.textView.text writeToFile:currentTune atomically:YES encoding:NSUTF8StringEncoding error:&error])
+                NSLog(@"couldn't write currentTune to file: %@", error.localizedFailureReason);
+            else {
+                NSURL *keepMultifile = _filepath;
+                [self loadABCfileFromPath:currentTune];
+                _filepath = keepMultifile;
+            }
+        }
+        if (![self enterFullScoreAndOrParts])
+            [self loadSvgImage];
+        else [_displayView loadHTMLString:@"" baseURL:nil];
     }
     else if (sender.tag == 4) {
         //create new file:
+        dropCreate = YES;
         [self createNewFile];
     }
+}
+
+- (NSMutableArray*) updateTuneArray {
+    NSError *error = nil;
+    _tuneArray = [NSMutableArray array];
+    NSMutableArray *abcDocuments = [NSMutableArray array];
+    NSString *filecontent = [NSString stringWithContentsOfURL:_filepath encoding:_encoding error:&error];
+    if (!error) {
+        NSArray* tunes = [filecontent componentsSeparatedByString:@"\nX:"];
+        for (int i = 0; i < tunes.count; i++) {
+            NSString *tune = tunes [i];
+            //extract title
+            NSArray *tunelines = [tune componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+            for (NSString *line in tunelines) {
+                if (line.length > 4 && [line hasPrefix:@"T:"]) {
+                    NSString *title = [line substringFromIndex:2];
+                    [abcDocuments addObject:title];
+                    break;
+                }
+            }
+            if (i == 0) {
+                NSArray *tuneData = @[tune, [NSValue valueWithRange:[filecontent rangeOfString:tune]], abcDocuments[i]];
+                [_tuneArray addObject:tuneData];
+            }
+            else {
+                NSArray *tuneData = @[[@"X:" stringByAppendingString:tune], [NSValue valueWithRange:[filecontent rangeOfString:tune]], abcDocuments[i]];
+                [_tuneArray addObject:tuneData];
+            }
+        }
+    }
+    return abcDocuments;
 }
 
 UIAlertController *alert;
@@ -830,22 +1034,30 @@ BOOL alertShown;
 
 - (void) createNewFile {
     _createFilePopup = [[STPopupController alloc] initWithRootViewController:[[UIStoryboard storyboardWithName: @"Main" bundle:nil] instantiateViewControllerWithIdentifier:@"createNewFileController"]];
-    _createFilePopup.containerView.layer.cornerRadius = 4;
+    _createFilePopup.containerView.layer.cornerRadius = 16;
     [_createFilePopup setNavigationBarHidden:YES];
     if (NSClassFromString(@"UIBlurEffect")) {
         UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
         _createFilePopup.backgroundView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+        _createFilePopup.backgroundView.alpha = 0.9;
     }
     [_createFilePopup.backgroundView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dropPopup)]];
     [_createFilePopup presentInViewController:self];
 }
 
+BOOL dropCreate;
 
 - (void) dropPopup {
 //    createFileViewController *pop = (createFileViewController*) [_createFilePopup topViewController];
 //    [pop disMiss:nil];
-    [_createFilePopup dismiss];
-    _createFilePopup = nil;
+    if (dropCreate) {
+        [_createFilePopup dismiss];
+        _createFilePopup = nil;
+    }
+    else {
+        [_loadFilePopup dismiss];
+        _loadFilePopup = nil;
+    }
 }
 
 - (IBAction)zoomText:(UIPinchGestureRecognizer *)sender {
@@ -923,16 +1135,10 @@ BOOL alertShown;
         cell = [[UITableViewCell alloc] initWithStyle: (!decorationController) ? UITableViewCellStyleDefault : UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
     }
     if (!decorationController) {
-        
-        if (!_loadSFs) {
-            cell.textLabel.text = _abcDocuments[indexPath.row];
+        if (indexPath.row == 0) {
+            cell.textLabel.text = @"Default";
         }
-        else {
-            if (indexPath.row == 0) {
-                cell.textLabel.text = @"Default";
-            }
-            else cell.textLabel.text = _userSoundfonts[indexPath.row-1];
-        }
+        else cell.textLabel.text = _userSoundfonts[indexPath.row-1];
         cell.textLabel.font = [UIFont systemFontOfSize:16];
     }
     else {
@@ -947,25 +1153,13 @@ BOOL alertShown;
 
 - (NSInteger)tableView:(nonnull UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (!decorationController) {
-        if (!_loadSFs) {
-            return _abcDocuments.count;
-        }
-        else return _userSoundfonts.count + 1;
+        return _userSoundfonts.count + 1;
     }
     else return _decorations.count;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (!decorationController) {
-        if (!_loadSFs) {
-            [self dismissViewControllerAnimated:YES completion:nil];
-            _refreshButton.enabled = YES;
-            _saveButton.enabled = YES;
-            NSString *fileName = _abcDocuments[indexPath.row];
-            _logString = @"";
-            [self loadABCfileFromPath:[docsPath stringByAppendingPathComponent:fileName]];
-        }
-        else {
             [self dismissViewControllerAnimated:YES completion:nil];
             _mp = nil;
             NSString *sfFile = [[NSString alloc] init];
@@ -977,7 +1171,6 @@ BOOL alertShown;
             _mp = [[midiPlayer alloc] initWithSoundFontURL:_soundfontUrl];
             _mp.progressView = _playbackProgress;
             _mp.delegate = self;
-        }
     }
     else {
         NSArray *split = _decorations[indexPath.row];
@@ -990,25 +1183,11 @@ BOOL alertShown;
     if (editingStyle == UITableViewCellEditingStyleDelete) {
         NSFileManager *fileManager = [NSFileManager defaultManager];
         NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-        NSString *filePath = [documentsPath stringByAppendingPathComponent: (!_loadSFs) ? _abcDocuments[indexPath.row] : _userSoundfonts[indexPath.row-1]];
+        NSString *filePath = [documentsPath stringByAppendingPathComponent: _userSoundfonts[indexPath.row-1]];
         NSError *error;
         BOOL success = [fileManager removeItemAtPath:filePath error:&error];
         if (!success) {
             NSLog(@"Could not delete file -:%@ ",[error localizedDescription]);
-        }
-        else if (!_loadSFs) {
-            if ([_abcDocuments[indexPath.row] isEqualToString:[_filepath lastPathComponent]]) {
-                _abcView.textView.text = @"";
-                [_displayView loadHTMLString:@"" baseURL:nil];
-                _refreshButton.enabled = NO;
-                _saveButton.enabled = NO;
-            }
-            [self loadABCdocuments];
-            if (_abcDocuments.count == 0) {
-                [self dismissViewControllerAnimated:YES completion:nil];
-                return;
-            }
-            [tableView reloadData];
         }
         else {
             [self loadSf2Documents];
@@ -1119,7 +1298,6 @@ BOOL alertShown;
 }
 
 - (IBAction)loadUserSoundFont:(id)sender {
-    _loadSFs = YES;
     decorationController = NO;
     [self loadSf2Documents];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"load soundfont-Tune:" message:@"to use your own sf2-files put them in the apps Shared Folder with iTunes." preferredStyle:UIAlertControllerStyleAlert];

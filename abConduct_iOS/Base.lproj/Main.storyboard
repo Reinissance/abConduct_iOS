@@ -485,10 +485,10 @@
                     <size key="freeformSize" width="275" height="288"/>
                     <userDefinedRuntimeAttributes>
                         <userDefinedRuntimeAttribute type="size" keyPath="contentSizeInPopup">
-                            <size key="value" width="275" height="330"/>
+                            <size key="value" width="275" height="288"/>
                         </userDefinedRuntimeAttribute>
                         <userDefinedRuntimeAttribute type="size" keyPath="landscapeContentSizeInPopup">
-                            <size key="value" width="330" height="220"/>
+                            <size key="value" width="330" height="200"/>
                         </userDefinedRuntimeAttribute>
                     </userDefinedRuntimeAttributes>
                     <connections>
@@ -507,10 +507,11 @@
             </objects>
             <point key="canvasLocation" x="959" y="-121"/>
         </scene>
-        <!--View Controller-->
+        <!--Load File View Controller-->
         <scene sceneID="vmW-vz-PFh">
             <objects>
-                <viewController id="9sV-SF-Htb" sceneMemberID="viewController">
+                <placeholder placeholderIdentifier="IBFirstResponder" id="9Sp-yY-sjc" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <viewController storyboardIdentifier="loadNewFileController" id="9sV-SF-Htb" customClass="loadFileViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="zU3-Pc-Bav"/>
                         <viewControllerLayoutGuide type="bottom" id="Naq-SL-ItD"/>
@@ -518,13 +519,46 @@
                     <view key="view" contentMode="scaleToFill" id="M35-Wh-1be">
                         <rect key="frame" x="0.0" y="0.0" width="275" height="288"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="load" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m3j-gv-6So">
+                                <rect key="frame" x="16" y="0.0" width="243" height="44"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="xtT-62-7Lb">
+                                <rect key="frame" x="16" y="105" width="243" height="163"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" heightSizable="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </tableView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CuE-f6-oLU">
+                                <rect key="frame" x="16" y="41" width="243" height="56"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" red="0.92020939086294418" green="0.92020939086294418" blue="0.92020939086294418" alpha="0.49917059075342468" colorSpace="custom" customColorSpace="sRGB"/>
                     </view>
                     <size key="freeformSize" width="275" height="288"/>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="size" keyPath="contentSizeInPopup">
+                            <size key="value" width="275" height="288"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="size" keyPath="landscapeContentSizeInPopup">
+                            <size key="value" width="330" height="200"/>
+                        </userDefinedRuntimeAttribute>
+                    </userDefinedRuntimeAttributes>
+                    <connections>
+                        <outlet property="messageLabel" destination="CuE-f6-oLU" id="Yen-ab-TBK"/>
+                        <outlet property="tableView" destination="xtT-62-7Lb" id="GK4-JJ-Qgw"/>
+                        <outlet property="titleLabel" destination="m3j-gv-6So" id="svF-TE-G41"/>
+                    </connections>
                 </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="9Sp-yY-sjc" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1721" y="168"/>
+            <point key="canvasLocation" x="1720.8" y="167.31634182908547"/>
         </scene>
     </scenes>
 </document>

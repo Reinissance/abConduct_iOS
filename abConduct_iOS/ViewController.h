@@ -19,9 +19,11 @@
 
 @property NSURL *filepath;
 @property NSStringEncoding encoding;
+- (NSString *) stringWithContentsOfEncodedFile: (NSString *) file;
 @property NSMutableArray *allVoices;
 @property NSString *selectedVoice;
 @property voiceHandler *voiceSVGpaths;
+@property NSString *logString;
 @property (weak, nonatomic) IBOutlet UIButton *refreshButton;
 @property (weak, nonatomic) IBOutlet UIButton *saveButton;
 @property (weak, nonatomic) IBOutlet UIWebView *displayView;
@@ -60,11 +62,16 @@
 @property (weak, nonatomic) IBOutlet UIButton *sfButton;
 @property (weak, nonatomic) IBOutlet UISegmentedControl *skipControl;
 @property (weak, nonatomic) IBOutlet UIButton *exportButton;
+@property int tuneSelected;
+@property NSString *tuneTitle;
+@property NSMutableArray *tuneArray;
+- (NSMutableArray*) updateTuneArray;
 
 - (void) setColouredCodeFromString: (NSString*) code;
 
 - (IBAction)skip:(UISegmentedControl *)sender;
 - (NSMutableArray*) getVoicesWithHeader;
-- (void) loadSvgImage: (NSString*) image;
+- (void) loadSvgImage;
+- (BOOL) enterFullScoreAndOrParts;
 
 @end
