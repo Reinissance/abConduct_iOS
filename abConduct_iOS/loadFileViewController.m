@@ -12,6 +12,7 @@
 
 #define APP ((AppDelegate *)[[UIApplication sharedApplication] delegate])
 #define docsPath [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]
+#define controller ((ViewController *)[[(AppDelegate*)APP window] rootViewController])
 
 @interface loadFileViewController ()
 
@@ -25,9 +26,11 @@
     _tuneTitle = @"";
     _tableView.delegate = self;
     _tableView.dataSource = self;
-    ViewController *controller = (ViewController *)[[(AppDelegate*)
-                                                     APP window] rootViewController];
     _abcDocuments = [NSMutableArray array];
+    
+}
+
+-(void) load {
     if (_loadController) {
         //loadFile
         if (_loadTunes) {
@@ -87,8 +90,6 @@
 
 - (NSMutableArray *) checkMultiFile: (NSMutableArray *) array {
     NSMutableArray *checked = [NSMutableArray array];
-    ViewController *controller = (ViewController *)[[(AppDelegate*)
-                                                     APP window] rootViewController];
     for (int i = 0; i < array.count; i++) {
         NSString *file = [docsPath stringByAppendingPathComponent:array[i]];
         NSError *error = nil;
@@ -107,8 +108,6 @@
 }
 
 - (void) getTunes: (NSString*) fileName {
-    ViewController *controller = (ViewController *)[[(AppDelegate*)
-                                                     APP window] rootViewController];
     _abcDocuments = [controller updateTuneArray];
 }
 
@@ -139,8 +138,6 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSString *fileName = _abcDocuments[indexPath.row];
-    ViewController *controller = (ViewController *)[[(AppDelegate*)
-                                                     APP window] rootViewController];
     if (_loadController) {
         //load abcDocuments
         controller.refreshButton.enabled = YES;
@@ -224,11 +221,9 @@
         if (!success) {
             NSLog(@"Could not delete file -:%@ ",[error localizedDescription]);
         }
-        ViewController *controller = (ViewController *)[[(AppDelegate*)
-                                                         APP window] rootViewController];
         if ([_abcDocuments[indexPath.row] isEqualToString:[controller.filepath lastPathComponent]]) {
             controller.abcView.textView.text = @"";
-            [controller.displayView loadHTMLString:@"" baseURL:nil];
+                    [controller.displayView loadHTMLString:@"" baseURL:nil];
             controller.refreshButton.enabled = NO;
             controller.saveButton.enabled = NO;
         }

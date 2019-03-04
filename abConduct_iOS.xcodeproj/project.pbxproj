@@ -29,16 +29,20 @@
 		4A2D7DDE214EBBCF005FB580 /* abConduct_iOSUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D7DDD214EBBCF005FB580 /* abConduct_iOSUITests.m */; };
 		4A30E55221F5A569000E4625 /* directives.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4A30E55121F5A569000E4625 /* directives.txt */; };
 		4A3C598C218A18AE00AD9A62 /* stresspat.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A3C598B218A18AE00AD9A62 /* stresspat.c */; };
+		4A473E51222DB2F4009F0B22 /* STPopup.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A473E4F222DB2D4009F0B22 /* STPopup.framework */; };
+		4A473E52222DB2F4009F0B22 /* STPopup.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4A473E4F222DB2D4009F0B22 /* STPopup.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		4A473EF4222DCB6C009F0B22 /* exportViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A473EF3222DCB6C009F0B22 /* exportViewController.m */; };
 		4A47A8CB21D2BC0400B33A51 /* midiInstruments.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4A47A8CA21D2BC0400B33A51 /* midiInstruments.txt */; };
 		4A4C07FB21CFA6AD00FCF89B /* decorations.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4A4C07FA21CFA6AD00FCF89B /* decorations.txt */; };
-		4A566EBC21E7F5DC00BEC3B0 /* STPopup.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A566EBB21E7F5DC00BEC3B0 /* STPopup.framework */; };
-		4A566EBD21E7F9A900BEC3B0 /* STPopup.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A566EBB21E7F5DC00BEC3B0 /* STPopup.framework */; };
-		4A566EBE21E7F9A900BEC3B0 /* STPopup.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4A566EBB21E7F5DC00BEC3B0 /* STPopup.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		4A596582215C300300F226A5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A596581215C300300F226A5 /* Foundation.framework */; };
 		4A66AB85222961CB00F5D1D8 /* loadFileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A66AB84222961CB00F5D1D8 /* loadFileViewController.m */; };
 		4A6743822150012400886D97 /* DefaultFiles in Resources */ = {isa = PBXBuildFile; fileRef = 4A6743812150012400886D97 /* DefaultFiles */; };
 		4A6B2AAF21EFBAE6007F9CEA /* createFileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6B2AAE21EFBAE6007F9CEA /* createFileViewController.m */; };
 		4A70C12021D3B4B5002A41F3 /* drummapSounds.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4A70C11F21D3B4B5002A41F3 /* drummapSounds.txt */; };
+		4A70E3FD222DA7A2008BF2DB /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A70E3FC222DA7A2008BF2DB /* CoreText.framework */; };
+		4A70E3FF222DA7BD008BF2DB /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A70E3FE222DA7BD008BF2DB /* CoreImage.framework */; };
+		4A70E401222DA7D1008BF2DB /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A70E400222DA7D1008BF2DB /* QuartzCore.framework */; };
+		4A70E403222DA7E3008BF2DB /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A70E402222DA7E2008BF2DB /* CoreGraphics.framework */; };
 		4A74251A2163F282001C7466 /* abcparse.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A7425052163F281001C7466 /* abcparse.c */; };
 		4A74251B2163F282001C7466 /* buffer.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A7425062163F281001C7466 /* buffer.c */; };
 		4A74251C2163F282001C7466 /* format.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A7425082163F281001C7466 /* format.c */; };
@@ -122,7 +126,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				4A566EBE21E7F9A900BEC3B0 /* STPopup.framework in Embed Frameworks */,
+				4A473E52222DB2F4009F0B22 /* STPopup.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -168,9 +172,12 @@
 		4A30E55121F5A569000E4625 /* directives.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = directives.txt; sourceTree = "<group>"; };
 		4A3A9B332150081E009757BC /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		4A3C598B218A18AE00AD9A62 /* stresspat.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = stresspat.c; sourceTree = "<group>"; };
+		4A473E4F222DB2D4009F0B22 /* STPopup.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = STPopup.framework; sourceTree = "<group>"; };
+		4A473EEB222DB6C1009F0B22 /* CocoaLumberjack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CocoaLumberjack.framework; sourceTree = "<group>"; };
+		4A473EF2222DCB6C009F0B22 /* exportViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = exportViewController.h; sourceTree = "<group>"; };
+		4A473EF3222DCB6C009F0B22 /* exportViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = exportViewController.m; sourceTree = "<group>"; };
 		4A47A8CA21D2BC0400B33A51 /* midiInstruments.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = midiInstruments.txt; sourceTree = "<group>"; };
 		4A4C07FA21CFA6AD00FCF89B /* decorations.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = decorations.txt; sourceTree = "<group>"; };
-		4A566EBB21E7F5DC00BEC3B0 /* STPopup.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = STPopup.framework; sourceTree = "<group>"; };
 		4A596581215C300300F226A5 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		4A66AB83222961CB00F5D1D8 /* loadFileViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = loadFileViewController.h; sourceTree = "<group>"; };
 		4A66AB84222961CB00F5D1D8 /* loadFileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = loadFileViewController.m; sourceTree = "<group>"; };
@@ -178,6 +185,10 @@
 		4A6B2AAD21EFBAE6007F9CEA /* createFileViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = createFileViewController.h; sourceTree = "<group>"; };
 		4A6B2AAE21EFBAE6007F9CEA /* createFileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = createFileViewController.m; sourceTree = "<group>"; };
 		4A70C11F21D3B4B5002A41F3 /* drummapSounds.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = drummapSounds.txt; sourceTree = "<group>"; };
+		4A70E3FC222DA7A2008BF2DB /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
+		4A70E3FE222DA7BD008BF2DB /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
+		4A70E400222DA7D1008BF2DB /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		4A70E402222DA7E2008BF2DB /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		4A7425052163F281001C7466 /* abcparse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = abcparse.c; sourceTree = "<group>"; };
 		4A7425062163F281001C7466 /* buffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = buffer.c; sourceTree = "<group>"; };
 		4A7425072163F281001C7466 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
@@ -287,13 +298,16 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A566EBD21E7F9A900BEC3B0 /* STPopup.framework in Frameworks */,
-				4A566EBC21E7F5DC00BEC3B0 /* STPopup.framework in Frameworks */,
+				4A70E403222DA7E3008BF2DB /* CoreGraphics.framework in Frameworks */,
+				4A70E401222DA7D1008BF2DB /* QuartzCore.framework in Frameworks */,
+				4A70E3FF222DA7BD008BF2DB /* CoreImage.framework in Frameworks */,
+				4A70E3FD222DA7A2008BF2DB /* CoreText.framework in Frameworks */,
 				4AFD1E3021A59566009924F4 /* MessageUI.framework in Frameworks */,
 				4A20DCA9218B3DBE00EC3765 /* AudioToolbox.framework in Frameworks */,
 				4A20DCA7218B3DB100EC3765 /* CoreMIDI.framework in Frameworks */,
 				4A20DCA5218B3DA600EC3765 /* CoreAudio.framework in Frameworks */,
 				4ADEC5712163D2CB0069274B /* libxml2.2.dylib in Frameworks */,
+				4A473E51222DB2F4009F0B22 /* STPopup.framework in Frameworks */,
 				4AD31CEB215C357400D3A910 /* UIKit.framework in Frameworks */,
 				4A596582215C300300F226A5 /* Foundation.framework in Frameworks */,
 				4A15A514215C2C9D00688610 /* WebKit.framework in Frameworks */,
@@ -404,6 +418,8 @@
 				4A6B2AAE21EFBAE6007F9CEA /* createFileViewController.m */,
 				4A66AB83222961CB00F5D1D8 /* loadFileViewController.h */,
 				4A66AB84222961CB00F5D1D8 /* loadFileViewController.m */,
+				4A473EF2222DCB6C009F0B22 /* exportViewController.h */,
+				4A473EF3222DCB6C009F0B22 /* exportViewController.m */,
 			);
 			path = abConduct_iOS;
 			sourceTree = "<group>";
@@ -429,7 +445,12 @@
 		4A3A9B322150081E009757BC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				4A566EBB21E7F5DC00BEC3B0 /* STPopup.framework */,
+				4A473EEB222DB6C1009F0B22 /* CocoaLumberjack.framework */,
+				4A473E4F222DB2D4009F0B22 /* STPopup.framework */,
+				4A70E402222DA7E2008BF2DB /* CoreGraphics.framework */,
+				4A70E400222DA7D1008BF2DB /* QuartzCore.framework */,
+				4A70E3FE222DA7BD008BF2DB /* CoreImage.framework */,
+				4A70E3FC222DA7A2008BF2DB /* CoreText.framework */,
 				4AFD1E2F21A59566009924F4 /* MessageUI.framework */,
 				4A20DCA8218B3DBE00EC3765 /* AudioToolbox.framework */,
 				4A20DCA6218B3DB100EC3765 /* CoreMIDI.framework */,
@@ -798,6 +819,7 @@
 				4ABD9E0E2150736C00CA5CD4 /* HTTPFileResponse.m in Sources */,
 				4A2D7DBB214EBBCE005FB580 /* AppDelegate.m in Sources */,
 				4ABD9E1F2150736C00CA5CD4 /* PUTResponse.m in Sources */,
+				4A473EF4222DCB6C009F0B22 /* exportViewController.m in Sources */,
 				4ABD9E132150736C00CA5CD4 /* WebSocket.m in Sources */,
 				4A20DCAC218B3E0200EC3765 /* midiPlayer.m in Sources */,
 				4A74251B2163F282001C7466 /* buffer.c in Sources */,
@@ -1024,13 +1046,16 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
+				GCC_VERSION = "";
 				INFOPLIST_FILE = abConduct_iOS/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/abConduct_iOS",
+					"$(PROJECT_DIR)/abConduct_iOS/SVGKit",
 				);
+				"OTHER_LDFLAGS[arch=*]" = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.reinissance.abConduct-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1049,12 +1074,14 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
+				GCC_VERSION = "";
 				INFOPLIST_FILE = abConduct_iOS/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/abConduct_iOS",
+					"$(PROJECT_DIR)/abConduct_iOS/SVGKit",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.reinissance.abConduct-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";

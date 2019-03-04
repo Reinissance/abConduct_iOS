@@ -13,10 +13,10 @@
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #import "store.h"
-#import "toabc.h"
 #import <STPopup/STPopup.h>
 #import "createFileViewController.h"
 #import "loadFileViewController.h"
+#import "exportViewController.h"
 
 #define APP ((AppDelegate *)[[UIApplication sharedApplication] delegate])
 #define docsPath [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]
@@ -25,7 +25,6 @@
 
 }
 
-@property NSURL *exportFile;
 @property BOOL buttonViewExpanded;
 @property NSMutableArray *potentialVoices;
 @property BOOL codeHighlighting;
@@ -41,6 +40,7 @@
 @property STPopupController *createFilePopup;
 @property BOOL loadFileController;
 @property STPopupController *loadFilePopup;
+@property STPopupController *exportPopup;
 
 @end
 
@@ -165,7 +165,9 @@
 }
 
 - (void) changeControl: (NSString *) lineString inRange: (NSRange) lineRange  {
-    NSLog(@"Now show the controlSlider");
+    if (pickershown)
+        return;
+    else pickershown = YES;
     NSArray *words;
     float number = 10;
     float value = 64;
@@ -185,7 +187,6 @@
     NSString *control = [NSString stringWithFormat:@"%@", (number == 10) ? @"panning" : (number == 7) ? @"volume" : @"control"];
     NSString *title = [NSString stringWithFormat:@"set the %@:", control];
     UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:@"\n\n" preferredStyle:UIAlertControllerStyleAlert];
-    //            TODO: show controlSlider
     UISlider *slider = [[UISlider alloc] initWithFrame:CGRectMake(20, 60, 230, 20)];
     slider.maximumValue = 127;
     [slider setValue:value];
@@ -193,16 +194,23 @@
     UIAlertAction *selectAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat: @"set %@", control] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
         NSString *replaceString = [[[@"\%\%" stringByAppendingString:[NSString stringWithFormat:@"MIDI control %d %d", (int)number, (int)roundf(slider.value)]] stringByAppendingString:@" \%"] stringByAppendingString:control];
         [self setColouredCodeFromString:[self->_abcView.textView.text stringByReplacingCharactersInRange:lineRange withString:replaceString]];
+        pickershown = NO;
         [self dismissViewControllerAnimated:YES completion:nil];
     }];
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {}];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+        pickershown = NO;
+    }];
     [alertController addAction:selectAction];
     [alertController addAction:cancelAction];
     [self presentViewController:alertController animated:YES completion:nil];
 }
 
+BOOL pickershown;
+
 - (void) changeProgram: (NSString *) lineString inRange: (NSRange) lineRange  {
-    NSLog(@"Now show the instrumentWheel");
+    if (pickershown)
+        return;
+    else pickershown = YES;
     NSArray *words;
     float number = 0;
     if (lineString.class != UIMenuController.class) {
@@ -211,6 +219,7 @@
         if (words.count > 2 && [nf numberFromString:words[2]] != nil) {
             number = [words[2] floatValue];
         }
+        lineRange = [self selectedLineRange];
     }
     else lineRange = _abcView.textView.selectedRange;
     UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Select instrument:" message:@"\n\n\n\n\n" preferredStyle:UIAlertControllerStyleAlert];
@@ -227,10 +236,13 @@
         NSString *replaceString = [@"\%\%" stringByAppendingString:[NSString stringWithFormat:@"MIDI program %ld", (long)[self->_instrumentsPicker.pickerView selectedRowInComponent:0]]];
         replaceString = [[replaceString stringByAppendingString:@" \%"] stringByAppendingString:instName];
         [self setColouredCodeFromString:[self->_abcView.textView.text stringByReplacingCharactersInRange:lineRange withString:replaceString]];
+        pickershown = NO;
         [self dismissViewControllerAnimated:YES completion:nil];
     }];
     [_instrumentsPicker.pickerView selectRow:number inComponent:0 animated:NO];
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {}];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+        pickershown = NO;
+    }];
     [alertController addAction:selectAction];
     [alertController addAction:cancelAction];
     [self presentViewController:alertController animated:YES completion:nil];
@@ -238,6 +250,9 @@
 
 
 - (void) changeDrummap: (NSString *) lineString inRange: (NSRange) lineRange  {
+    if (pickershown)
+        return;
+    else pickershown = YES;
     NSLog(@"Now show the drummap");
     NSArray *words;
     float number = 0;
@@ -267,11 +282,15 @@
         NSString *replaceString = [@"\%\%" stringByAppendingString:[NSString stringWithFormat:@"MIDI drummap %@ %ld", selectedNote, (long)[self->_instrumentsPicker.pickerView selectedRowInComponent:1]+36]];
         replaceString = [[replaceString stringByAppendingString:@" \%"] stringByAppendingString:soundName];
         [self setColouredCodeFromString:[self->_abcView.textView.text stringByReplacingCharactersInRange:lineRange withString:replaceString]];
+        pickershown = NO;
         [self dismissViewControllerAnimated:YES completion:nil];
     }];
     [_instrumentsPicker.pickerView selectRow:[notes indexOfObject:note] inComponent:0 animated:NO];
     [_instrumentsPicker.pickerView selectRow:number inComponent:1 animated:NO];
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {}];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+        pickershown = NO;
+        
+    }];
     [alertController addAction:selectAction];
     [alertController addAction:cancelAction];
     [self presentViewController:alertController animated:YES completion:nil];
@@ -294,7 +313,6 @@
                 [self changeControl:selectedLine inRange:lineRange];
             }
             else if ([[selectedLine substringToIndex:14] isEqualToString:@"%%MIDI drummap"]) {
-                //            TODO: show drumMap selector
                 [self changeDrummap:selectedLine inRange:lineRange];
             }
         }
@@ -399,7 +417,7 @@ BOOL decorationController;
         CGFloat keyboardAnimationDuration = [[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
         if (_displayHeight.constant + 28 > keyboardHeight) {
             [UIView animateWithDuration:keyboardAnimationDuration*1.5 animations:^{
-                self->_displayHeight.constant = self->_displayHeight.constant - keyboardHeight;
+                self->_displayHeight.constant = self->_displayHeight.constant *1.2 - keyboardHeight ;
             }];
             buttonViewMoved = YES;
         }
@@ -425,7 +443,7 @@ BOOL buttonViewMoved;
     if (_displayHeight.constant + keyboardHeight < self.view.frame.size.height && buttonViewMoved) {
         CGFloat keyboardAnimationDuration = [[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
         [UIView animateWithDuration:keyboardAnimationDuration*1.5 animations:^{
-            self->_displayHeight.constant = self->_displayHeight.constant + keyboardHeight;
+            self->_displayHeight.constant = (self->_displayHeight.constant + keyboardHeight) * 0.8;
         }];
         [self.view layoutIfNeeded];
         [self.view layoutSubviews];
@@ -441,7 +459,8 @@ BOOL buttonViewMoved;
     NSArray *directory = [fileManager contentsOfDirectoryAtPath:webFolder error:nil];
     NSString *imagePath = [_selectedVoice stringByAppendingPathExtension:@"svg"];
     int index = (int) [directory indexOfObject:imagePath];
-    _exportFile = [NSURL fileURLWithPath:[webFolder stringByAppendingPathComponent:directory[index]]];
+    NSString *filePath = [webFolder stringByAppendingPathComponent:directory[index]];
+    _exportFile = [NSURL fileURLWithPath:filePath];
     NSURLRequest *request = [NSURLRequest requestWithURL:_exportFile];
     [_displayView setScalesPageToFit:YES];
     [_displayView loadRequest:request];
@@ -892,22 +911,15 @@ BOOL buttonViewMoved;
 - (IBAction)buttonPressed:(UIButton *)sender {
     if (sender.tag == 0) {
         //load
-        dropCreate = NO;
-        _loadFilePopup = [[STPopupController alloc] initWithRootViewController:[[UIStoryboard storyboardWithName: @"Main" bundle:nil] instantiateViewControllerWithIdentifier:@"loadNewFileController"]];
+        dropCreate = 0;
+        _loadFilePopup = [self createPopupcontrollerWithIdentifier:@"loadNewFileController"];
         loadFileViewController *loadFile = (loadFileViewController *) _loadFilePopup.topViewController;
         loadFile.loadController = YES;
         if (_tuneSelected != -1) {
             loadFile.loadTunes = YES;
             loadFile.multiTuneFile = [_filepath path];
         }
-        _loadFilePopup.containerView.layer.cornerRadius = 16;
-        [_loadFilePopup setNavigationBarHidden:YES];
-        if (NSClassFromString(@"UIBlurEffect")) {
-            UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
-            _loadFilePopup.backgroundView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-            _loadFilePopup.backgroundView.alpha = 0.9;
-        }
-        [_loadFilePopup.backgroundView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dropPopup)]];
+        [loadFile load];
         [_loadFilePopup presentInViewController:self];
     }
     else if (sender.tag == 1) {
@@ -946,29 +958,22 @@ BOOL buttonViewMoved;
     }
     else if (sender.tag == 2) {
         //display
-        dropCreate = NO;
-        _loadFilePopup = [[STPopupController alloc] initWithRootViewController:[[UIStoryboard storyboardWithName: @"Main" bundle:nil] instantiateViewControllerWithIdentifier:@"loadNewFileController"]];
+        dropCreate = 0;
+        _loadFilePopup = [self createPopupcontrollerWithIdentifier:@"loadNewFileController"];
         loadFileViewController *loadFile = (loadFileViewController *) _loadFilePopup.topViewController;
         loadFile.loadController = NO;
         if (_tuneSelected != -1) {
             loadFile.loadTunes = YES;
             loadFile.multiTuneFile = [_filepath path];
         }
-        _loadFilePopup.containerView.layer.cornerRadius = 16;
-        [_loadFilePopup setNavigationBarHidden:YES];
-        if (NSClassFromString(@"UIBlurEffect")) {
-            UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
-            _loadFilePopup.backgroundView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-            _loadFilePopup.backgroundView.alpha = 0.9;
-        }
-        [_loadFilePopup.backgroundView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dropPopup)]];
+        [loadFile load];
         [_loadFilePopup presentInViewController:self];
     }
     else if (sender.tag == 3) {
         //refresh
         _allVoices = [self getVoicesWithHeader];
         if (_allVoices.count < 1) {
-            [_displayView loadHTMLString:@"" baseURL:nil];
+                    [_displayView loadHTMLString:@"" baseURL:nil];
             return;
         }
         if (_tuneSelected < 0) {
@@ -989,11 +994,11 @@ BOOL buttonViewMoved;
         }
         if (![self enterFullScoreAndOrParts])
             [self loadSvgImage];
-        else [_displayView loadHTMLString:@"" baseURL:nil];
+                [_displayView loadHTMLString:@"" baseURL:nil];
     }
     else if (sender.tag == 4) {
         //create new file:
-        dropCreate = YES;
+        dropCreate = 1;
         [self createNewFile];
     }
 }
@@ -1033,30 +1038,40 @@ UIAlertController *alert;
 BOOL alertShown;
 
 - (void) createNewFile {
-    _createFilePopup = [[STPopupController alloc] initWithRootViewController:[[UIStoryboard storyboardWithName: @"Main" bundle:nil] instantiateViewControllerWithIdentifier:@"createNewFileController"]];
-    _createFilePopup.containerView.layer.cornerRadius = 16;
-    [_createFilePopup setNavigationBarHidden:YES];
-    if (NSClassFromString(@"UIBlurEffect")) {
-        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
-        _createFilePopup.backgroundView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-        _createFilePopup.backgroundView.alpha = 0.9;
-    }
-    [_createFilePopup.backgroundView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dropPopup)]];
+    _createFilePopup = [self createPopupcontrollerWithIdentifier:@"createNewFileController"];
     [_createFilePopup presentInViewController:self];
 }
 
-BOOL dropCreate;
+- (STPopupController *) createPopupcontrollerWithIdentifier: (NSString*) identifier {
+    STPopupController *controller = [[STPopupController alloc] initWithRootViewController:[[UIStoryboard storyboardWithName: @"Main" bundle:nil] instantiateViewControllerWithIdentifier:identifier]];
+    controller.containerView.layer.cornerRadius = 16;
+    [controller setNavigationBarHidden:YES];
+    if (NSClassFromString(@"UIBlurEffect")) {
+        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+        controller.backgroundView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+        controller.backgroundView.alpha = 0.9;
+    }
+    [controller.backgroundView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dropPopup)]];
+    return controller;
+}
+
+float dropCreate;
 
 - (void) dropPopup {
 //    createFileViewController *pop = (createFileViewController*) [_createFilePopup topViewController];
 //    [pop disMiss:nil];
-    if (dropCreate) {
+    if (dropCreate == 1) {
         [_createFilePopup dismiss];
         _createFilePopup = nil;
     }
-    else {
+    else if (dropCreate == 0) {
         [_loadFilePopup dismiss];
         _loadFilePopup = nil;
+    }
+    else {
+        [_exportPopup dismiss];
+        _exportPopup = nil;
+        
     }
 }
 
@@ -1384,13 +1399,16 @@ BOOL setLogString;
 }
 
 - (IBAction)exportDocument:(id)sender {
-    UIActionSheet *actionSheet = [[UIActionSheet alloc]
-                                   initWithTitle:@""
-                                   delegate:self
-                                   cancelButtonTitle:@"Cancel"
-                                   destructiveButtonTitle:nil
-                                   otherButtonTitles:@"Export via File Sharing", @"Export via Email", nil];
-    [actionSheet showInView:self.view];
+    dropCreate = 2;
+    _exportPopup = [self createPopupcontrollerWithIdentifier:@"exportFileController"];
+    [_exportPopup presentInViewController:self];
+//    UIActionSheet *actionSheet = [[UIActionSheet alloc]
+//                                   initWithTitle:@""
+//                                   delegate:self
+//                                   cancelButtonTitle:@"Cancel"
+//                                   destructiveButtonTitle:nil
+//                                   otherButtonTitles:@"include abc-File", @"Export via Email", nil];
+//    [actionSheet showInView:self.view];
 }
 
 - (IBAction)clearLog:(id)sender {
@@ -1405,49 +1423,24 @@ BOOL setLogString;
     [_mp skip:sender.selectedSegmentIndex-1];
 }
 
-// Add new methods
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
+- (void) createMailComposerWithDataArray: (NSArray *) dataArray {
     
     NSOperationQueue *_queue = [[NSOperationQueue alloc] init];
-    
-//    if (buttonIndex == actionSheet.firstOtherButtonIndex + 0) {
-//
-//        [DSBezelActivityView newActivityViewForView:self.navigationController.navigationBar.superview withLabel:@"Exporting Bug..." width:160];
-//        [_queue addOperationWithBlock: ^{
-//            BOOL exported = [_bugDoc exportToDiskWithForce:FALSE];
-//            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-//                [DSBezelActivityView removeViewAnimated:YES];
-//                if (!exported) {
-//                    UIAlertView *alertView = [[[UIAlertView alloc]
-//                                               initWithTitle:@"File Already Exists!"
-//                                               message:@"An exported bug with this name already exists.  Overwrite?"
-//                                               delegate:self
-//                                               cancelButtonTitle:@"Cancel"
-//                                               otherButtonTitles:@"Overwrite", nil] autorelease];
-//                    [alertView show];
-//                }
-//            }];
-//        }];
-//
-//    } else
-    if (buttonIndex == actionSheet.firstOtherButtonIndex + 1) {
-        [_queue addOperationWithBlock: ^{
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                    MFMailComposeViewController *picker = [[MFMailComposeViewController alloc] init];
-                    [picker setSubject:@"abConduct-sheet"];
-                NSData *data = [NSData dataWithContentsOfFile:[self->_exportFile path]];
-                    [picker addAttachmentData:data mimeType:@"application/abConduct" fileName:[[self->_exportFile path] lastPathComponent]];
-                    [picker setToRecipients:[NSArray array]];
-                    [picker setMessageBody:@"Hi,\nThis sheet is an export of the awesome abConduct_iOS-app" isHTML:NO];
-                    [picker setMailComposeDelegate:self];
-                    [self presentModalViewController:picker animated:YES];
-//                }
-                
-            }];
+    [_queue addOperationWithBlock: ^{
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            MFMailComposeViewController *picker = [[MFMailComposeViewController alloc] init];
+            [picker setSubject:@"abConduct-sheet"];
+            for (NSArray *attach in dataArray) {
+                [picker addAttachmentData:attach[0] mimeType:@"application/abConduct" fileName:attach[1]];
+            }
+            [picker setToRecipients:[NSArray array]];
+            [picker setMessageBody:@"Hi,\nThis sheet is an export of the awesome abConduct_iOS-app" isHTML:NO];
+            [picker setMailComposeDelegate:self];
+            [self presentViewController:picker animated:YES completion:nil];
+            //                }
+            
         }];
-        
-    }
-    
+    }];
 }
 
 - (void)mailComposeController:(MFMailComposeViewController *)controller

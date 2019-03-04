@@ -12,6 +12,7 @@
 
 #define APP ((AppDelegate *)[[UIApplication sharedApplication] delegate])
 #define docsPath [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]
+#define controller ((ViewController *)[[(AppDelegate*)APP window] rootViewController])
 
 @interface createFileViewController ()
 
@@ -301,9 +302,6 @@
         }
         createAbcFileString = [[createAbcFileString stringByAppendingString:@"\n\%start writing voice "] stringByAppendingString:[NSString stringWithFormat:@"%@ here:\n", voice[0]]];
     }
-//    }
-    ViewController *controller = (ViewController *)[[(AppDelegate*)
-                                                        APP window] rootViewController];
     [controller setColouredCodeFromString: createAbcFileString];
     NSError *error;
     NSString *path = [docsPath stringByAppendingPathComponent:[_createFileName stringByReplacingOccurrencesOfString:@" " withString:@"_"]];

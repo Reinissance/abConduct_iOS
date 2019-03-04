@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property BOOL loadTunes;
 @property NSString *multiTuneFile;
 @property NSString *tuneTitle;
-
+-(void) load;
 @end
 
 NS_ASSUME_NONNULL_END

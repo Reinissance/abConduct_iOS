@@ -17,6 +17,7 @@
 
 @interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, midiPlayerDelegate, UITextViewDelegate, UIActionSheetDelegate, MFMailComposeViewControllerDelegate>
 
+@property NSURL *exportFile;
 @property NSURL *filepath;
 @property NSStringEncoding encoding;
 - (NSString *) stringWithContentsOfEncodedFile: (NSString *) file;
@@ -73,5 +74,6 @@
 - (NSMutableArray*) getVoicesWithHeader;
 - (void) loadSvgImage;
 - (BOOL) enterFullScoreAndOrParts;
+- (void) createMailComposerWithDataArray: (NSArray *) dataArray;
 
 @end
