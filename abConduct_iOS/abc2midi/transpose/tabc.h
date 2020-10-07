@@ -95,7 +95,7 @@ EFFECT
 
 /* note decorations */
 #define DECSIZE 10
-extern char decorations[];
+extern char tdecorations[];
 #define STACCATO 0
 #define TENUTO 1
 #define LOUD 2
@@ -118,25 +118,25 @@ char* st;
 /* vstring routines */
 extern void initvstring(struct vstring* s);
 extern void extendvstring(struct vstring* s);
-extern void addch_(char ch, struct vstring* s);
-extern void addtext(char* text, struct vstring* s);
+extern void taddch(char ch, struct vstring* s);
+extern void taddtext(char* text, struct vstring* s);
 extern void clearvstring(struct vstring* s);
 extern void freevstring(struct vstring* s);
 /* error-handling routines */
-extern void event_error(char *s);
-extern void event_fatal_error(char *s);
-extern void event_warning(char *s);
+extern void tevent_error(char *s);
+extern void tevent_fatal_error(char *s);
+extern void tevent_warning(char *s);
 #else
 /* vstring routines */
 extern void initvstring();
 extern void extendvstring();
-extern void addch_();
-extern void addtext();
+extern void taddch();
+extern void taddtext();
 extern void clearvstring();
 extern void freevstring();
 /* error-handling routines */
-extern void event_error();
-extern void event_fatal_error();
-extern void event_warning();
+extern void tevent_error();
+extern void tevent_fatal_error();
+extern void tevent_warning();
 #endif
 

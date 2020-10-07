@@ -1,8 +1,8 @@
 # abConduct_iOS
 
-An iOS application for creating Scores with the abcnotation format, including the ability to create parts from the different voices of the full score and providing all as svg-files through a webDAV server to the local network. You can also Playback all as midi optionally with your favourite sf2 soundfont.
+An iOS application for creating Scores with the abcnotation format, including the ability to create parts from the different voices of the full score and providing all as svg-files through a webDAV server to the local network and a simple html-page containing links to them. You can also Playback all as midi optionally with your favourite sf2 soundfont.
 
-I am a music teacher, musician in at least three active bands and I imagine myself with for example an orchestra in school playing scores I wrote displayed on iPads or tablets connected to this app via a WebDav capable app. Suddently we notice a fault in the score or it needs to be changed a little bit for some pupil being not able to play what wrote for him.  Ok, Kids, have a sip from your bottle of water while I change the line, refresh, and, dear kid, will you please reload your file, - here we can go on...
+I am a music teacher, musician in at least three active bands and I imagine myself with for example an orchestra in school playing scores I wrote displayed on iPads or tablets connected to this app via a WebDav capable app. Suddently we notice a fault in the score or it needs to be changed a little bit for some pupil being not able to play what wrote for him.  Ok, Kids, have a sip from your bottle of water while I change the line, refresh, and, dear kid, will you please reload that page in your browser, - here we can go on...
 
 Of course this scenario might be part of the future, but still you can imagine a lot of other situation for ensembles that might profit from an app like this.
 

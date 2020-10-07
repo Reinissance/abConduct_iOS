@@ -16,5 +16,7 @@
 
 @property (strong, nonatomic) WebServer *server;
 
+- (void) openUrl: (NSURL *)url;
+
 @end
 

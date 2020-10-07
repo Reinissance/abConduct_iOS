@@ -54,8 +54,17 @@
             _messageLabel.text = [_messageLabel.text stringByAppendingString:[NSString stringWithFormat:@" for tune \"%@\"", controller.tuneTitle]];
             _tuneTitle = controller.tuneTitle;
         }
-        _abcDocuments = controller.voiceSVGpaths.voicePaths;
+        if (!controller.directMode) {
+            _abcDocuments = controller.voiceSVGpaths.voicePaths;
+        }
+        else {
+            [self getVoicesForDirectMode];
+        }
     }
+}
+
+- (void) getVoicesForDirectMode {
+    _abcDocuments = [NSMutableArray array];
 }
 
 - (void) setDisplayTitle {
@@ -97,7 +106,7 @@
         if (![content isEqualToString:@""]) {
             NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"\nX:" options:NSRegularExpressionCaseInsensitive error:&error];
             NSUInteger numberOfMatches = [regex numberOfMatchesInString:content options:0 range:NSMakeRange(0, [content length])];
-            if (numberOfMatches > 1) {
+            if (numberOfMatches > 0) {
                 [checked addObject:[array[i] stringByAppendingString:@" >>>"]];
             }
             else [checked addObject:array[i]];
@@ -147,6 +156,7 @@
         if (!_loadTunes) {
             if (![[fileName substringFromIndex: fileName.length - 4] isEqualToString:@" >>>"]) {
                 //no multifile
+                controller.unselectedMultitune = NO;
                 [controller loadABCfileFromPath:[docsPath stringByAppendingPathComponent:fileName]];
                 [self dismissViewControllerAnimated:YES completion:^{
                     [controller enterFullScoreAndOrParts];
@@ -158,6 +168,7 @@
                 _multiTuneFile = [docsPath stringByAppendingPathComponent:[fileName substringToIndex:fileName.length-4]];
                 [controller loadABCfileFromPath:_multiTuneFile];
                 [controller enterFullScoreAndOrParts];
+                controller.unselectedMultitune = YES;
                 [self getTunes:_multiTuneFile];
                 [_abcDocuments addObject:@"<<< all abc-Tunes"];
                 _titleLabel.text = @"select tune";
@@ -169,6 +180,7 @@
         }
         else if (indexPath.row == _abcDocuments.count-1) {
             // return to all documents
+            controller.unselectedMultitune = NO;
             _loadTunes = NO;
             [self loadABCdocuments];
             [self setLoadTitle];
@@ -177,6 +189,7 @@
         }
         else {
             // tune selected from multitunefile
+            controller.unselectedMultitune = NO;
             controller.tuneSelected = (int) indexPath.row;
             NSError *error;
             NSString *currentTune = [NSTemporaryDirectory() stringByAppendingPathComponent:@"currentTune.abc"];
@@ -202,10 +215,15 @@
     }
     else {
         //display voices
-        NSString *voice = controller.voiceSVGpaths.voicePaths[indexPath.row];
-        controller.selectedVoice = [voice substringToIndex:voice.length-4];
-        [controller loadSvgImage];
-        [self dismissViewControllerAnimated:YES completion:nil];
+        if (!controller.directMode) {
+            NSString *voice = controller.voiceSVGpaths.voicePaths[indexPath.row];
+            controller.selectedVoice = [voice substringToIndex:voice.length-4];
+            [controller loadSvgImage];
+            [self dismissViewControllerAnimated:YES completion:nil];
+        }
+        else {
+            
+        }
     }
 }
 
@@ -223,7 +241,7 @@
         }
         if ([_abcDocuments[indexPath.row] isEqualToString:[controller.filepath lastPathComponent]]) {
             controller.abcView.textView.text = @"";
-                    [controller.displayView loadHTMLString:@"" baseURL:nil];
+//                    [controller.displayView loadHTMLString:@"" baseURL:nil];
             controller.refreshButton.enabled = NO;
             controller.saveButton.enabled = NO;
         }
@@ -237,8 +255,11 @@
 }
 
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (_loadController)
-        return YES;
+    if (_loadController) {
+        if (!_loadTunes)
+            return YES;
+        else return NO;
+    }
     else
         return NO;
 }

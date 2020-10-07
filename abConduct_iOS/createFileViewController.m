@@ -72,6 +72,7 @@
     else if (textField.tag == 3) {
         _createFileVoices = textField.text;
         if (!_voiceSettingSelection) {
+            _voiceSettingSelection = @[];
             [_voiceSettingsPicker setDelegate:self];
             [_voiceSettingsPicker setDataSource:self];
         }
@@ -318,9 +319,10 @@
         controller.saveButton.enabled = YES;
         [controller.allVoices removeAllObjects];
         controller.allVoices = [controller getVoicesWithHeader];
-        [controller.voiceSVGpaths createVoices:controller.allVoices];
-        NSArray *Voice = controller.allVoices[0];
-        controller.selectedVoice = Voice[0];
+        NSArray *tune = controller.allVoices[0];
+        NSMutableArray *tuneArray = tune[1];
+        [[controller voiceSVGpaths] createVoices:tuneArray];
+        controller.selectedVoice = [tune[0] stringByAppendingString:@"_Partitur"];
         [controller loadSvgImage];
     }
     [self dismiss];

@@ -2693,7 +2693,7 @@ char ch;
     parts = parts + 1;
   };
 */
-  addch(ch, part);
+  addch_(ch, part);
   parts = parts + 1;
 }
 

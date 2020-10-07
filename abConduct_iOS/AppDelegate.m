@@ -11,6 +11,7 @@
 #import "DDLog.h"
 #import "DDTTYLogger.h"
 #import "ViewController.h"
+#include <AVFoundation/AVFoundation.h>
 
 // Log levels: off, error, warn, info, verbose
 
@@ -25,6 +26,11 @@
     // Override point for customization after application launch.
     
     self.server = [[WebServer alloc] init];
+    
+    NSError *setCategoryErr = nil;
+    NSError *activationErr  = nil;
+    [[AVAudioSession sharedInstance] setCategory: AVAudioSessionCategoryPlayback error:&setCategoryErr];
+    [[AVAudioSession sharedInstance] setActive:YES error:&activationErr];
     
     return YES;
 }
@@ -56,8 +62,24 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
+- (BOOL) application:(UIApplication *)application openURL:(NSURL *)url options:(nonnull NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    
+    [self openUrl:url];
+    return YES;
+}
+
+- (BOOL) application:(UIApplication *)application handleOpenURL:(NSURL *)url {
+    [self openUrl:url];
+    return YES;
+}
+
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
 {
+    [self openUrl:url];
+    return YES;
+}
+
+- (void) openUrl: (NSURL *)url {
     
     if (url != nil && [url isFileURL]) {
         
@@ -70,29 +92,58 @@
             NSFileManager *fileManager = [[NSFileManager alloc] init];
             NSString *file = [url path];
             NSString *copyFile = [docsPath stringByAppendingPathComponent:[[file lastPathComponent] stringByReplacingOccurrencesOfString:@" " withString:@"_"]];
-            if (![fileManager copyItemAtPath:file toPath:copyFile error:&error]) {
-                NSLog(@"couldn´t copy File: %@ to documentsDirectory: %@, resaon: %@, %@", file, copyFile, error.localizedDescription, error.localizedFailureReason);
-            }
-            else {
-                UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"copied file %@ to documents folder.", [file lastPathComponent]] message:@"select open to view..." preferredStyle:UIAlertControllerStyleAlert];
-                UIAlertAction *action = [UIAlertAction actionWithTitle:@"open" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                    ViewController *controller = (ViewController*) self.window.rootViewController;
-                    controller.refreshButton.enabled = YES;
-                    controller.saveButton.enabled = YES;
-                    [controller loadABCfileFromPath:copyFile];
-                    
+            if ([fileManager fileExistsAtPath:copyFile]) {
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"File exists" message:[NSString stringWithFormat:@"a file with name %@ already exists in the documents directory. Do You want to replace it?", [copyFile lastPathComponent]]  preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction *replace = [UIAlertAction actionWithTitle:@"replace" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                    NSError *thisError;
+                    if (![fileManager removeItemAtPath:copyFile error:&thisError]) {
+                        NSLog(@"Could`t remove existing file: %@, reason: %@", copyFile, error.localizedFailureReason);
+                    }
+                    else {
+                        if ([fileManager copyItemAtPath:file toPath:copyFile error:&thisError])
+                            [self askToLoadCopiedFile:copyFile];
+                        else NSLog(@"couldn´t copy File: %@ to documentsDirectory: %@, reason: %@, %@ after deleting the old...", file, copyFile, error.localizedDescription, error.localizedFailureReason);
+                    }
                 }];
-                [alert addAction:action];
+                [alert addAction:replace];
+                UIAlertAction *keepBoth = [UIAlertAction actionWithTitle:@"keepBoth" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                    NSError *thisError;
+                    NSDate *startTime = [NSDate date];
+                    NSString *timeString = [NSString stringWithFormat:@"%@", startTime];
+                    timeString = [timeString substringToIndex:timeString.length-6];
+                    NSString *newCopyFile = [[NSString stringWithFormat:@"%@", [[[copyFile substringToIndex:copyFile.length-4] stringByAppendingString: timeString] stringByAppendingPathExtension: @"abc"]] stringByReplacingOccurrencesOfString:@" " withString:@"-"];
+                    if ([fileManager copyItemAtPath:file toPath:newCopyFile error:&thisError])
+                        [self askToLoadCopiedFile:newCopyFile];
+                    else NSLog(@"couldn´t copy File: %@ to documentsDirectory: %@, reason: %@, %@", file, newCopyFile, error.localizedDescription, error.localizedFailureReason);
+                }];
+                [alert addAction:keepBoth];
                 UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
                 [alert addAction:cancel];
                 [self.window.rootViewController presentViewController:alert animated:YES completion:nil];
             }
-            
+            else if (![fileManager copyItemAtPath:file toPath:copyFile error:&error]) {
+                NSLog(@"couldn´t copy File: %@ to documentsDirectory: %@, reason: %@, %@", file, copyFile, error.localizedDescription, error.localizedFailureReason);
+            }
+            else {
+                [self askToLoadCopiedFile:copyFile];
+            }
         }
-        
     }
-    
-    return YES;
+}
+
+- (void) askToLoadCopiedFile: (NSString*) file {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"copied file %@ to documents folder.", [file lastPathComponent]] message:@"select open to view..." preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *action = [UIAlertAction actionWithTitle:@"open" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+        ViewController *controller = (ViewController*) self.window.rootViewController;
+        controller.refreshButton.enabled = YES;
+        controller.saveButton.enabled = YES;
+        [controller loadABCfileFromPath:file];
+        
+    }];
+    [alert addAction:action];
+    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
+    [alert addAction:cancel];
+    [self.window.rootViewController presentViewController:alert animated:YES completion:nil];
 }
 
 @end

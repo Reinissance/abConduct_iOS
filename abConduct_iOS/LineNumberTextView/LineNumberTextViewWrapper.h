@@ -10,9 +10,26 @@
 #import "LineNumberTextView.h"
 #import "LineNumberLayoutManager.h"
 
+@class LineNumberTextViewWrapper;
+@protocol lineNumberDelegate
+
+- (void) storeText;
+- (void) renderText;
+- (void) playBack;
+- (void) transpose;
+- (void) exportDocument;
+- (void) loadDocument;
+- (void) displayDocument;
+- (void) newDocument;
+
+@end
+
 // To use this from Swift, in the project settings,
 // set the Objective-C Bridging Header to include the path of this file.
 @interface LineNumberTextViewWrapper : UIView
+
+
+@property (nonatomic, weak) id  delegate;
 
 @property (nonatomic) LineNumberTextView* textView;
 

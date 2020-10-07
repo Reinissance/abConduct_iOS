@@ -1,5 +1,5 @@
 /* 
- * parseabc.c - code to parse an abc file. This file is used by the
+ * tparseabc.c - code to tparse an abc file. This file is used by the
  * following 3 programs :
  * abc2midi - program to convert abc files to MIDI files.
  * abc2abc  - program to manipulate abc files.
@@ -30,8 +30,8 @@
 
 
 #define TAB 9
-#include "abc.h"
-#include "parseabc.h"
+#include "tabc.h"
+#include "tparseabc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -79,63 +79,63 @@
 extern char *strchr ();
 #endif
 
-int lineno;
-int parsing_started = 0;
-int parsing, slur;
-int ignore_line = 0; /* [SS] 2017-04-12 */
-int inhead, inbody;
-int parserinchord;
-int ingrace = 0;
-int chorddecorators[DECSIZE];
-char decorations[] = ".MLRH~Tuv";
-char *abbreviation[SIZE_ABBREVIATIONS];
+int tlineno;
+int ttparsing_started = 0;
+int tparsing, tslur;
+int ignore_tline = 0; /* [SS] 2017-04-12 */
+int tinhead, intbody;
+int tparserinchord;
+int ttingrace = 0;
+int chordtdecorators[DECSIZE];
+char tdecorations[] = ".MLRH~Tuv";
+char *tabbreviation[SIZE_ABBREVIATIONS];
 
-int voicecodes = 0;
+int tvoicecodes = 0;
 /* [SS] 2015-03-16 allow 24 voices */
-/*char voicecode[16][30];       for interpreting V: string */
-char voicecode[24][30];		/*for interpreting V: string */
+/*char tvoicecode[16][30];       for interpreting V: string */
+char tvoicecode[24][30];		/*for interpreting V: string */
 
-int decorators_passback[DECSIZE];
+int tdecorators_passback[DECSIZE];
 /* this global array is linked as an external to store.c and 
  * yaps.tree.c and is used to pass back decorator information
- * from event_instruction to parsenote.
+ * from event_instruction to tparsenote.
 */
 
-char inputline[512];		/* [SS] 2011-06-07 2012-11-22 */
-char *linestart;		/* [SS] 2011-07-18 */
-int lineposition;		/* [SS] 2011-07-18 */
-char timesigstring[16];		/* [SS] 2011-08-19 links with stresspat.c */
+char inputtline[512];		/* [SS] 2011-06-07 2012-11-22 */
+char *tlinestart;		/* [SS] 2011-07-18 */
+int tlineposition;		/* [SS] 2011-07-18 */
+char ttimesigstring[16];		/* [SS] 2011-08-19 links with stresspat.c */
 
-int nokey = 0;			/* K: none was encountered */
-int nokeysig = 0;               /* links with toabc.c [SS] 2016-03-03 */
-int chord_n, chord_m;		/* for event_chordoff */
-int fileline_number = 1;
-int intune = 1;
-int inchordflag;		/* [SS] 2012-03-30 */
-struct fraction setmicrotone;	/* [SS] 2014-01-07 */
-int microtone;			/* [SS] 2014-01-19 */
+int tnokey = 0;			/* K: none was encountered */
+int tnokeysig = 0;               /* links with toabc.c [SS] 2016-03-03 */
+int tchord_n, tchord_m;		/* for event_chordoff */
+int filetline_number = 1;
+int tintune = 1;
+int trinchordflag;		/* [SS] 2012-03-30 */
+struct fraction settmicrotone;	/* [SS] 2014-01-07 */
+int tmicrotone;			/* [SS] 2014-01-19 */
 
 
 extern programname fileprogram;
-int oldchordconvention = 0;
-char * abcversion = "2.0"; /* [SS] 2014-08-11 */
-char lastfieldcmd = ' '; /* [SS] 2014-08-15 */
+int toldchordconvention = 0;
+char * tabcversion = "2.0"; /* [SS] 2014-08-11 */
+char tlastfieldcmd = ' '; /* [SS] 2014-08-15 */
 
-char *mode[10] = { "maj", "min", "m",
+char *tmode[10] = { "maj", "min", "m",
   "aeo", "loc", "ion", "dor", "phr", "lyd", "mix"
 };
 
-int modeshift[10] = { 0, -3, -3,
+int tmodeshift[10] = { 0, -3, -3,
   -3, -5, 0, -2, -4, 1, -1
 };
 
-int modeminor[10] = { 0, 1, 1,
+int tmodeminor[10] = { 0, 1, 1,
   1, 0, 0, 0, 0, 0, 0
 };
-int modekeyshift[10] = { 0, 5, 5, 5, 6, 0, 1, 2, 3, 4 };
+int tmodekeyshift[10] = { 0, 5, 5, 5, 6, 0, 1, 2, 3, 4 };
 
 int *
-checkmalloc (bytes)
+tcheckmalloc (bytes)
 /* malloc with error checking */
      int bytes;
 {
@@ -151,41 +151,41 @@ checkmalloc (bytes)
 }
 
 char *
-addstring (s)
+taddstring (s)
 /* create space for string and store it in memory */
      char *s;
 {
   char *p;
 
-  p = (char *) checkmalloc (strlen (s) + 1);
+  p = (char *) tcheckmalloc (strlen (s) + 1);
   strcpy (p, s);
   return (p);
 }
 
 /* [SS] 2014-08-16 */
-char * concatenatestring(s1,s2)
+char * tconcatenatestring(s1,s2)
    char * s1;
    char * s2;
 {  char *p;
-  p = (char *) checkmalloc (strlen(s1) + strlen(s2) + 1);
+  p = (char *) tcheckmalloc (strlen(s1) + strlen(s2) + 1);
   snprintf(p,sizeof p, "%s%s",s1,s2);
   return p;
 }
 
 
 void
-initvstring (s)
+inittvstring (s)
      struct vstring *s;
 /* initialize vstring (variable length string data structure) */
 {
   s->len = 0;
   s->limit = 40;
-  s->st = (char *) checkmalloc (s->limit + 1);
+  s->st = (char *) tcheckmalloc (s->limit + 1);
   *(s->st) = '\0';
 }
 
 void
-extendvstring (s)
+extendtvstring (s)
      struct vstring *s;
 /* doubles character space available in string */
 {
@@ -194,26 +194,26 @@ extendvstring (s)
   if (s->limit > 0)
     {
       s->limit = s->limit * 2;
-      p = (char *) checkmalloc (s->limit + 1);
+      p = (char *) tcheckmalloc (s->limit + 1);
       strcpy (p, s->st);
       free (s->st);
       s->st = p;
     }
   else
     {
-      initvstring (s);
+      inittvstring (s);
     };
 }
 
 void
-addch_ (ch, s)
+taddch (ch, s)
      char ch;
      struct vstring *s;
 /* appends character to vstring structure */
 {
   if (s->len >= s->limit)
     {
-      extendvstring (s);
+      extendtvstring (s);
     };
   *(s->st + s->len) = ch;
   *(s->st + (s->len) + 1) = '\0';
@@ -221,7 +221,7 @@ addch_ (ch, s)
 }
 
 void
-addtext (text, s)
+taddtext (text, s)
      char *text;
      struct vstring *s;
 /* appends a string to vstring data structure */
@@ -231,14 +231,14 @@ addtext (text, s)
   newlen = s->len + strlen (text);
   while (newlen >= s->limit)
     {
-      extendvstring (s);
+      extendtvstring (s);
     };
   strcpy (s->st + s->len, text);
   s->len = newlen;
 }
 
 void
-clearvstring (s)
+cleartvstring (s)
      struct vstring *s;
 /* set string to empty */
 /* does not deallocate memory ! */
@@ -248,7 +248,7 @@ clearvstring (s)
 }
 
 void
-freevstring (s)
+freetvstring (s)
      struct vstring *s;
 /* deallocates memory allocated for string */
 {
@@ -262,40 +262,40 @@ freevstring (s)
 }
 
 void
-parseron ()
+tparseron ()
 {
-  parsing = 1;
-  slur = 0;
-  parsing_started = 1;
+  tparsing = 1;
+  tslur = 0;
+  ttparsing_started = 1;
 }
 
 void
-parseroff ()
+tparseroff ()
 {
-  parsing = 0;
-  slur = 0;
+  tparsing = 0;
+  tslur = 0;
 }
 
 /* [SS] 2017-04-12 */
-void handle_abc2midi_parser (line) 
-char *line;
+void handle_abc2midi_tparser (tline)
+char *tline;
 {
 char *p;
-p = line;
+p = tline;
 if (strncmp(p,"%%MidiOff",9) == 0) {
-  ignore_line = 1;
-  printf("ignore_line = 1\n");
+  ignore_tline = 1;
+  printf("ignore_tline = 1\n");
   }
 if (strncmp(p,"%%MidiOn",8) == 0) {
-  ignore_line = 0;
-  printf("ignore_line = 0\n");
+  ignore_tline = 0;
+  printf("ignore_tline = 0\n");
   }
 }
 
 
 int
-getarg (option, argc, argv)
-/* look for argument 'option' in command line */
+tgetarg (option, argc, argv)
+/* look for argument 'option' in command tline */
      char *option;
      char *argv[];
      int argc;
@@ -314,7 +314,7 @@ getarg (option, argc, argv)
 }
 
 void
-skipspace (p)
+tskipspace (p)
      char **p;
 {
   /* skip space and tab */
@@ -323,7 +323,7 @@ skipspace (p)
 }
 
 void
-skiptospace (p)
+tskiptospace (p)
      char **p;
 {
   while (((int) **p != ' ') && ((int) **p != TAB) && (int) **p != '\0')
@@ -332,7 +332,7 @@ skiptospace (p)
 
 
 int
-isnumberp (p)
+tisnumberp (p)
      char **p;
 /* returns 1 if positive number, returns 0 if not a positive number */
 /* ie -4 or 1A both return 0. This function is needed to get the    */
@@ -353,7 +353,7 @@ isnumberp (p)
 
 
 int
-readnumf (num)
+readtnumf (num)
      char *num;
 /* read integer from string without advancing character pointer */
 {
@@ -363,7 +363,7 @@ readnumf (num)
   p = num;
   if (!isdigit (*p))
     {
-      event_error ("Missing Number");
+      tevent_error ("Missing Number");
     };
   t = 0;
   while (((int) *p >= '0') && ((int) *p <= '9'))
@@ -375,7 +375,7 @@ readnumf (num)
 }
 
 int
-readsnumf (s)
+readstnumf (s)
      char *s;
 /* reads signed integer from string without advancing character pointer */
 {
@@ -385,17 +385,17 @@ readsnumf (s)
   if (*p == '-')
     {
       p = p + 1;
-      skipspace (&p);
-      return (-readnumf (p));
+      tskipspace (&p);
+      return (-readtnumf (p));
     }
   else
     {
-      return (readnumf (p));
+      return (readtnumf (p));
     }
 }
 
 int
-readnump (p)
+readtnump (p)
      char **p;
 /* read integer from string and advance character pointer */
 {
@@ -411,24 +411,24 @@ readnump (p)
 }
 
 int
-readsnump (p)
+readstnump (p)
      char **p;
 /* reads signed integer from string and advance character pointer */
 {
   if (**p == '-')
     {
       *p = *p + 1;
-      skipspace (p);
-      return (-readnump (p));
+      tskipspace (p);
+      return (-readtnump (p));
     }
   else
     {
-      return (readnump (p));
+      return (readtnump (p));
     }
 }
 
 void
-readsig (a, b, sig)
+treadsig (a, b, sig)
      int *a, *b;
      char **sig;
 /* read time signature (meter) from M: field */
@@ -450,27 +450,27 @@ readsig (a, b, sig)
       *b = 4;
       return;
     };
-  *a = readnump (sig);
+  *a = readtnump (sig);
 
   /* [SS] 2015-08-19 */
   while ((int) **sig == '+') {
     *sig = *sig + 1;
-    c = readnump (sig);
+    c = readtnump (sig);
     *a = *a + c;
     }
 
   if ((int) **sig != '/')
     {
-      event_error ("Missing / ");
+      tevent_error ("Missing / ");
     }
   else
     {
       *sig = *sig + 1;
     };
-  *b = readnump (sig);
+  *b = readtnump (sig);
   if ((*a == 0) || (*b == 0))
     {
-      event_error ("Expecting fraction in form A/B");
+      tevent_error ("Expecting fraction in form A/B");
     }
   else
     {
@@ -479,7 +479,7 @@ readsig (a, b, sig)
 	{
 	  if (t % 2 != 0)
 	    {
-	      event_error ("divisor must be a power of 2");
+	      tevent_error ("divisor must be a power of 2");
 	      t = 1;
 	      *b = 0;
 	    }
@@ -492,14 +492,14 @@ readsig (a, b, sig)
 }
 
 void
-readlen (a, b, p)
+treadlen (a, b, p)
      int *a, *b;
      char **p;
 /* read length part of a note and advance character pointer */
 {
   int t;
 
-  *a = readnump (p);
+  *a = readtnump (p);
   if (*a == 0)
     {
       *a = 1;
@@ -508,7 +508,7 @@ readlen (a, b, p)
   if (**p == '/')
     {
       *p = *p + 1;
-      *b = readnump (p);
+      *b = readtnump (p);
       if (*b == 0)
 	{
 	  *b = 2;
@@ -524,7 +524,7 @@ readlen (a, b, p)
     {
       if (t % 2 != 0)
 	{
-	  event_warning ("divisor not a power of 2");
+	  tevent_warning ("divisor not a power of 2");
 	  t = 1;
 	}
       else
@@ -535,14 +535,14 @@ readlen (a, b, p)
 }
 
 void
-readlen_nocheck (a, b, p)
+treadlen_nocheck (a, b, p)
      int *a, *b;
      char **p;
 /* read length part of a note and advance character pointer */
 {
   int t;
 
-  *a = readnump (p);
+  *a = readtnump (p);
   if (*a == 0)
     {
       *a = 1;
@@ -551,7 +551,7 @@ readlen_nocheck (a, b, p)
   if (**p == '/')
     {
       *p = *p + 1;
-      *b = readnump (p);
+      *b = readtnump (p);
       if (*b == 0)
 	{
 	  *b = 2;
@@ -578,19 +578,19 @@ readlen_nocheck (a, b, p)
 }
 
 int
-ismicrotone (p, dir)
+istmicrotone (p, dir)
      char **p;
      int dir;
 {
   int a, b;
-  readlen_nocheck (&a, &b, p);
+  treadlen_nocheck (&a, &b, p);
   if (b != 1)
     {
-      event_microtone (dir, a, b);
+      tevent_microtone (dir, a, b);
       return 1;
     }
-  setmicrotone.num = 0;
-  setmicrotone.denom = 0;
+  settmicrotone.num = 0;
+  settmicrotone.denom = 0;
   return 0;
 }
 
@@ -598,11 +598,11 @@ ismicrotone (p, dir)
 
 
 int
-isclef (s, gotoctave, octave, strict)
+tisclef (s, gotoctave, octave, strict)
      char *s;
      int *gotoctave, *octave;
      int strict;
-/* part of K: parsing - looks for a clef in K: field                 */
+/* part of K: tparsing - looks for a clef in K: field                 */
 /* format is K:string where string is treble, bass, baritone, tenor, */
 /* alto, mezzo, soprano or K:clef=arbitrary                          */
 {
@@ -620,7 +620,7 @@ isclef (s, gotoctave, octave, strict)
       if (fileprogram == ABC2MIDI && *gotoctave != 1 && *octave != 1)
         {
         /* [SS] 2015-07-02 */
-	event_warning ("clef= is overriding octave= setting");
+	tevent_warning ("clef= is overriding octave= setting");
         *gotoctave = 1;		/* [SS] 2011-12-19 */
         *octave = 0;
         }
@@ -630,7 +630,7 @@ isclef (s, gotoctave, octave, strict)
       gotclef = 1;
       if (fileprogram == ABC2MIDI && *gotoctave != 1 && *octave != 1)
         {
-	event_warning ("clef= is overriding octave= setting"); 
+	tevent_warning ("clef= is overriding octave= setting");
         /* [SS] 2015-07-02 */
         *gotoctave = 1;
         *octave = 1;
@@ -641,7 +641,7 @@ isclef (s, gotoctave, octave, strict)
       gotclef = 1;
       if (fileprogram == ABC2MIDI && *gotoctave == 1 && *octave != -1)
         {
-	event_warning ("clef= is overriding octave= setting");
+	tevent_warning ("clef= is overriding octave= setting");
         *gotoctave = 1;
         *octave = -1;
         }
@@ -658,7 +658,7 @@ isclef (s, gotoctave, octave, strict)
     {
       gotclef = 1;
       if (fileprogram == ABC2MIDI && *gotoctave == 1 && *octave != -1) {
-	event_warning ("clef= is overriding octave= setting");
+	tevent_warning ("clef= is overriding octave= setting");
         *gotoctave = 1;
         *octave = -1;
         }
@@ -705,7 +705,7 @@ isclef (s, gotoctave, octave, strict)
   if (!strict && !gotclef)
     {
       gotclef = 1;
-      event_warning ("cannot recognize clef indication");
+      tevent_warning ("cannot recognize clef indication");
     }
 
   return (gotclef);
@@ -714,8 +714,8 @@ isclef (s, gotoctave, octave, strict)
 
 
 char *
-readword (word, s)
-/* part of parsekey, extracts word from input line */
+treadword (word, s)
+/* part of tparsekey, extracts word from input tline */
 /* besides the space, the symbols _, ^, and = are used */
 /* as separators in order to handle key signature modifiers. */
 /* [SS] 2010-05-24 */
@@ -745,7 +745,7 @@ readword (word, s)
 }
 
 void
-lcase (s)
+tlcase (s)
 /* convert word to lower case */
      char *s;
 {
@@ -764,37 +764,37 @@ lcase (s)
 
 
 void
-init_voicecode ()
+init_tvoicecode ()
 {
   int i;
   for (i = 0; i < 24; i++) /* [SS} 2015-03-15 */
-    voicecode[i][0] = 0;
-  voicecodes = 0;
+    tvoicecode[i][0] = 0;
+  tvoicecodes = 0;
 }
 
 void
-print_voicecodes ()
+print_tvoicecodes ()
 {
   int i;
-  if (voicecodes == 0)
+  if (tvoicecodes == 0)
     return;
   printf ("voice mapping:\n");
-  for (i = 0; i < voicecodes; i++)
+  for (i = 0; i < tvoicecodes; i++)
     {
       if (i % 4 == 3)
 	printf ("\n");
-      printf ("%s  %d   ", voicecode[i], i + 1);
+      printf ("%s  %d   ", tvoicecode[i], i + 1);
     }
   printf ("\n");
 }
 
 int
-interpret_voicestring (char *s)
+tinterpret_voicestring (char *s)
 {
 /* if V: is followed  by a string instead of a number
  * we check to see if we have encountered this string
  * before. We assign the number associated with this
- * string and add it to voicecode if it was not encountered
+ * string and add it to tvoicecode if it was not encountered
  * before. If more than 16 distinct strings were encountered
  * we report an error -1.
 */
@@ -802,36 +802,36 @@ interpret_voicestring (char *s)
   char code[32];
   char msg[80];			/* [PHDM] 2012-11-22 */
   char *c;
-  c = readword (code, s);
+  c = treadword (code, s);
 
 /* [PHDM] 2012-11-22 */
   if (*c != '\0' && *c != ' ' && *c != ']')
     {
       sprintf (msg, "invalid character `%c' in Voice ID", *c);
-      event_error (msg);
+      tevent_error (msg);
     }
 /* [PHDM] 2012-11-22 */
 
   if (code[0] == '\0')
     return 0;
-  if (voicecodes == 0)
+  if (tvoicecodes == 0)
     {
-      strcpy (voicecode[voicecodes], code);
-      voicecodes++;
-      return voicecodes;
+      strcpy (tvoicecode[tvoicecodes], code);
+      tvoicecodes++;
+      return tvoicecodes;
     }
-  for (i = 0; i < voicecodes; i++)
-    if (stringcmp (code, voicecode[i]) == 0)
+  for (i = 0; i < tvoicecodes; i++)
+    if (stringcmp (code, tvoicecode[i]) == 0)
       return (i + 1);
-  if ((voicecodes + 1) > 23) /* [SS] 2015-03-16 */
+  if ((tvoicecodes + 1) > 23) /* [SS] 2015-03-16 */
     return -1;
-  strcpy (voicecode[voicecodes], code);
-  voicecodes++;
-  return voicecodes;
+  strcpy (tvoicecode[tvoicecodes], code);
+  tvoicecodes++;
+  return tvoicecodes;
 }
 
-/* The following three functions parseclefs, parsetranspose,
- * parseoctave are used to parse the K: field which not
+/* The following three functions tparseclefs, tparsettranspose,
+ * tparseoctave are used to tparse the K: field which not
  * only specifies the key signature but also other descriptors
  * used for producing a midi file or postscript file.
  *
@@ -842,7 +842,7 @@ interpret_voicestring (char *s)
  */
 
 int
-parseclef (s, word, gotclef, clefstr, gotoctave, octave)
+tparseclef (s, word, gotclef, clefstr, gotoctave, octave)
      char **s;
      char *word;
      int *gotclef;
@@ -851,29 +851,29 @@ parseclef (s, word, gotclef, clefstr, gotoctave, octave)
 /* extracts string clef= something */
 {
   int successful;
-  skipspace (s);
-  *s = readword (word, *s);
+  tskipspace (s);
+  *s = treadword (word, *s);
   successful = 0;
   if (casecmp (word, "clef") == 0)
     {
-      skipspace (s);
+      tskipspace (s);
       if (**s != '=')
 	{
-	  event_error ("clef must be followed by '='");
+	  tevent_error ("clef must be followed by '='");
 	}
       else
 	{
 	  *s = *s + 1;
-	  skipspace (s);
-	  *s = readword (clefstr, *s);
-	  if (isclef (clefstr, gotoctave, octave, 0))
+	  tskipspace (s);
+	  *s = treadword (clefstr, *s);
+	  if (tisclef (clefstr, gotoctave, octave, 0))
 	    {
 	      *gotclef = 1;
 	    };
 	};
       successful = 1;
     }
-  else if (isclef (word, gotoctave, octave, 1))
+  else if (tisclef (word, gotoctave, octave, 1))
     {
       *gotclef = 1;
       strcpy (clefstr, word);
@@ -884,34 +884,34 @@ parseclef (s, word, gotclef, clefstr, gotoctave, octave)
 
 
 int
-parsetranspose (s, word, gottranspose, transpose)
-/* parses string transpose= number */
+tparsettranspose (s, word, gotttranspose, ttranspose)
+/* tparses string ttranspose= number */
      char **s;
      char *word;
-     int *gottranspose;
-     int *transpose;
+     int *gotttranspose;
+     int *ttranspose;
 {
-  if (casecmp (word, "transpose") != 0)
+  if (casecmp (word, "ttranspose") != 0)
     return 0;
-  skipspace (s);
+  tskipspace (s);
   if (**s != '=')
     {
-      event_error ("transpose must be followed by '='");
+      tevent_error ("ttranspose must be followed by '='");
     }
   else
     {
       *s = *s + 1;
-      skipspace (s);
-      *transpose = readsnump (s);
-      *gottranspose = 1;
+      tskipspace (s);
+      *ttranspose = readstnump (s);
+      *gotttranspose = 1;
     };
   return 1;
 };
 
 
 int
-parseoctave (s, word, gotoctave, octave)
-/* parses string octave= number */
+tparseoctave (s, word, gotoctave, octave)
+/* tparses string octave= number */
      char **s;
      char *word;
      int *gotoctave;
@@ -919,16 +919,16 @@ parseoctave (s, word, gotoctave, octave)
 {
   if (casecmp (word, "octave") != 0)
     return 0;
-  skipspace (s);
+  tskipspace (s);
   if (**s != '=')
     {
-      event_error ("octave must be followed by '='");
+      tevent_error ("octave must be followed by '='");
     }
   else
     {
       *s = *s + 1;
-      skipspace (s);
-      *octave = readsnump (s);
+      tskipspace (s);
+      *octave = readstnump (s);
       *gotoctave = 1;
     };
   return 1;
@@ -936,8 +936,8 @@ parseoctave (s, word, gotoctave, octave)
 
 
 int
-parsename (s, word, gotname, namestring, maxsize)
-/* parses string name= "string" in V: command 
+tparsename (s, word, gotname, namestring, maxsize)
+/* tparses string name= "string" in V: command
    for compatability of abc2abc with abcm2ps
 */
      char **s;
@@ -950,15 +950,15 @@ parsename (s, word, gotname, namestring, maxsize)
   i = 0;
   if (casecmp (word, "name") != 0)
     return 0;
-  skipspace (s);
+  tskipspace (s);
   if (**s != '=')
     {
-      event_error ("name must be followed by '='");
+      tevent_error ("name must be followed by '='");
     }
   else
     {
       *s = *s + 1;
-      skipspace (s);
+      tskipspace (s);
       if (**s == '"')		/* string enclosed in double quotes */
 	{
 	  namestring[i] = (char) **s;
@@ -990,8 +990,8 @@ parsename (s, word, gotname, namestring, maxsize)
 };
 
 int
-parsesname (s, word, gotname, namestring, maxsize)
-/* parses string name= "string" in V: command 
+tparsesname (s, word, gotname, namestring, maxsize)
+/* tparses string name= "string" in V: command
    for compatability of abc2abc with abcm2ps
 */
      char **s;
@@ -1004,15 +1004,15 @@ parsesname (s, word, gotname, namestring, maxsize)
   i = 0;
   if (casecmp (word, "sname") != 0)
     return 0;
-  skipspace (s);
+  tskipspace (s);
   if (**s != '=')
     {
-      event_error ("name must be followed by '='");
+      tevent_error ("name must be followed by '='");
     }
   else
     {
       *s = *s + 1;
-      skipspace (s);
+      tskipspace (s);
       if (**s == '"')		/* string enclosed in double quotes */
 	{
 	  namestring[i] = (char) **s;
@@ -1044,8 +1044,8 @@ parsesname (s, word, gotname, namestring, maxsize)
 };
 
 int
-parsemiddle (s, word, gotmiddle, middlestring, maxsize)
-/* parse string middle=X in V: command
+tparsemiddle (s, word, gotmiddle, middlestring, maxsize)
+/* tparse string middle=X in V: command
  for abcm2ps compatibility
 */
      char **s;
@@ -1058,15 +1058,15 @@ parsemiddle (s, word, gotmiddle, middlestring, maxsize)
   i = 0;
   if (casecmp (word, "middle") != 0)
     return 0;
-  skipspace (s);
+  tskipspace (s);
   if (**s != '=')
     {
-      event_error ("middle must be followed by '='");
+      tevent_error ("middle must be followed by '='");
     }
   else
     {
       *s = *s + 1;
-      skipspace (s);
+      tskipspace (s);
 /* we really ought to check the we have a proper note name; for now, just copy non-space
 characters */
       while (i < maxsize && **s != ' ' && **s != '\0')
@@ -1082,8 +1082,8 @@ characters */
 }
 
 int
-parseother (s, word, gotother, other, maxsize)	/* [SS] 2011-04-18 */
-/* parses any left overs in V: command (eg. stafflines=1) */
+tparseother (s, word, gotother, other, maxsize)	/* [SS] 2011-04-18 */
+/* tparses any left overs in V: command (eg. stafftlines=1) */
      char **s;
      char *word;
      int *gotother;
@@ -1096,7 +1096,7 @@ parseother (s, word, gotother, other, maxsize)	/* [SS] 2011-04-18 */
 	strncat (other, word, maxsize);
       if (**s == '=')
 	{			/* [SS] 2011-04-19 */
-	  *s = readword (word, *s);
+	  *s = treadword (word, *s);
 	  if ( (int) strlen (other) < maxsize) /* [SS] 2015-10-08 added (int) */
 	    strncat (other, word, maxsize);
 	}
@@ -1108,82 +1108,82 @@ parseother (s, word, gotother, other, maxsize)	/* [SS] 2011-04-18 */
 }
 
 int
-parsekey (str)
-/* parse contents of K: field */
-/* this works by picking up a strings and trying to parse them */
+tparsekey (str)
+/* tparse contents of K: field */
+/* this works by picking up a strings and trying to tparse them */
 /* returns 1 if valid key signature found, 0 otherwise */
      char *str;
 {
   char *s;
   char word[30];
-  int parsed;
-  int gotclef, gotkey, gotoctave, gottranspose;
+  int tparsed;
+  int gotclef, gotkey, gotoctave, gotttranspose;
   int explict;			/* [SS] 2010-05-08 */
   int modnotes;			/* [SS] 2010-07-29 */
-  int foundmode;
-  int transpose, octave;
+  int foundtmode;
+  int ttranspose, octave;
   char clefstr[30];
-  char modestr[30];
+  char tmodestr[30];
   char msg[80];
   char *moveon;
   int sf = -1, minor = -1;
   char modmap[7];
   int modmul[7];
-  struct fraction modmicrotone[7];
+  struct fraction modtmicrotone[7];
   int i, j;
   int cgotoctave, coctave;
   char *key = "FCGDAEB";
-  int modeindex;
-  int a, b;			/* for microtones [SS] 2014-01-06 */
+  int tmodeindex;
+  int a, b;			/* for tmicrotones [SS] 2014-01-06 */
   int success;
   char c;
 
   clefstr[0] = (char) 0;
-  modestr[0] = (char) 0;
+  tmodestr[0] = (char) 0;
   s = str;
-  transpose = 0;
-  gottranspose = 0;
+  ttranspose = 0;
+  gotttranspose = 0;
   octave = 0;
   gotkey = 0;
   gotoctave = 0;
   gotclef = 0;
   cgotoctave = 0;
   coctave = 0;
-  modeindex = 0;
+  tmodeindex = 0;
   explict = 0;
   modnotes = 0;
-  nokey = nokeysig; /* [SS] 2016-03-03 */
+  tnokey = tnokeysig; /* [SS] 2016-03-03 */
   for (i = 0; i < 7; i++)
     {
       modmap[i] = ' ';
       modmul[i] = 1;
-      modmicrotone[i].num = 0;	/* [SS] 2014-01-06 */
-      modmicrotone[i].denom = 0;
+      modtmicrotone[i].num = 0;	/* [SS] 2014-01-06 */
+      modtmicrotone[i].denom = 0;
     };
   while (*s != '\0')
     {
-      parsed = parseclef (&s, word, &gotclef, clefstr, &cgotoctave, &coctave);
-      /* parseclef also scans the s string using readword(), placing */
+      tparsed = tparseclef (&s, word, &gotclef, clefstr, &cgotoctave, &coctave);
+      /* tparseclef also scans the s string using readword(), placing */
       /* the next token  into the char array word[].                   */
-      if (!parsed)
-	parsed = parsetranspose (&s, word, &gottranspose, &transpose);
+      if (!tparsed)
+	tparsed = tparsettranspose (&s, word, &gotttranspose, &ttranspose);
 
-      if (!parsed)
-	parsed = parseoctave (&s, word, &gotoctave, &octave);
+      if (!tparsed)
+	tparsed = tparseoctave (&s, word, &gotoctave, &octave);
 
-      if ((parsed == 0) && (casecmp (word, "Hp") == 0))
+      if ((tparsed == 0) && (casecmp (word, "Hp") == 0))
 	{
 	  sf = 2;
 	  minor = 0;
 	  gotkey = 1;
-	  parsed = 1;
+	  tparsed = 1;
 	};
 
-      if ((parsed == 0) && (casecmp (word, "none") == 0))
+      if ((tparsed == 0) && (casecmp (word, "none") == 0))
 	{
 	  gotkey = 1;
-	  parsed = 1;
-	  nokey = 1;
+	  tparsed = 1;
+	  tnokey = 1;
 	  minor = 0;
 	  sf = 0;
 	}
@@ -1191,14 +1191,14 @@ parsekey (str)
       if (casecmp (word, "exp") == 0)
 	{
 	  explict = 1;
-	  parsed = 1;
+	  tparsed = 1;
 	}
 
-      if ((parsed == 0) && ((word[0] >= 'A') && (word[0] <= 'G')))
+      if ((tparsed == 0) && ((word[0] >= 'A') && (word[0] <= 'G')))
 	{
 	  gotkey = 1;
-	  parsed = 1;
-	  /* parse key itself */
+	  tparsed = 1;
+	  /* tparse key itself */
 	  sf = strchr (key, word[0]) - key - 1;
 	  j = 1;
 	  /* deal with sharp/flat */
@@ -1216,47 +1216,47 @@ parsekey (str)
 		};
 	    }
 	  minor = 0;
-	  foundmode = 0;
+	  foundtmode = 0;
 	  if ((int) strlen (word) == j)
 	    {
-	      /* look at next word for mode */
-	      skipspace (&s);
-	      moveon = readword (modestr, s);
-	      lcase (modestr);
+	      /* look at next word for tmode */
+	      tskipspace (&s);
+	      moveon = treadword (tmodestr, s);
+	      tlcase (tmodestr);
 	      for (i = 0; i < 10; i++)
 		{
-		  if (strncmp (modestr, mode[i], 3) == 0)
+		  if (strncmp (tmodestr, tmode[i], 3) == 0)
 		    {
-		      foundmode = 1;
-		      sf = sf + modeshift[i];
-		      minor = modeminor[i];
-		      modeindex = i;
+		      foundtmode = 1;
+		      sf = sf + tmodeshift[i];
+		      minor = tmodeminor[i];
+		      tmodeindex = i;
 		    };
 		};
-	      if (foundmode)
+	      if (foundtmode)
 		{
 		  s = moveon;
 		};
 	    }
 	  else
 	    {
-	      strcpy (modestr, &word[j]);
-	      lcase (modestr);
+	      strcpy (tmodestr, &word[j]);
+	      tlcase (tmodestr);
 	      for (i = 0; i < 10; i++)
 		{
-		  if (strncmp (modestr, mode[i], 3) == 0)
+		  if (strncmp (tmodestr, tmode[i], 3) == 0)
 		    {
-		      foundmode = 1;
-		      sf = sf + modeshift[i];
-		      minor = modeminor[i];
-		      modeindex = i;
+		      foundtmode = 1;
+		      sf = sf + tmodeshift[i];
+		      minor = tmodeminor[i];
+		      tmodeindex = i;
 		    };
 		};
-	      if (!foundmode)
+	      if (!foundtmode)
 		{
-		  sprintf (msg, "Unknown mode '%s'", &word[j]);
-		  event_error (msg);
-		  modeindex = 0;
+		  sprintf (msg, "Unknown tmode '%s'", &word[j]);
+		  tevent_error (msg);
+		  tmodeindex = 0;
 		};
 	    };
 	};
@@ -1264,12 +1264,12 @@ parsekey (str)
 	{
 	  if (sf > 7)
 	    {
-	      event_warning ("Unusual key representation");
+	      tevent_warning ("Unusual key representation");
 	      sf = sf - 12;
 	    };
 	  if (sf < -7)
 	    {
-	      event_warning ("Unusual key representation");
+	      tevent_warning ("Unusual key representation");
 	      sf = sf + 12;
 	    };
 	};
@@ -1281,7 +1281,7 @@ parsekey (str)
 	      j = (int) word[1] - 'a';
 	      modmap[j] = word[0];
 	      modmul[j] = 1;
-	      parsed = 1;
+	      tparsed = 1;
 	    }
 	  else
 	    {			/*double sharp or double flat */
@@ -1292,7 +1292,7 @@ parsekey (str)
 		  j = (int) word[2] - 'a';
 		  modmap[j] = word[0];
 		  modmul[j] = 2;
-		  parsed = 1;
+		  tparsed = 1;
 		};
 	    };
 	};
@@ -1306,7 +1306,7 @@ parsekey (str)
 	      j = (int) word[1] - 'A';
 	      modmap[j] = word[0];
 	      modmul[j] = 1;
-	      parsed = 1;
+	      tparsed = 1;
 	    }
 	  else if		/*double sharp or double flat */
 	    ((strlen (word) == 3) && (word[0] != '=') && (word[0] == word[1])
@@ -1315,9 +1315,9 @@ parsekey (str)
 	      j = (int) word[2] - 'A';
 	      modmap[j] = word[0];
 	      modmul[j] = 2;
-	      parsed = 1;
+	      tparsed = 1;
 	    };
-	  /* microtone? */
+	  /* tmicrotone? */
 	  success = sscanf (&word[1], "/%d%c", &b, &c);
 	  if (success == 2) /* [SS] 2016-04-10 */
 	    a = 1;
@@ -1325,7 +1325,7 @@ parsekey (str)
 	    success = sscanf (&word[1], "%d/%d%c", &a, &b, &c);
 	  if (success == 3) /* [SS] 2016-04-10 */
 	    {
-	      parsed = 1;
+	      tparsed = 1;
 	      j = (int) c - 'A';
               if (j > 7) j = (int) c - 'a';
               if (j > 7 || j < 0) {printf("invalid j = %d\n",j); exit(-1);}
@@ -1333,15 +1333,15 @@ parsekey (str)
 		a = -a;
 	      /*printf("a/b = %d/%d for %c\n",a,b,c);*/ 
 	      modmap[j] = word[0];
-	      modmicrotone[j].num = a;
-	      modmicrotone[j].denom = b;
+	      modtmicrotone[j].num = a;
+	      modtmicrotone[j].denom = b;
 	    }
 	}
     }
-  if ((parsed == 0) && (strlen (word) > 0))
+  if ((tparsed == 0) && (strlen (word) > 0))
     {
       sprintf (msg, "Ignoring string '%s' in K: field", word);
-      event_warning (msg);
+      tevent_warning (msg);
     };
   if (cgotoctave)
     {
@@ -1354,25 +1354,25 @@ parsekey (str)
       /*gotkey = 1; [SS] 2010-07-29 */
       explict = 1;		/* [SS] 2010-07-29 */
     }
-  event_key (sf, str, modeindex, modmap, modmul, modmicrotone, gotkey,
-	     gotclef, clefstr, octave, transpose, gotoctave, gottranspose,
+  tevent_key (sf, str, tmodeindex, modmap, modmul, modtmicrotone, gotkey,
+	     gotclef, clefstr, octave, ttranspose, gotoctave, gotttranspose,
 	     explict);
   return (gotkey);
 }
 
 
 void
-parsevoice (s)
+tparsevoice (s)
      char *s;
 {
   int num;			/* voice number */
   struct voice_params vparams;
   char word[30];
-  int parsed;
+  int tparsed;
   int coctave, cgotoctave;
 
-  vparams.transpose = 0;
-  vparams.gottranspose = 0;
+  vparams.ttranspose = 0;
+  vparams.gotttranspose = 0;
   vparams.octave = 0;
   vparams.gotoctave = 0;
   vparams.gotclef = 0;
@@ -1384,49 +1384,49 @@ parsevoice (s)
   vparams.gotother = 0;		/* [SS] 2011-04-18 */
   vparams.other[0] = '\0';	/* [SS] 2011-04-18 */
 
-  skipspace (&s);
-  if (isnumberp (&s) == 1)
+  tskipspace (&s);
+  if (tisnumberp (&s) == 1)
     {
-      num = readnump (&s);
+      num = readtnump (&s);
     }
   else
     {
-      num = interpret_voicestring (s);
+      num = tinterpret_voicestring (s);
       if (num == 0)
-	event_error ("No voice number or string in V: field");
+	tevent_error ("No voice number or string in V: field");
       if (num == -1)
 	{
-	  event_error ("More than 16 voices encountered in V: fields");
+	  tevent_error ("More than 16 voices encountered in V: fields");
 	  num = 0;
 	}
-      skiptospace (&s);
+      tskiptospace (&s);
     };
-  skipspace (&s);
+  tskipspace (&s);
   while (*s != '\0')
     {
-      parsed =
-	parseclef (&s, word, &vparams.gotclef, vparams.clefname, &cgotoctave,
+      tparsed =
+	tparseclef (&s, word, &vparams.gotclef, vparams.clefname, &cgotoctave,
 		   &coctave);
-      if (!parsed)
-	parsed =
-	  parsetranspose (&s, word, &vparams.gottranspose,
-			  &vparams.transpose);
-      if (!parsed)
-	parsed = parseoctave (&s, word, &vparams.gotoctave, &vparams.octave);
-      if (!parsed)
-	parsed =
-	  parsename (&s, word, &vparams.gotname, vparams.namestring,
+      if (!tparsed)
+	tparsed =
+	  tparsettranspose (&s, word, &vparams.gotttranspose,
+			  &vparams.ttranspose);
+      if (!tparsed)
+	tparsed = tparseoctave (&s, word, &vparams.gotoctave, &vparams.octave);
+      if (!tparsed)
+	tparsed =
+	  tparsename (&s, word, &vparams.gotname, vparams.namestring,
 		     V_STRLEN);
-      if (!parsed)
-	parsed =
-	  parsesname (&s, word, &vparams.gotsname, vparams.snamestring,
+      if (!tparsed)
+	tparsed =
+	  tparsesname (&s, word, &vparams.gotsname, vparams.snamestring,
 		      V_STRLEN);
-      if (!parsed)
-	parsed =
-	  parsemiddle (&s, word, &vparams.gotmiddle, vparams.middlestring,
+      if (!tparsed)
+	tparsed =
+	  tparsemiddle (&s, word, &vparams.gotmiddle, vparams.middlestring,
 		       V_STRLEN);
-      if (!parsed)
-	parsed = parseother (&s, word, &vparams.gotother, vparams.other, V_STRLEN);	/* [SS] 2011-04-18 */
+      if (!tparsed)
+	tparsed = tparseother (&s, word, &vparams.gotother, vparams.other, V_STRLEN);	/* [SS] 2011-04-18 */
     }
   /* [SS] 2015-05-13 allow octave= to change the clef= octave setting */
   /* cgotoctave may be set to 1 by a clef=. vparams.gotoctave is set  */
@@ -1437,24 +1437,24 @@ parsevoice (s)
       vparams.gotoctave = 1;
       vparams.octave = coctave;
     }
-  event_voice (num, s, &vparams);
+  tevent_voice (num, s, &vparams);
 
 /*
-if (gottranspose) printf("transpose = %d\n", vparams.transpose);
+if (gotttranspose) printf("ttranspose = %d\n", vparams.ttranspose);
  if (gotoctave) printf("octave= %d\n", vparams.octave);
  if (gotclef) printf("clef= %s\n", vparams.clefstr);
-if (gotname) printf("parsevoice: name= %s\n", vparams.namestring);
-if(gotmiddle) printf("parsevoice: middle= %s\n", vparams.middlestring);
+if (gotname) printf("tparsevoice: name= %s\n", vparams.namestring);
+if(gotmiddle) printf("tparsevoice: middle= %s\n", vparams.middlestring);
 */
 }
 
 
 void
-parsenote (s)
+tparsenote (s)
      char **s;
-/* parse abc note and advance character pointer */
+/* tparse abc note and advance character pointer */
 {
-  int decorators[DECSIZE];
+  int tdecorators[DECSIZE];
   int i, t;
   int mult;
   char accidental, note;
@@ -1462,44 +1462,44 @@ parsenote (s)
   char msg[80];
 
   mult = 1;
-  microtone = 0;
+  tmicrotone = 0;
   accidental = ' ';
   note = ' ';
   for (i = 0; i < DECSIZE; i++)
     {
-      decorators[i] = decorators_passback[i];
-      if (!inchordflag)
-	decorators_passback[i] = 0;	/* [SS] 2012-03-30 */
+      tdecorators[i] = tdecorators_passback[i];
+      if (!trinchordflag)
+	tdecorators_passback[i] = 0;	/* [SS] 2012-03-30 */
     }
-  while (strchr (decorations, **s) != NULL)
+  while (strchr (tdecorations, **s) != NULL)
     {
-      t = strchr (decorations, **s) - decorations;
-      decorators[t] = 1;
+      t = strchr (tdecorations, **s) - tdecorations;
+      tdecorators[t] = 1;
       *s = *s + 1;
     };
   /*check for decorated chord */
   if (**s == '[')
     {
-      lineposition = *s - linestart;	/* [SS] 2011-07-18 */
+      tlineposition = *s - tlinestart;	/* [SS] 2011-07-18 */
       if (fileprogram == YAPS)
-	event_warning ("decorations applied to chord");
+	tevent_warning ("decorations applied to chord");
       for (i = 0; i < DECSIZE; i++)
-	chorddecorators[i] = decorators[i];
-      event_chordon (chorddecorators);
+	chordtdecorators[i] = tdecorators[i];
+      tevent_chordon (chordtdecorators);
       if (fileprogram == ABC2ABC)
 	for (i = 0; i < DECSIZE; i++)
-	  decorators[i] = 0;
-      parserinchord = 1;
+	  tdecorators[i] = 0;
+      tparserinchord = 1;
       *s = *s + 1;
-      skipspace (s);
+      tskipspace (s);
     };
-  if (parserinchord)
+  if (tparserinchord)
     {
       /* inherit decorators */
       if (fileprogram != ABC2ABC)
 	for (i = 0; i < DECSIZE; i++)
 	  {
-	    decorators[i] = decorators[i] | chorddecorators[i];
+	    tdecorators[i] = tdecorators[i] | chordtdecorators[i];
 	  };
     };
 
@@ -1508,15 +1508,15 @@ parsenote (s)
   if (**s == 'z')
     {
       *s = *s + 1;
-      readlen (&n, &m, s);
-      event_rest (decorators, n, m, 0);
+      treadlen (&n, &m, s);
+      tevent_rest (tdecorators, n, m, 0);
       return;
     }
   if (**s == 'x')
     {
       *s = *s + 1;
-      readlen (&n, &m, s);
-      event_rest (decorators, n, m, 1);
+      treadlen (&n, &m, s);
+      tevent_rest (tdecorators, n, m, 1);
       return;
     }
 
@@ -1531,8 +1531,8 @@ parsenote (s)
 	  *s = *s + 1;
 	  mult = 2;
 	};
-      microtone = ismicrotone (s, -1);
-      if (microtone)
+      tmicrotone = istmicrotone (s, -1);
+      if (tmicrotone)
 	{
 	  if (mult == 2)
 	    mult = 1;
@@ -1548,8 +1548,8 @@ parsenote (s)
 	  *s = *s + 1;
 	  mult = 2;
 	};
-      microtone = ismicrotone (s, 1);
-      if (microtone)
+      tmicrotone = istmicrotone (s, 1);
+      if (tmicrotone)
 	{
 	  if (mult == 2)
 	    mult = 1;
@@ -1568,21 +1568,21 @@ parsenote (s)
 	{
 	  accidental = **s;
 	  *s = *s + 1;
-	  microtone = ismicrotone (s, 1);
-	  if (microtone == 0)
+	  tmicrotone = istmicrotone (s, 1);
+	  if (tmicrotone == 0)
 	    accidental = '^';
 	}
       else if (**s == '_')
 	{
 	  accidental = **s;
 	  *s = *s + 1;
-	  microtone = ismicrotone (s, -1);
-	  if (microtone == 0)
+	  tmicrotone = istmicrotone (s, -1);
+	  if (tmicrotone == 0)
 	    accidental = '_';
 	}
       break;
     default:
-      microtone = ismicrotone (s, 1);		/* [SS] 2014-01-19 */
+      tmicrotone = istmicrotone (s, 1);		/* [SS] 2014-01-19 */
       break;
     };
   if ((**s >= 'a') && (**s <= 'g'))
@@ -1600,7 +1600,7 @@ parsenote (s)
 	  if (**s == ',')
 	    {
 	      sprintf (msg, "Bad pitch specifier , after note %c", note);
-	      event_error (msg);
+	      tevent_error (msg);
 	      octave = octave - 1;
 	      *s = *s + 1;
 	    };
@@ -1624,7 +1624,7 @@ parsenote (s)
 		{
 		  sprintf (msg, "Bad pitch specifier ' after note %c",
 			   note + 'A' - 'a');
-		  event_error (msg);
+		  tevent_error (msg);
 		  octave = octave + 1;
 		  *s = *s + 1;
 		};
@@ -1633,19 +1633,19 @@ parsenote (s)
     };
   if (note == ' ')
     {
-      event_error ("Malformed note : expecting a-g or A-G");
+      tevent_error ("Malformed note : expecting a-g or A-G");
     }
   else
     {
-      readlen (&n, &m, s);
-      event_note (decorators, accidental, mult, note, octave, n, m);
-      if (!microtone)
-	event_normal_tone ();	/* [SS] 2014-01-09 */
+      treadlen (&n, &m, s);
+      tevent_note (tdecorators, accidental, mult, note, octave, n, m);
+      if (!tmicrotone)
+	tevent_normal_tone ();	/* [SS] 2014-01-09 */
     };
 }
 
 char *
-getrep (p, out)
+tgetrep (p, out)
      char *p;
      char *out;
 /* look for number or list following [ | or :| */
@@ -1670,7 +1670,7 @@ getrep (p, out)
 	  /* [SS] 2013-04-21 */
 	  if (count > 50)
 	    {
-	      event_error ("malformed repeat");
+	      tevent_error ("malformed repeat");
 	      break;
 	    }
 	}
@@ -1686,7 +1686,7 @@ getrep (p, out)
 	      /* [SS] 2013-04-21 */
 	      if (count > 50)
 		{
-		  event_error ("malformed repeat");
+		  tevent_error ("malformed repeat");
 		  break;
 		}
 	    }
@@ -1701,16 +1701,16 @@ getrep (p, out)
 }
 
 int
-checkend (s)
+tcheckend (s)
      char *s;
-/* returns 1 if we are at the end of the line 0 otherwise */
-/* used when we encounter '\' '*' or other special line end characters */
+/* returns 1 if we are at the end of the tline 0 otherwise */
+/* used when we encounter '\' '*' or other special tline end characters */
 {
   char *p;
   int atend;
 
   p = s;
-  skipspace (&p);
+  tskipspace (&p);
   if (*p == '\0')
     {
       atend = 1;
@@ -1723,7 +1723,7 @@ checkend (s)
 }
 
 void
-readstr (out, in, limit)
+treadstr (out, in, limit)
      char out[];
      char **in;
      int limit;
@@ -1741,9 +1741,9 @@ readstr (out, in, limit)
   out[i] = '\0';
 }
 
-/* [SS] 2015-06-01 required for parse_mididef() in store.c */
+/* [SS] 2015-06-01 required for tparse_mididef() in store.c */
 /* Just like readstr but also allows anything except white space */
-int readaln (out, in, limit)
+int treadaln (out, in, limit)
      char out[];
      char **in;
      int limit;
@@ -1763,7 +1763,7 @@ int readaln (out, in, limit)
 }
 
 void
-parse_precomment (s)
+tparse_precomment (s)
      char *s;
 /* handles a comment field */
 {
@@ -1771,23 +1771,23 @@ parse_precomment (s)
   char *p;
   int success;
 
-  success = sscanf (s, "%%abc-version %s", &abcversion); /* [SS] 2014-08-11 */
+  success = sscanf (s, "%%abc-version %s", &tabcversion); /* [SS] 2014-08-11 */
   if (*s == '%')
     {
       p = s + 1;
-      readstr (package, &p, 40);
-      event_specific (package, p);
+      treadstr (package, &p, 40);
+      tevent_specific (package, p);
     }
   else
     {
-      event_comment (s);
+      tevent_comment (s);
     };
 }
 
 void
-parse_tempo (place)
+tparse_tempo (place)
      char *place;
-/* parse tempo descriptor i.e. Q: field */
+/* tparse tempo descriptor i.e. Q: field */
 {
   char *p;
   int a, b;
@@ -1809,7 +1809,7 @@ parse_tempo (place)
 	};
       if (*p == '\0')
 	{
-	  event_error ("Missing closing double quote");
+	  tevent_error ("Missing closing double quote");
 	}
       else
 	{
@@ -1823,17 +1823,17 @@ parse_tempo (place)
   if (*p == '=')
     {
       p = place;
-      skipspace (&p);
+      tskipspace (&p);
       if (((*p >= 'A') && (*p <= 'G')) || ((*p >= 'a') && (*p <= 'g')))
 	{
 	  relative = 1;
 	  p = p + 1;
 	};
-      readlen (&a, &b, &p);
-      skipspace (&p);
+      treadlen (&a, &b, &p);
+      tskipspace (&p);
       if (*p != '=')
 	{
-	  event_error ("Expecting = in tempo");
+	  tevent_error ("Expecting = in tempo");
 	};
       p = p + 1;
     }
@@ -1844,8 +1844,8 @@ parse_tempo (place)
       b = 4;
       p = place;
     };
-  skipspace (&p);
-  n = readnump (&p);
+  tskipspace (&p);
+  n = readtnump (&p);
   post_string = NULL;
   if (*p == '"')
     {
@@ -1857,7 +1857,7 @@ parse_tempo (place)
 	};
       if (*p == '\0')
 	{
-	  event_error ("Missing closing double quote");
+	  tevent_error ("Missing closing double quote");
 	}
       else
 	{
@@ -1865,12 +1865,12 @@ parse_tempo (place)
 	  p = p + 1;
 	};
     };
-  event_tempo (n, a, b, relative, pre_string, post_string);
+  tevent_tempo (n, a, b, relative, pre_string, post_string);
 }
 
 void appendfield(char *); /* links with store.c and yapstree.c */
 
-void append_fieldcmd (key, s)  /* [SS] 2014-08-15 */
+void tappend_fieldcmd (key, s)  /* [SS] 2014-08-15 */
 char key;
 char *s;
 {
@@ -1878,15 +1878,15 @@ appendfield(s);
 } 
 
 void
-preparse_words (s)
+pretparse_words (s)
      char *s;
-/* takes a line of lyrics (w: field) and strips off */
+/* takes a tline of lyrics (w: field) and strips off */
 /* any continuation character */
 {
   int continuation;
   int l;
 
-  /* printf("Parsing %s\n", s); */
+  /* printf("tparsing %s\n", s); */
   /* strip off any trailing spaces */
   l = strlen (s) - 1;
   while ((l >= 0) && (*(s + l) == ' '))
@@ -1901,7 +1901,7 @@ preparse_words (s)
   else
     {
       /* [SS] 2014-08-14 */
-      event_warning ("\\n continuation no longer supported in w: line");
+      tevent_warning ("\\n continuation no longer supported in w: tline");
       continuation = 1;
       /* remove continuation character */
       *(s + l) = '\0';
@@ -1912,11 +1912,11 @@ preparse_words (s)
 	  l = l - 1;
 	};
     };
-  event_words (s, continuation);
+  tevent_words (s, continuation);
 }
 
 void
-init_abbreviations ()
+init_tabbreviations ()
 /* initialize mapping of H-Z to strings */
 {
   int i;
@@ -1924,12 +1924,12 @@ init_abbreviations ()
   /* for (i = 0; i < 'Z' - 'H'; i++) [SS] 2016-09-25 */
   for (i = 0; i < 'z' - 'A'; i++) /* [SS] 2016-09-25 */
     {
-      abbreviation[i] = NULL;
+      tabbreviation[i] = NULL;
     };
 }
 
 void
-record_abbreviation (char symbol, char *string)
+record_tabbreviation (char symbol, char *string)
 /* update record of abbreviations when a U: field is encountered */
 {
   int index;
@@ -1940,15 +1940,15 @@ record_abbreviation (char symbol, char *string)
       return;
     };
   index = symbol - 'A';
-  if (abbreviation[index] != NULL)
+  if (tabbreviation[index] != NULL)
     {
-      free (abbreviation[index]);
+      free (tabbreviation[index]);
     };
-  abbreviation[index] = addstring (string);
+  tabbreviation[index] = taddstring (string);
 }
 
 char *
-lookup_abbreviation (char symbol)
+lookup_tabbreviation (char symbol)
 /* return string which s abbreviates */
 {
   /* if ((symbol < 'H') || (symbol > 'Z'))  [SS] 2016-09-25 */
@@ -1958,30 +1958,30 @@ lookup_abbreviation (char symbol)
     }
   else
     {
-      return (abbreviation[symbol - 'A']); /* [SS] 2016-09-20 */
+      return (tabbreviation[symbol - 'A']); /* [SS] 2016-09-20 */
     };
 }
 
 void
-free_abbreviations ()
+free_tabbreviations ()
 /* free up any space taken by abbreviations */
 {
   int i;
 
   for (i = 0; i < SIZE_ABBREVIATIONS; i++)
     {
-      if (abbreviation[i] != NULL)
+      if (tabbreviation[i] != NULL)
 	{
-	  free (abbreviation[i]);
+	  free (tabbreviation[i]);
 	};
     };
 }
 
 void
-parsefield (key, field)
+tparsefield (key, field)
      char key;
      char *field;
-/* top-level routine handling all lines containing a field */
+/* top-level routine handling all tlines containing a field */
 {
   char *comment;
   char *place;
@@ -1994,28 +1994,28 @@ parsefield (key, field)
       int x;
 
       xplace = field;
-      skipspace (&xplace);
-      x = readnumf (xplace);
-      if (inhead)
+      tskipspace (&xplace);
+      x = readtnumf (xplace);
+      if (tinhead)
 	{
-	  event_error ("second X: field in header");
+	  tevent_error ("second X: field in header");
 	};
-      event_refno (x);
-      ignore_line =0; /* [SS] 2017-04-12 */
-      init_voicecode ();	/* [SS] 2011-01-01 */
-      inhead = 1;
-      inbody = 0;
-      parserinchord = 0;
+      tevent_refno (x);
+      ignore_tline =0; /* [SS] 2017-04-12 */
+      init_tvoicecode ();	/* [SS] 2011-01-01 */
+      tinhead = 1;
+      intbody = 0;
+      tparserinchord = 0;
       return;
     };
 
-  if (parsing == 0)
+  if (tparsing == 0)
     return;
 
-  /*if ((inbody) && (strchr ("EIKLMPQTVdswW", key) == NULL)) [SS] 2014-08-15 */
-  if ((inbody) && (strchr ("EIKLMPQTVdrswW+", key) == NULL)) /* [SS] 2015-05-11 */
+  /*if ((intbody) && (strchr ("EIKLMPQTVdswW", key) == NULL)) [SS] 2014-08-15 */
+  if ((intbody) && (strchr ("EIKLMPQTVdrswW+", key) == NULL)) /* [SS] 2015-05-11 */
     {
-      event_error ("Field not allowed in tune body");
+      tevent_error ("Field not allowed in tune tbody");
     };
   comment = field;
   iscomment = 0;
@@ -2030,46 +2030,46 @@ parsefield (key, field)
       comment = comment + 1;
     };
   place = field;
-  skipspace (&place);
+  tskipspace (&place);
   switch (key)
     {
     case 'K':
-      foundkey = parsekey (place);
-      if (inhead || inbody)
+      foundkey = tparsekey (place);
+      if (tinhead || intbody)
 	{
 	  if (foundkey)
 	    {
-	      inbody = 1;
-	      inhead = 0;
+	      intbody = 1;
+	      tinhead = 0;
 	    }
 	  else
 	    {
-	      if (inhead)
+	      if (tinhead)
 		{
-		  event_error ("First K: field must specify key signature");
+		  tevent_error ("First K: field must specify key signature");
 		};
 	    };
 	}
       else
 	{
-	  event_error ("No X: field preceding K:");
+	  tevent_error ("No X: field preceding K:");
 	};
       break;
     case 'M':
       {
 	int num, denom;
 
-	strncpy (timesigstring, place, 16);	/* [SS] 2011-08-19 */
+	strncpy (ttimesigstring, place, 16);	/* [SS] 2011-08-19 */
 	if (strncmp (place, "none", 4) == 0)
 	  {
-	    event_timesig (4, 4, 0);
+	    tevent_timesig (4, 4, 0);
 	  }
 	else
 	  {
-	    readsig (&num, &denom, &place);
+	    treadsig (&num, &denom, &place);
 	    if ((*place == 's') || (*place == 'l'))
 	      {
-		event_error ("s and l in M: field not supported");
+		tevent_error ("s and l in M: field not supported");
 	      };
 	    if ((num != 0) && (denom != 0))
 	      {
@@ -2078,7 +2078,7 @@ parsefield (key, field)
 		 * or checkbars = 2 for 'common' time signature to
 		 * remain faithful to style of input abc file.
 		 */
-		event_timesig (num, denom, 1 + ((*place == 'C') || (*place == 'c')));
+		tevent_timesig (num, denom, 1 + ((*place == 'C') || (*place == 'c')));
 	      };
 	  };
 	break;
@@ -2087,35 +2087,35 @@ parsefield (key, field)
       {
 	int num, denom;
 
-	readsig (&num, &denom, &place);
+	treadsig (&num, &denom, &place);
 	if (num != 1)
 	  {
-	    event_error ("Default length must be 1/X");
+	    tevent_error ("Default length must be 1/X");
 	  }
 	else
 	  {
 	    if (denom > 0)
 	      {
-		event_length (denom);
+		tevent_length (denom);
 	      }
 	    else
 	      {
-		event_error ("invalid denominator");
+		tevent_error ("invalid denominator");
 	      };
 	  };
 	break;
       };
     case 'P':
-      event_part (place);
+      tevent_part (place);
       break;
     case 'I':
-      event_info (place);
+      tevent_info (place);
       break;
     case 'V':
-      parsevoice (place);
+      tparsevoice (place);
       break;
     case 'Q':
-      parse_tempo (place);
+      tparse_tempo (place);
       break;
     case 'U':
       {
@@ -2123,17 +2123,17 @@ parsefield (key, field)
 	char container;
 	char *expansion;
 
-	skipspace (&place);
+	tskipspace (&place);
 	/* if ((*place >= 'H') && (*place <= 'Z')) [SS] 2016-09-20 */
 	if ((*place >= 'A') && (*place <= 'z'))  /* [SS] 2016-09-20 */
 	  {
 	    symbol = *place;
 	    place = place + 1;
-	    skipspace (&place);
+	    tskipspace (&place);
 	    if (*place == '=')
 	      {
 		place = place + 1;
-		skipspace (&place);
+		tskipspace (&place);
 		if (*place == '!')
 		  {
 		    place = place + 1;
@@ -2145,7 +2145,7 @@ parsefield (key, field)
 		      };
 		    if (*place != '!')
 		      {
-			event_error ("No closing ! in U: field");
+			tevent_error ("No closing ! in U: field");
 		      };
 		    *place = '\0';
 		  }
@@ -2161,58 +2161,58 @@ parsefield (key, field)
 		  };
 		if (strlen (expansion) > 0)
 		  {
-		    record_abbreviation (symbol, expansion);
-		    event_abbreviation (symbol, expansion, container);
+		    record_tabbreviation (symbol, expansion);
+		    tevent_abbreviation (symbol, expansion, container);
 		  }
 		else
 		  {
-		    event_error ("Missing term in U: field");
+		    tevent_error ("Missing term in U: field");
 		  };
 	      }
 	    else
 	      {
-		event_error ("Missing '=' U: field ignored");
+		tevent_error ("Missing '=' U: field ignored");
 	      };
 	  }
 	else
 	  {
-	    event_warning ("only 'H' - 'Z' supported in U: field");
+	    tevent_warning ("only 'H' - 'Z' supported in U: field");
 	  };
       };
       break;
     case 'w':
-      preparse_words (place);
+      pretparse_words (place);
       break;
     case 'd':
-      /* decoration line in abcm2ps */
-      event_field (key, place);	/* [SS] 2010-02-23 */
+      /* decoration tline in abcm2ps */
+      tevent_field (key, place);	/* [SS] 2010-02-23 */
       break;
     case 's':
-      event_field (key, place);	/* [SS] 2010-02-23 */
+      tevent_field (key, place);	/* [SS] 2010-02-23 */
       break;
     case '+':
-      if (lastfieldcmd == 'w') 
-          append_fieldcmd (key, place); /*[SS] 2014-08-15 */
+      if (tlastfieldcmd == 'w')
+          tappend_fieldcmd (key, place); /*[SS] 2014-08-15 */
       break; /* [SS] 2014-09-07 */
     default:
-      event_field (key, place);
+      tevent_field (key, place);
     };
   if (iscomment)
     {
-      parse_precomment (comment);
+      tparse_precomment (comment);
     };
-  if (key == 'w') lastfieldcmd = 'w'; /* [SS] 2014-08-15 */
-  else lastfieldcmd = ' ';  /* [SS[ 2014-08-15 */
+  if (key == 'w') tlastfieldcmd = 'w'; /* [SS] 2014-08-15 */
+  else tlastfieldcmd = ' ';  /* [SS[ 2014-08-15 */
 }
 
 char *
-parseinlinefield (p)
+tparseintlinefield (p)
      char *p;
-/* parse field within abc line e.g. [K:G] */
+/* tparse field within abc tline e.g. [K:G] */
 {
   char *q;
 
-  event_startinline ();
+  tevent_startinline ();
   q = p;
   while ((*q != ']') && (*q != '\0'))
     {
@@ -2221,47 +2221,47 @@ parseinlinefield (p)
   if (*q == ']')
     {
       *q = '\0';
-      parsefield (*p, p + 2);
+      tparsefield (*p, p + 2);
       q = q + 1;
     }
   else
     {
-      event_error ("missing closing ]");
-      parsefield (*p, p + 2);
+      tevent_error ("missing closing ]");
+      tparsefield (*p, p + 2);
     };
-  event_closeinline ();
+  tevent_closeinline ();
   return (q);
 }
 
 /* this function is used by toabc.c [SS] 2011-06-10 */
 void
-print_inputline_nolinefeed ()
+tprint_inputtline_notlinefeed ()
 {
-  if (inputline[sizeof inputline - 1] != '\0')
+  if (inputtline[sizeof inputtline - 1] != '\0')
     {
       /*
        * We are called exclusively by toabc.c,
        * and when we are called, event_error is muted,
-       * so, event_error("input line truncated") does nothing.
+       * so, event_error("input tline truncated") does nothing.
        * Simulate it with a plain printf. [PHDM 2012-12-01]
        */
-      printf ("%%Error : input line truncated\n");
+      printf ("%%Error : input tline truncated\n");
     }
-  printf ("%s", inputline);
+  printf ("%s", inputtline);
 }
 
 /* this function is used by toabc.c [SS] 2011-06-07 */
 void
-print_inputline ()
+print_inputtline ()
 {
-  print_inputline_nolinefeed ();
+  tprint_inputtline_notlinefeed ();
   printf ("\n");
 }
 
 void
-parsemusic (field)
+tparsemusic (field)
      char *field;
-/* parse a line of abc notes */
+/* tparse a tline of abc notes */
 {
   char *p;
   char c; /* [SS] 2017-04-19 */
@@ -2271,12 +2271,12 @@ parsemusic (field)
   int starcount;
   int i;
   char playonrep_list[80];
-  int decorators[DECSIZE];
+  int tdecorators[DECSIZE];
 
   for (i = 0; i < DECSIZE; i++)
-    decorators[i] = 0;		/* [SS] 2012-03-30 */
+    tdecorators[i] = 0;		/* [SS] 2012-03-30 */
 
-  event_startmusicline ();
+  tevent_startmusicline ();
   endchar = ' ';
   comment = field;
   iscomment = 0;
@@ -2292,21 +2292,21 @@ parsemusic (field)
     };
 
   p = field;
-  skipspace (&p);
+  tskipspace (&p);
   while (*p != '\0')
     {
-      lineposition = p - linestart;	/* [SS] 2011-07-18 */
+      tlineposition = p - tlinestart;	/* [SS] 2011-07-18 */
 
-      if (*p == '.' && *(p+1) == '(') {  /* [SS] 2015-04-28 dotted slur */
+      if (*p == '.' && *(p+1) == '(') {  /* [SS] 2015-04-28 dotted tslur */
           p = p+1;
-          event_sluron (1);
+          tevent_sluron (1);
           p = p+1;
           }
 
       if (((*p >= 'a') && (*p <= 'g')) || ((*p >= 'A') && (*p <= 'G')) ||
-	  (strchr ("_^=", *p) != NULL) || (strchr (decorations, *p) != NULL))
+	  (strchr ("_^=", *p) != NULL) || (strchr (tdecorations, *p) != NULL))
 	{
-	  parsenote (&p);
+	  tparsenote (&p);
 	}
       else
 	{
@@ -2318,22 +2318,22 @@ parsemusic (field)
 		struct vstring gchord;
 
 		p = p + 1;
-		initvstring (&gchord);
+		inittvstring (&gchord);
 		while ((*p != '"') && (*p != '\0'))
 		  {
-		    addch_ (*p, &gchord);
+		    taddch (*p, &gchord);
 		    p = p + 1;
 		  };
 		if (*p == '\0')
 		  {
-		    event_error ("Guitar chord name not properly closed");
+		    tevent_error ("Guitar chord name not properly closed");
 		  }
 		else
 		  {
 		    p = p + 1;
 		  };
-		event_gchord (gchord.st);
-		freevstring (&gchord);
+		tevent_gchord (gchord.st);
+		freetvstring (&gchord);
 		break;
 	      };
 	    case '|':
@@ -2341,20 +2341,20 @@ parsemusic (field)
 	      switch (*p)
 		{
 		case ':':
-		  event_bar (BAR_REP, "");
+		  tevent_bar (BAR_REP, "");
 		  p = p + 1;
 		  break;
 		case '|':
-		  event_bar (DOUBLE_BAR, "");
+		  tevent_bar (DOUBLE_BAR, "");
 		  p = p + 1;
 		  break;
 		case ']':
-		  event_bar (THIN_THICK, "");
+		  tevent_bar (THIN_THICK, "");
 		  p = p + 1;
 		  break;
 		default:
-		  p = getrep (p, playonrep_list);
-		  event_bar (SINGLE_BAR, playonrep_list);
+		  p = tgetrep (p, playonrep_list);
+		  tevent_bar (SINGLE_BAR, playonrep_list);
 		};
 	      break;
 	    case ':':
@@ -2362,27 +2362,27 @@ parsemusic (field)
 	      switch (*p)
 		{
 		case ':':
-		  event_bar (DOUBLE_REP, "");
+		  tevent_bar (DOUBLE_REP, "");
 		  p = p + 1;
 		  break;
 		case '|':
 		  p = p + 1;
-		  p = getrep (p, playonrep_list);
-		  event_bar (REP_BAR, playonrep_list);
+		  p = tgetrep (p, playonrep_list);
+		  tevent_bar (REP_BAR, playonrep_list);
 		  if (*p == ']')
 		    p = p + 1;	/* [SS] 2013-10-31 */
 		  break;
 		default:
-		  event_error ("Single colon in bar");
+		  tevent_error ("Single colon in bar");
 		};
 	      break;
 	    case ' ':
-	      event_space ();
-	      skipspace (&p);
+	      tevent_space ();
+	      tskipspace (&p);
 	      break;
 	    case TAB:
-	      event_space ();
-	      skipspace (&p);
+	      tevent_space ();
+	      tskipspace (&p);
 	      break;
 	    case '(':
 	      p = p + 1;
@@ -2392,45 +2392,45 @@ parsemusic (field)
 		t = 0;
 		q = 0;
 		r = 0;
-		t = readnump (&p);
+		t = readtnump (&p);
 		if ((t != 0) && (*p == ':'))
 		  {
 		    p = p + 1;
-		    q = readnump (&p);
+		    q = readtnump (&p);
 		    if (*p == ':')
 		      {
 			p = p + 1;
-			r = readnump (&p);
+			r = readtnump (&p);
 		      };
 		  };
 		if (t == 0)
 		  {
                     if (*p == '&') {
                        p = p+1;
-                       event_start_extended_overlay(); /* [SS] 2015-03-23 */
+                       tevent_start_extended_overlay(); /* [SS] 2015-03-23 */
                        }
                     else
-		       event_sluron (1);
+		       tevent_sluron (1);
 		  }
 		else  /* t != 0 */
 		  {
-		    event_tuple (t, q, r);
+		    tevent_tuple (t, q, r);
 		  };
 	      };
 	      break;
 	    case ')':
 	      p = p + 1;
-	      event_sluroff (0);
+	      tevent_sluroff (0);
 	      break;
 	    case '{':
 	      p = p + 1;
-	      event_graceon ();
-	      ingrace = 1;
+	      tevent_graceon ();
+	      ttingrace = 1;
 	      break;
 	    case '}':
 	      p = p + 1;
-	      event_graceoff ();
-	      ingrace = 0;
+	      tevent_graceoff ();
+	      ttingrace = 0;
 	      break;
 	    case '[':
 	      p = p + 1;
@@ -2438,32 +2438,32 @@ parsemusic (field)
 		{
 		case '|':
 		  p = p + 1;
-		  event_bar (THICK_THIN, "");
+		  tevent_bar (THICK_THIN, "");
 		  if (*p == ':')   /* [SS] 2015-04-13 */
-		      event_bar (BAR_REP, "");
+		      tevent_bar (BAR_REP, "");
 		      p = p + 1;
 		  break;
 		default:
 		  if (isdigit (*p))
 		    {
-		      p = getrep (p, playonrep_list);
-		      event_playonrep (playonrep_list);
+		      p = tgetrep (p, playonrep_list);
+		      tevent_playonrep (playonrep_list);
 		    }
 		  else
 		    {
 		      if (isalpha (*p) && (*(p + 1) == ':'))
 			{
-			  p = parseinlinefield (p);
+			  p = tparseintlinefield (p);
 			}
 		      else
 			{
-			  lineposition = p - linestart;	/* [SS] 2011-07-18 */
+			  tlineposition = p - tlinestart;	/* [SS] 2011-07-18 */
 			  /* [SS] 2012-03-30 */
 			  for (i = 0; i < DECSIZE; i++)
-			    chorddecorators[i] =
-			      decorators[i] | decorators_passback[i];
-			  event_chordon (chorddecorators);
-			  parserinchord = 1;
+			    chordtdecorators[i] =
+			      tdecorators[i] | tdecorators_passback[i];
+			  tevent_chordon (chordtdecorators);
+			  tparserinchord = 1;
 			};
 		    };
 		  break;
@@ -2471,13 +2471,13 @@ parsemusic (field)
 	      break;
 	    case ']':
 	      p = p + 1;
-	      readlen (&chord_n, &chord_m, &p);
-	      event_chordoff (chord_n, chord_m);
-	      parserinchord = 0;
+	      treadlen (&tchord_n, &tchord_m, &p);
+	      tevent_chordoff (tchord_n, tchord_m);
+	      tparserinchord = 0;
 	      for (i = 0; i < DECSIZE; i++)
 		{
-		  chorddecorators[i] = 0;
-		  decorators_passback[i] = 0;	/* [SS] 2012-03-30 */
+		  chordtdecorators[i] = 0;
+		  tdecorators_passback[i] = 0;	/* [SS] 2012-03-30 */
 		}
 	      break;
 /*  hidden rest  */
@@ -2486,17 +2486,17 @@ parsemusic (field)
 		int n, m;
 
 		p = p + 1;
-		readlen (&n, &m, &p);
+		treadlen (&n, &m, &p);
 /* in order to handle a fermata applied to a rest we must
  * pass decorators to event_rest.
  */
 		for (i = 0; i < DECSIZE; i++)
 		  {
-		    decorators[i] = decorators_passback[i];
-		    decorators_passback[i] = 0;
+		    tdecorators[i] = tdecorators_passback[i];
+		    tdecorators_passback[i] = 0;
 		  }
-		event_rest (decorators, n, m, 1);
-                decorators[FERMATA] = 0;  /* [SS] 2014-11-17 */
+		tevent_rest (tdecorators, n, m, 1);
+                tdecorators[FERMATA] = 0;  /* [SS] 2014-11-17 */
 		break;
 	      };
 /*  regular rest */
@@ -2505,17 +2505,17 @@ parsemusic (field)
 		int n, m;
 
 		p = p + 1;
-		readlen (&n, &m, &p);
+		treadlen (&n, &m, &p);
 /* in order to handle a fermata applied to a rest we must
  * pass decorators to event_rest.
  */
 		for (i = 0; i < DECSIZE; i++)
 		  {
-		    decorators[i] = decorators_passback[i];
-		    decorators_passback[i] = 0;
+		    tdecorators[i] = tdecorators_passback[i];
+		    tdecorators_passback[i] = 0;
 		  }
-		event_rest (decorators, n, m, 0);
-                decorators[FERMATA] = 0;  /* [SS] 2014-11-17 */
+		tevent_rest (tdecorators, n, m, 0);
+                tdecorators[FERMATA] = 0;  /* [SS] 2014-11-17 */
 		break;
 	      };
 	    case 'y':		/* used by Barfly and abcm2ps to put space */
@@ -2527,8 +2527,8 @@ parsemusic (field)
 		int n, m;
 
 		p = p + 1;
-		readlen (&n, &m, &p);
-		event_spacing (n, m);
+		treadlen (&n, &m, &p);
+		tevent_spacing (n, m);
 		break;
 	      };
 /* full bar rest */
@@ -2539,14 +2539,14 @@ parsemusic (field)
 		int n, m;
 
 		p = p + 1;
-		readlen (&n, &m, &p);
+		treadlen (&n, &m, &p);
 		if (m != 1)
 		  {
-		    event_error
+		    tevent_error
 		      ("X or Z must be followed by a whole integer");
 		  };
-		event_mrest (n, m, c);
-                decorators[FERMATA] = 0;  /* [SS] 2014-11-17 */
+		tevent_mrest (n, m, c);
+                tdecorators[FERMATA] = 0;  /* [SS] 2014-11-17 */
 		break;
 	      };
 	    case '>':
@@ -2561,11 +2561,11 @@ parsemusic (field)
 		  };
 		if (n > 3)
 		  {
-		    event_error ("Too many >'s");
+		    tevent_error ("Too many >'s");
 		  }
 		else
 		  {
-		    event_broken (GT, n);
+		    tevent_broken (GT, n);
 		  };
 		break;
 	      };
@@ -2581,52 +2581,52 @@ parsemusic (field)
 		  };
 		if (n > 3)
 		  {
-		    event_error ("Too many <'s");
+		    tevent_error ("Too many <'s");
 		  }
 		else
 		  {
-		    event_broken (LT, n);
+		    tevent_broken (LT, n);
 		  };
 		break;
 	      };
 	    case 's':
-	      if (slur == 0)
+	      if (tslur == 0)
 		{
-		  slur = 1;
+		  tslur = 1;
 		}
 	      else
 		{
-		  slur = slur - 1;
+		  tslur = tslur - 1;
 		};
-	      event_slur (slur);
+	      tevent_slur (tslur);
 	      p = p + 1;
 	      break;
 	    case '-':
-	      event_tie ();
+	      tevent_tie ();
 	      p = p + 1;
 	      break;
 	    case '\\':
 	      p = p + 1;
-	      if (checkend (p))
+	      if (tcheckend (p))
 		{
-		  event_lineend ('\\', 1);
+		  tevent_lineend ('\\', 1);
 		  endchar = '\\';
 		}
 	      else
 		{
-		  event_error ("'\\' in middle of line ignored");
+		  tevent_error ("'\\' in middle of tline ignored");
 		};
 	      break;
 	    case '+':
-	      if (oldchordconvention)
+	      if (toldchordconvention)
 		{
-		  lineposition = p - linestart;	/* [SS] 2011-07-18 */
-		  event_chord ();
-		  parserinchord = 1 - parserinchord;
-		  if (parserinchord == 0)
+		  tlineposition = p - tlinestart;	/* [SS] 2011-07-18 */
+		  tevent_chord ();
+		  tparserinchord = 1 - tparserinchord;
+		  if (tparserinchord == 0)
 		    {
 		      for (i = 0; i < DECSIZE; i++)
-			chorddecorators[i] = 0;
+			chordtdecorators[i] = 0;
 		    };
 		  p = p + 1;
 		  break;
@@ -2641,31 +2641,31 @@ parsemusic (field)
 		endcode = *p;
 		p = p + 1;
 		s = p;
-		initvstring (&instruction);
+		inittvstring (&instruction);
 		while ((*p != endcode) && (*p != '\0'))
 		  {
-		    addch_ (*p, &instruction);
+		    taddch (*p, &instruction);
 		    p = p + 1;
 		  };
 		if (*p != endcode)
 		  {
 		    p = s;
-		    if (checkend (s))
+		    if (tcheckend (s))
 		      {
-			event_lineend ('!', 1);
+			tevent_lineend ('!', 1);
 			endchar = '!';
 		      }
 		    else
 		      {
-			event_error ("'!' or '+' in middle of line ignored");
+			tevent_error ("'!' or '+' in middle of tline ignored");
 		      };
 		  }
 		else
 		  {
-		    event_instruction (instruction.st);
+		    tevent_instruction (instruction.st);
 		    p = p + 1;
 		  };
-		freevstring (&instruction);
+		freetvstring (&instruction);
 	      }
 	      break;
 	    case '*':
@@ -2676,32 +2676,32 @@ parsemusic (field)
 		  p = p + 1;
 		  starcount = starcount + 1;
 		};
-	      if (checkend (p))
+	      if (tcheckend (p))
 		{
-		  event_lineend ('*', starcount);
+		  tevent_lineend ('*', starcount);
 		  endchar = '*';
 		}
 	      else
 		{
-		  event_error ("*'s in middle of line ignored");
+		  tevent_error ("*'s in middle of tline ignored");
 		};
 	      break;
 	    case '/':
 	      p = p + 1;
-	      if (ingrace)
-		event_acciaccatura ();
+	      if (ttingrace)
+		tevent_acciaccatura ();
 	      else
-		event_error ("stray / not in grace sequence");
+		tevent_error ("stray / not in grace sequence");
 	      break;
 	    case '&':
 	      p = p + 1;
               if (*p == ')') {
                  p = p + 1;
-                 event_stop_extended_overlay(); /* [SS] 2015-03-23 */
+                 tevent_stop_extended_overlay(); /* [SS] 2015-03-23 */
                  break;
                  }
               else
-	        event_split_voice ();
+	        tevent_split_voice ();
 	        break;
 	    default:
 	      {
@@ -2709,143 +2709,143 @@ parsemusic (field)
 
 		if ((*p >= 'A') && (*p <= 'z')) /* [SS] 2016-09-20 */
 		  {
-		    event_reserved (*p);
+		    tevent_reserved (*p);
 		  }
 		else
 		  {
 		    sprintf (msg, "Unrecognized character: %c", *p);
-		    event_error (msg);
+		    tevent_error (msg);
 		  };
 	      };
 	      p = p + 1;
 	    };
 	};
     };
-  event_endmusicline (endchar);
+  tevent_endmusicline (endchar);
   if (iscomment)
     {
-      parse_precomment (comment);
+      tparse_precomment (comment);
     };
 }
 
 void
-parseline (line)
-     char *line;
-/* top-level routine for handling a line in abc file */
+tparsetline (tline)
+     char *tline;
+/* top-level routine for handling a tline in abc file */
 {
   char *p, *q;
 
-  handle_abc2midi_parser (line);  /* [SS] 2017-04-12 */
-  if (ignore_line == 1) return; /* [SS] 2017-04-12 */
+  handle_abc2midi_tparser (tline);  /* [SS] 2017-04-12 */
+  if (ignore_tline == 1) return; /* [SS] 2017-04-12 */
 
-  /*printf("%d parsing : %s\n", lineno, line); */
-  strncpy (inputline, line, sizeof inputline);	/* [SS] 2011-06-07 [PHDM] 2012-11-27 */
+  /*printf("%d tparsing : %s\n", tlineno, tline); */
+  strncpy (inputtline, tline, sizeof inputtline);	/* [SS] 2011-06-07 [PHDM] 2012-11-27 */
 
-  p = line;
-  linestart = p;		/* [SS] 2011-07-18 */
-  ingrace = 0;
-  skipspace (&p);
+  p = tline;
+  tlinestart = p;		/* [SS] 2011-07-18 */
+  ttingrace = 0;
+  tskipspace (&p);
   if (strlen (p) == 0)
     {
-      event_blankline ();
-      inhead = 0;
-      inbody = 0;
+      tevent_blankline ();
+      tinhead = 0;
+      intbody = 0;
       return;
     };
   if ((int) *p == '\\')
     {
-      if (parsing)
+      if (tparsing)
 	{
-	  event_tex (p);
+	  tevent_tex (p);
 	};
       return;
     };
   if ((int) *p == '%')
     {
-      parse_precomment (p + 1);
-      if (!parsing)
-	event_linebreak ();
+      tparse_precomment (p + 1);
+      if (!tparsing)
+	tevent_linebreak ();
       return;
     };
   /*if (strchr ("ABCDEFGHIKLMNOPQRSTUVdwsWXZ", *p) != NULL) [SS] 2014-08-15 */
   if (strchr ("ABCDEFGHIKLMNOPQRSTUVdwsWXZ+", *p) != NULL)
     {
       q = p + 1;
-      skipspace (&q);
+      tskipspace (&q);
       if ((int) *q == ':')
 	{
-	  if (*(line + 1) != ':')
+	  if (*(tline + 1) != ':')
 	    {
-	      event_warning ("whitespace in field declaration");
+	      tevent_warning ("whitespace in field declaration");
 	    };
 	  if ((*(q + 1) == ':') || (*(q + 1) == '|'))
 	    {
-	      event_warning ("Potentially ambiguous line - either a :| repeat or a field command -- cannot distinguish.");
+	      tevent_warning ("Potentially ambiguous tline - either a :| repeat or a field command -- cannot distinguish.");
 /*    [SS] 2013-03-20 */
 /*     };             */
-/*      parsefield(*p,q+1); */
+/*      tparsefield(*p,q+1); */
 
 /*    [SS} 2013-03-20 start */
-/*    malformed field command try processing it as a music line */
-	      if (inbody)
+/*    malformed field command try processing it as a music tline */
+	      if (intbody)
 		{
-		  if (parsing)
-		    parsemusic (p);
+		  if (tparsing)
+		    tparsemusic (p);
 		}
 	      else
 		{
-		  if (parsing)
-		    event_text (p);
+		  if (tparsing)
+		    tevent_text (p);
 		};
 	    }
 	  else
-	    parsefield (*p, q + 1);	/* not field command malformed */
+	    tparsefield (*p, q + 1);	/* not field command malformed */
 /*    [SS] 2013-03-20  end */
 
 	}
       else
 	{
-	  if (inbody)
+	  if (intbody)
 	    {
-	      if (parsing)
-		parsemusic (p);
+	      if (tparsing)
+		tparsemusic (p);
 	    }
 	  else
 	    {
-	      if (parsing)
-		event_text (p);
+	      if (tparsing)
+		tevent_text (p);
 	    };
 	};
     }
   else
     {
-      if (inbody)
+      if (intbody)
 	{
-	  if (parsing)
-	    parsemusic (p);
+	  if (tparsing)
+	    tparsemusic (p);
 	}
       else
 	{
-	  if (parsing)
-	    event_text (p);
+	  if (tparsing)
+	    tevent_text (p);
 	};
     };
 }
 
 void
-parsefile (name)
+tparsefile (name)
      char *name;
-/* top-level routine for parsing file */
+/* top-level routine for tparsing file */
 {
   FILE *fp;
   int reading;
-  int fileline;
-  struct vstring line;
-  /* char line[MAXLINE]; */
+  int filetline;
+  struct vstring tline;
+  /* char tline[MAXtline]; */
   int t;
   int lastch, done_eol;
 
-  /* printf("parsefile called %s\n", name); */
+  /* printf("tparsefile called %s\n", name); */
   /* The following code permits abc2midi to read abc from stdin */
   if ((strcmp (name, "stdin") == 0) || (strcmp (name, "-") == 0))
     {
@@ -2860,13 +2860,13 @@ parsefile (name)
       printf ("Failed to open file %s\n", name);
       exit (1);
     };
-  inhead = 0;
-  inbody = 0;
-  parseroff ();
+  tinhead = 0;
+  intbody = 0;
+  tparseroff ();
   reading = 1;
-  line.limit = 4;
-  initvstring (&line);
-  fileline = 1;
+  tline.limit = 4;
+  inittvstring (&tline);
+  filetline = 1;
   done_eol = 0;
   lastch = '\0';
   while (reading)
@@ -2875,22 +2875,22 @@ parsefile (name)
       if (t == EOF)
 	{
 	  reading = 0;
-	  if (line.len > 0)
+	  if (tline.len > 0)
 	    {
-	      parseline (line.st);
-	      fileline = fileline + 1;
-	      lineno = fileline;
-	      if (parsing)
-		event_linebreak ();
+	      tparsetline (tline.st);
+	      filetline = filetline + 1;
+	      tlineno = filetline;
+	      if (tparsing)
+		tevent_linebreak ();
 	    };
 	}
       else
 	{
-	  /* recognize  \n  or  \r  or  \r\n  or  \n\r  as end of line */
+	  /* recognize  \n  or  \r  or  \r\n  or  \n\r  as end of tline */
 	  /* should work for DOS, unix and Mac files */
 	  if ((t != '\n') && (t != '\r'))
 	    {
-	      addch_ ((char) t, &line);
+	      taddch ((char) t, &tline);
 	      done_eol = 0;
 	    }
 	  else
@@ -2903,13 +2903,13 @@ parsefile (name)
 		}
 	      else
 		{
-		  /* reached end of line */
-		  parseline (line.st);
-		  clearvstring (&line);
-		  fileline = fileline + 1;
-		  lineno = fileline;
-		  if (parsing)
-		    event_linebreak ();
+		  /* reached end of tline */
+		  tparsetline (tline.st);
+		  cleartvstring (&tline);
+		  filetline = filetline + 1;
+		  tlineno = filetline;
+		  if (tparsing)
+		    tevent_linebreak ();
 		  done_eol = 1;
 		};
 	    };
@@ -2917,28 +2917,28 @@ parsefile (name)
 	};
     };
   fclose (fp);
-  event_eof ();
-  freevstring (&line);
-  if (parsing_started == 0)
-    event_error ("No tune processed. Possible missing X: field");
+  tevent_eof ();
+  freetvstring (&tline);
+  if (ttparsing_started == 0)
+    tevent_error ("No tune processed. Possible missing X: field");
 }
 
 
 int
-parsetune (FILE * fp)
-/* top-level routine for parsing file */
+tparsetune (FILE * fp)
+/* top-level routine for tparsing file */
 {
-  struct vstring line;
-  /* char line[MAXLINE]; */
+  struct vstring tline;
+  /* char tline[MAXtline]; */
   int t;
   int lastch, done_eol;
 
-  inhead = 0;
-  inbody = 0;
-  parseroff ();
-  intune = 1;
-  line.limit = 4;
-  initvstring (&line);
+  tinhead = 0;
+  intbody = 0;
+  tparseroff ();
+  tintune = 1;
+  tline.limit = 4;
+  inittvstring (&tline);
   done_eol = 0;
   lastch = '\0';
   do
@@ -2946,23 +2946,23 @@ parsetune (FILE * fp)
       t = getc (fp);
       if (t == EOF)
 	{
-	  if (line.len > 0)
+	  if (tline.len > 0)
 	    {
-	      printf ("%s\n", line.st);
-	      parseline (line.st);
-	      fileline_number = fileline_number + 1;
-	      lineno = fileline_number;
-	      event_linebreak ();
+	      printf ("%s\n", tline.st);
+	      tparsetline (tline.st);
+	      filetline_number = filetline_number + 1;
+	      tlineno = filetline_number;
+	      tevent_linebreak ();
 	    };
 	  break;
 	}
       else
 	{
-	  /* recognize  \n  or  \r  or  \r\n  or  \n\r  as end of line */
+	  /* recognize  \n  or  \r  or  \r\n  or  \n\r  as end of tline */
 	  /* should work for DOS, unix and Mac files */
 	  if ((t != '\n') && (t != '\r'))
 	    {
-	      addch_ ((char) t, &line);
+	      taddch ((char) t, &tline);
 	      done_eol = 0;
 	    }
 	  else
@@ -2975,26 +2975,26 @@ parsetune (FILE * fp)
 		}
 	      else
 		{
-		  /* reached end of line */
-		  parseline (line.st);
-		  clearvstring (&line);
-		  fileline_number = fileline_number + 1;
-		  lineno = fileline_number;
-		  event_linebreak ();
+		  /* reached end of tline */
+		  tparsetline (tline.st);
+		  cleartvstring (&tline);
+		  filetline_number = filetline_number + 1;
+		  tlineno = filetline_number;
+		  tevent_linebreak ();
 		  done_eol = 1;
 		};
 	    };
 	  lastch = t;
 	};
     }
-  while (intune);
-  freevstring (&line);
+  while (tintune);
+  freetvstring (&tline);
   return t;
 }
 
 /*
 int getline ()
 {
-  return (lineno);
+  return (tlineno);
 }
 */

@@ -33,13 +33,13 @@
     if (sender.tag == 2 && sender.isOn) {
         [_exportCurrentSwitch setOn:NO];
     }
-    float exportable = _exportABCSwitch.on + _exportCurrentSwitch.on + _exportAllSwitch.on;
+    float exportable = _exportABCSwitch.on + _exportCurrentSwitch.on + _exportAllSwitch.on + _exportMIDISwitch.on;
     _exportButton.enabled = exportable;
+    _shareButton.enabled = exportable;
 }
 
+
 - (IBAction)createMailButtonPushed:(id)sender {
-//    NSData *data = [NSData dataWithContentsOfFile:controller.exportFile.path];
-//                [picker addAttachmentData:data mimeType:@"application/abConduct" fileName:[[controller.exportFile path] lastPathComponent]];
     NSMutableArray *exportArray = [NSMutableArray array];
     if (_exportABCSwitch.isOn) {
         [exportArray addObject:@[[NSData dataWithContentsOfFile:[controller.filepath path]], [[controller.filepath path] lastPathComponent]]];
@@ -53,8 +53,41 @@
             [exportArray addObject:@[[NSData dataWithContentsOfFile:[url path]], [[url path] lastPathComponent]]];
         }
     }
+    if (_exportMIDISwitch.isOn) {
+        if (!controller.midiCreated) {
+            [controller exportMIDI:nil andPlay:NO];
+        }
+        [exportArray addObject:@[[NSData dataWithContentsOfFile:[controller.midiFile path]], [[controller.midiFile path] lastPathComponent]]];
+    }
     [self dismissViewControllerAnimated:YES completion:^{
-        [controller createMailComposerWithDataArray:[exportArray copy]];
+        [controller createMailComposerWithDataArray:exportArray];
     }];
 }
+
+- (IBAction)shareButtonPushed:(id)sender {
+    
+    NSMutableArray *exportArray = [NSMutableArray array];
+    if (_exportABCSwitch.isOn) {
+        [exportArray addObject:[NSURL fileURLWithPath: [controller.filepath path]]];
+    }
+    if (_exportCurrentSwitch.isOn) {
+        [exportArray addObject:[NSURL fileURLWithPath:[controller.exportFile path]]];
+    }
+    else if (_exportAllSwitch.isOn) {
+        for (NSString *filePath in controller.voiceSVGpaths.voicePaths) {
+            NSURL *url = [NSURL fileURLWithPath:[[docsPath stringByAppendingPathComponent:@"webDAV"] stringByAppendingPathComponent: filePath]];
+            [exportArray addObject:url];
+        }
+    }
+    if (_exportMIDISwitch.isOn) {
+        if (!controller.midiCreated) {
+            [controller exportMIDI:nil andPlay:NO];
+        }
+        [exportArray addObject:[NSURL fileURLWithPath:[controller.midiFile path]]];
+    }
+    [self dismissViewControllerAnimated:YES completion:^{
+        [controller shareExportDataArray:exportArray];
+    }];
+}
+
 @end

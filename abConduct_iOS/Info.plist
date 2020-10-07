@@ -4,42 +4,38 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>ABConduct</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleTypeIconFiles</key>
 			<array/>
 			<key>CFBundleTypeName</key>
-			<string>abc-File</string>
+			<string>Alembic 3D-Szene</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>LSHandlerRank</key>
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.reinissance.abConduct-iOS.abc</string>
+				<string>public.alembic</string>
 			</array>
 		</dict>
-	</array>
-	<key>UTExportedTypeDeclarations</key>
-	<array>
-    		<dict>
-        		<key>UTTypeDescription</key>
-        		<string>abc File</string>
-        		<key>UTTypeConformsTo</key>
-        		<array>
-        			<string>public.text</string>
-        		</array>
-        		<key>UTTypeIdentifier</key>
-        			<string>com.reinissance.abConduct-iOS.abc</string>
-        		<key>UTTypeTagSpecification</key>
-       			<dict>
-        			<key>public.filename-extension</key>
-        			<string>abc</string>
-        			<key>public.mime-type</key>
-        			<string>text/xml</string>
-        		</dict>
-    		</dict>
+		<dict>
+			<key>CFBundleTypeIconFiles</key>
+			<array/>
+			<key>CFBundleTypeName</key>
+			<string>svg-Document</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.svg-image</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
@@ -52,11 +48,19 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>1.1</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>UIApplicationExitsOnSuspend</key>
+	<false/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

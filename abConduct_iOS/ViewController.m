@@ -17,12 +17,12 @@
 #import "createFileViewController.h"
 #import "loadFileViewController.h"
 #import "exportViewController.h"
+#import "toabc.h"
 
 #define APP ((AppDelegate *)[[UIApplication sharedApplication] delegate])
 #define docsPath [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]
 
-@interface ViewController () {
-
+@interface ViewController () <UIDocumentPickerDelegate> {
 }
 
 @property BOOL buttonViewExpanded;
@@ -38,22 +38,39 @@
 @property BOOL keyboard;
 @property BOOL skipping;
 @property STPopupController *createFilePopup;
-@property BOOL loadFileController;
 @property STPopupController *loadFilePopup;
 @property STPopupController *exportPopup;
+@property NSString *transposedString;
 
 @end
 
 @implementation ViewController
 
+- (void) orientationChanged {
+    [UIView animateWithDuration:0.1 animations:^{
+        self->_webDisplayView.frame = CGRectMake(self->_displayView.frame.origin.x-2, self->_displayView.frame.origin.y-4, self->_displayView.frame.size.width, self->_displayView.frame.size.height);
+    }];
+}
+
 - (void)viewDidLoad {
+    
+    codeAssist = YES;
+    autoRefresh = NO;
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(orientationChanged)    name:UIDeviceOrientationDidChangeNotification  object:nil];
+
+    //create WKWebView
+    _webDisplayView = [[WKWebView alloc] initWithFrame:CGRectMake(_displayView.frame.origin.x-2, _displayView.frame.origin.y-2, _displayView.frame.size.width, _displayView.frame.size.height)];
+    [_displayView addSubview:_webDisplayView];
+    
     _tuneSelected = -1;
-    _loadFileController = YES;
+    _directMode = NO;
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    _encoding = NSUTF8StringEncoding;
     NSString *file = [[NSBundle mainBundle] pathForResource:@"Hallelujah" ofType:@"abc" inDirectory: @"DefaultFiles"];
     _filepath = [NSURL fileURLWithPath:file];
-    NSString *content = [NSString stringWithContentsOfFile:[_filepath path]  encoding:NSUTF8StringEncoding error:NULL];
+    NSString *content = [self stringWithContentsOfEncodedFile:[_filepath path]];
     _logString = @"";
     _codeHighlighting = YES;
     _fontSize = 12.0;
@@ -73,14 +90,16 @@
     
     NSString *sfPath = [[NSBundle mainBundle] pathForResource:@"32MbGMStereo" ofType:@"sf2" inDirectory:@"DefaultFiles"];
     _soundfontUrl = [[NSURL alloc] initFileURLWithPath:sfPath];
-    _encoding = NSUTF8StringEncoding;
     _abcView.textView.delegate = self;
+    _abcView.delegate = self;
     [_abcView.textView setTintColor:[UIColor whiteColor]];
     _abcView.textView.backgroundColor = [UIColor colorWithHue:41.0/360.0 saturation:11.0/360.0 brightness:84.0/360.0 alpha:0.0];
     _abcView.textView.autocorrectionType = UITextAutocorrectionTypeNo;
     if (@available(iOS 11.0, *)) {
         _abcView.textView.smartQuotesType = UITextSmartQuotesTypeNo;
     }
+    #if TARGET_OS_MACCATALYST
+    #else
     UIToolbar *toolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, self.view.window.frame.size.width, 44.0f)];
     toolbar.tintColor = [UIColor blackColor];
     toolbar.translucent = YES;
@@ -145,13 +164,14 @@
     toolScroll.contentSize = toolbar.frame.size;
     [toolScroll addSubview:toolbar];
     _abcView.textView.inputAccessoryView = toolScroll;
+    #endif
     _playbackProgress.progress = 0.0;
     
     NSMutableArray *items = [[[UIMenuController sharedMenuController] menuItems] mutableCopy];
     if (!items) items = [[NSMutableArray alloc] init];
-//    UIMenuItem *transposeItem;
-//    transposeItem = [[UIMenuItem alloc] initWithTitle:@"transpose" action:@selector(transpose:)];
-//    [items addObject:transposeItem];
+    UIMenuItem *transposeItem;
+    transposeItem = [[UIMenuItem alloc] initWithTitle:@"transpose" action:@selector(transpose:)];
+    [items addObject:transposeItem];
     UIMenuItem *instItem;
     instItem = [[UIMenuItem alloc] initWithTitle:@"change program" action:@selector(changeProgram: inRange:)];
     [items addObject:instItem];
@@ -162,6 +182,22 @@
     drummapItem = [[UIMenuItem alloc] initWithTitle:@"drummap" action:@selector(changeDrummap: inRange:)];
     [items addObject:drummapItem];
     [[UIMenuController sharedMenuController] setMenuItems:items];
+    UILongPressGestureRecognizer *toggleMode = [[UILongPressGestureRecognizer  alloc] initWithTarget:self action:@selector(longPressModeToggle:)];
+    [_displayBtn addGestureRecognizer:toggleMode];
+    
+      if (@available(iOS 11.0, *)) {
+          UIDropInteraction *dropper = [[UIDropInteraction alloc] initWithDelegate:self];
+          [self.view addInteraction:dropper];
+      }
+}
+
+- (void) longPressModeToggle: (UILongPressGestureRecognizer*) gesture {
+    if ( gesture.state == UIGestureRecognizerStateEnded ) {
+        _directMode = !_directMode;
+        [_displayBtn setTitle:(_directMode) ? @"direct" : @"display" forState: UIControlStateNormal];
+        [_displayBtn setTitleColor:(_directMode) ? [UIColor whiteColor] : [UIColor magentaColor] forState:UIControlStateNormal];
+        [self render];
+    }
 }
 
 - (void) changeControl: (NSString *) lineString inRange: (NSRange) lineRange  {
@@ -302,18 +338,20 @@ BOOL pickershown;
 }
 
 - (void) observeValueForKeyPath: (NSString*) keyPath ofObject: (id) object change: (NSDictionary *) change context: (void *) context {
-    if ([keyPath isEqualToString:@"selectedTextRange"] && _abcView.textView == object) {
-        NSRange lineRange = [self selectedLineRange];
-        NSString *selectedLine = [_abcView.textView.text substringWithRange:lineRange];
-        if (selectedLine.length >= 14) {
-            if ([[selectedLine substringToIndex:14] isEqualToString:@"%%MIDI program"]) {
-                [self changeProgram:selectedLine inRange: lineRange];
-            }
-            else if ([[selectedLine substringToIndex:14] isEqualToString:@"%%MIDI control"]) {
-                [self changeControl:selectedLine inRange:lineRange];
-            }
-            else if ([[selectedLine substringToIndex:14] isEqualToString:@"%%MIDI drummap"]) {
-                [self changeDrummap:selectedLine inRange:lineRange];
+    if (codeAssist) {
+        if ([keyPath isEqualToString:@"selectedTextRange"] && _abcView.textView == object) {
+            NSRange lineRange = [self selectedLineRange];
+            NSString *selectedLine = [_abcView.textView.text substringWithRange:lineRange];
+            if (selectedLine.length >= 14) {
+                if ([[selectedLine substringToIndex:14] isEqualToString:@"%%MIDI program"]) {
+                    [self changeProgram:selectedLine inRange: lineRange];
+                }
+                else if ([[selectedLine substringToIndex:14] isEqualToString:@"%%MIDI control"]) {
+                    [self changeControl:selectedLine inRange:lineRange];
+                }
+                else if ([[selectedLine substringToIndex:14] isEqualToString:@"%%MIDI drummap"]) {
+                    [self changeDrummap:selectedLine inRange:lineRange];
+                }
             }
         }
     }
@@ -323,8 +361,8 @@ BOOL pickershown;
     UITextRange *caretPositionRange = _abcView.textView.selectedTextRange;
     UITextPosition *pos = caretPositionRange.start;
     id<UITextInputTokenizer> tokenizer = [_abcView.textView tokenizer];
-    UITextPosition *startOfLine = [tokenizer positionFromPosition:pos toBoundary:UITextGranularityLine inDirection:UITextStorageDirectionBackward];
-    UITextPosition *endOfLine = [tokenizer positionFromPosition:pos toBoundary:UITextGranularityLine inDirection:UITextStorageDirectionForward];
+    UITextPosition *startOfLine = [tokenizer positionFromPosition:pos toBoundary:UITextGranularityParagraph inDirection:UITextStorageDirectionBackward];
+    UITextPosition *endOfLine = [tokenizer positionFromPosition:pos toBoundary:UITextGranularityParagraph inDirection:UITextStorageDirectionForward];
     NSRange lineRange = _abcView.textView.selectedRange;
     if (startOfLine != nil && endOfLine != nil && startOfLine != endOfLine) {
         NSUInteger startPosition = [_abcView.textView offsetFromPosition:_abcView.textView.beginningOfDocument toPosition:startOfLine];
@@ -334,35 +372,170 @@ BOOL pickershown;
     return lineRange;
 }
 
-- (void) transpose: (NSString *) menuController {
-    UITextRange *selectedRange = [_abcView.textView selectedTextRange];
-    NSString *abcCode = [_abcView.textView textInRange:selectedRange];
+- (void) performTransposition: (NSInteger) transposition {
     NSString *tmpFile = [[NSTemporaryDirectory() stringByAppendingPathComponent:@"transpose"] stringByAppendingPathExtension:@"abc"];
     [_voiceSVGpaths cleanTempFolder];
     NSError *error;
-    if (![_abcView.textView.text writeToFile:tmpFile atomically:YES encoding:_encoding error:&error]) {
+    UITextRange *selectedRange = [_abcView.textView selectedTextRange];
+    NSString *abcCode = [_abcView.textView textInRange:selectedRange];
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"\n+" options:0 error:NULL];
+    abcCode = [regex stringByReplacingMatchesInString:abcCode options:0 range:NSMakeRange(0, [abcCode length]) withTemplate:@"\n"];
+    NSLog(@"code to transpose: %@", abcCode);
+    NSString *lineText = [_abcView.textView.text substringWithRange:[self selectedLineRange]];
+    if ([[lineText substringFromIndex:lineText.length-1] isEqualToString:@"\n"])
+        lineText = [lineText substringToIndex:lineText.length-1];
+    NSArray *codeLines = [_abcView.textView.text componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+    int lineNum = (int) [codeLines indexOfObject:lineText];
+    if (lineNum == 0)
+        lineNum = (int)codeLines.count-1;
+    BOOL noKeyFromVoice = NO;
+    BOOL removeHeader = NO;
+    //search key in Voice
+    NSString *keyline = @"";
+    NSString *metrumLine = @"";
+    NSString *lengthLine = @"";
+    NSMutableArray *voices = [NSMutableArray array];
+    for (int i = lineNum; i > 1; i--) {
+        NSString *line = codeLines[i];
+        if ([line hasPrefix:@"V:"]) {
+            //not found in Voice
+            noKeyFromVoice = YES;
+            [voices insertObject:line atIndex:0];
+            abcCode = [abcCode stringByReplacingOccurrencesOfString:line withString:[NSString stringWithFormat:@"V:%d", i]];
+        }
+        else if ([line containsString:@"K:"]) {
+            if ([line hasPrefix:@"K:"] && noKeyFromVoice && [keyline isEqualToString:@""]) {
+                //found in header
+                keyline = [line stringByAppendingString:@"\n"];
+            }
+            else if (!noKeyFromVoice) {
+                //extract key from line in Voice
+                NSRange range = [line rangeOfString:@"K:"];
+                NSUInteger startPos = range.location;
+                unsigned int len = (int)([line length] - startPos);
+                for (int i = (int) startPos; i < len; i++) {
+                    NSString *character = [line substringWithRange: NSMakeRange(i, 1)];
+                    if ([character isEqualToString:@"]"]) {
+                        keyline = [keyline stringByAppendingString:@"\n"];
+                        break;
+                    }
+                    keyline = [keyline stringByAppendingString:character];
+                }
+            }
+        }
+        if ([line hasPrefix:@"M:"]) {
+            metrumLine = [line stringByAppendingString:@"\n"];
+        }
+        if ([line hasPrefix:@"L:"]) {
+            lengthLine = [line stringByAppendingString:@"\n"];
+        }
+    }
+    NSString *writeFile = [NSString stringWithFormat:@"%@", abcCode];
+    if (![writeFile hasPrefix:@"X:"]) {
+        //only part of abc-Code, so add header
+        removeHeader = YES;
+        writeFile = [[[[@"X:1\n" stringByAppendingString:lengthLine] stringByAppendingString:metrumLine] stringByAppendingString:[NSString stringWithFormat: @"%@%@", keyline, [NSString stringWithFormat:@"%@",(noKeyFromVoice) ? [NSString stringWithFormat:@"[%@]",[keyline substringToIndex:keyline.length-1]] : @""]]] stringByAppendingString:abcCode];
+    }
+    NSLog(@"writing file: \n%@", writeFile);
+    if (![writeFile writeToFile:tmpFile atomically:YES encoding:_encoding error:&error]) {
         NSLog(@"couldn't write tempFile to tranpose: %@, %@", error.localizedDescription, error.localizedFailureReason);
     }
     else {
-        NSLog(@"code to transpose: %@", abcCode);
         char *transp = strdup([@"-t" UTF8String]);
-        char *transpose = strdup([@"-2" UTF8String]);
-        char *open = strdup([@"-v" UTF8String]);
-//        const char *outPath = strdup([tmpFile UTF8String]);
-//        char *duppedOut = strdup(outPath);
+        char *transpose = strdup([[NSString stringWithFormat:@"%ld", (long)((transposition < 12) ? (transposition-12)*-1 : (transposition - 11)*-1)] UTF8String]);
+        char *open = strdup([@"-o" UTF8String]);
+        char *noErr = strdup([@"-e" UTF8String]);
         char *duppedInPath = strdup([tmpFile UTF8String]);
-        char *args[] = {open, duppedInPath, transp, transpose, NULL };
+        gatherTranspose = YES;
+        _transposedString = @"";
         fileprogram = ABC2ABC;
-//        abc2abcMain(4, args);
-//        _abcView.textView.text = [NSString stringWithContentsOfFile:tmpFile encoding:_encoding error:&error];
-//        if (error) {
-//            NSLog(@"Couldn't read transposed tempFile: %@", error.localizedFailureReason);
-//        }
+        NSString *totalTransCode = @"";
+        char *args[] = {open, duppedInPath, noErr, transp, transpose, NULL };
+        abc2abcMain(5, args);
+        if (error) {
+            NSLog(@"Couldn't read transposed tempFile: %@", error.localizedFailureReason);
+        }
+        else {
+            NSMutableArray *transLines = [_transposedString componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]].mutableCopy;
+            NSString *transCode = @"";
+            for (int i = (int)transLines.count-1; i >= 0; i--) {
+                if (i < transLines.count) {
+                    NSString *line = transLines[i];
+                    if ([line isEqualToString:@""] )
+                        [transLines removeObject:line];
+                    else if ([line hasPrefix:@"V:"]) {
+                        transCode = [[NSString stringWithFormat:@"%@\n", voices[voices.count-1]] stringByAppendingString:transCode];
+                        [voices removeLastObject];
+                    }
+                    else if (![transCode hasPrefix:line])
+                        transCode = [[NSString stringWithFormat:@"%@\n", line] stringByAppendingString:transCode];
+                }
+                else
+                    transCode = @"";
+            }
+            transCode = [regex stringByReplacingMatchesInString:transCode options:0 range:NSMakeRange(0, [transCode length]) withTemplate:@"\n"];
+            _logString = [[[@"Transposed:\n\n" stringByAppendingString:_transposedString] stringByAppendingString:@"\n\n"] stringByAppendingString:_logString];
+            [self setMutableLogString];
+            if (!_logEnabled) {
+                _logEnabled = YES;
+                [_logSwitch setOn:YES];
+                [self enableLog:_logSwitch];
+            }
+            if (!removeHeader) {
+                NSLog(@"TRANSPOSED CODE:\n%@", transCode);
+                totalTransCode = [totalTransCode stringByAppendingString:transCode];
+            }
+            else {
+                transCode = @"";
+                for (int i = (int)transLines.count-1; i > 0; i--) {
+                    if (i < transLines.count) {
+                        NSString *line = transLines[i];
+                        if ((i < 4 && ([line hasPrefix:@"X:"] || [line hasPrefix:@"L:"] || [line hasPrefix:@"M:"] || [line hasPrefix:@"K:"])))
+                            [transLines removeObject:line];
+                        else transCode = [[NSString stringWithFormat:@"%@\n", line] stringByAppendingString:transCode];
+                    }
+                }
+                totalTransCode = [totalTransCode stringByAppendingString:[[transCode substringToIndex:transCode.length-1] stringByAppendingString:[NSString stringWithFormat:@"%@", (!noKeyFromVoice) ? @"" : [NSString stringWithFormat:@"[%@]", [keyline substringToIndex:keyline.length-1]]]]];
+            }
+        }
+        if (removeHeader) {
+            NSString *replaceTotalTransCode = [_abcView.textView.text stringByReplacingOccurrencesOfString:abcCode withString:totalTransCode];
+            totalTransCode = replaceTotalTransCode;
+        }
+        [self setColouredCodeFromString:totalTransCode];
+        gatherTranspose = NO;
+        [self render];
     }
 }
 
+- (void) transpose: (NSString *) menuController {
+    if (pickershown)
+        return;
+    else pickershown = YES;
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Transpose:" message:@"\n\n\n\n\n" preferredStyle:UIAlertControllerStyleAlert];
+    NSArray *transpositions = @[@"12", @"11", @"10", @"9", @"8", @"7", @"6", @"5", @"4", @"3", @"2", @"1", @"-1", @"-2", @"-3", @"-4", @"-5", @"-6", @"-7", @"-8", @"-9", @"-10", @"-11", @"-12", ];
+    _instrumentsPicker = [[arrayPicker alloc] initWithArray:transpositions frame:CGRectMake(40, 50, 200, 80) andTextColour:[UIColor brownColor]];
+    [alertController.view addSubview:_instrumentsPicker.pickerView];
+    UIAlertAction *selectAction = [UIAlertAction actionWithTitle:@"transpose" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        NSInteger transpositionNumber = [self->_instrumentsPicker.pickerView selectedRowInComponent:0];
+        [self performTransposition:transpositionNumber];
+        pickershown = NO;
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+        pickershown = NO;
+    }];
+    [_instrumentsPicker.pickerView selectRow:10 inComponent:0 animated:NO];
+    [alertController addAction:selectAction];
+    [alertController addAction:cancelAction];
+    [self presentViewController:alertController animated:YES completion:nil];
+}
+
 - (BOOL) canPerformAction:(SEL)action withSender:(id)sender {
-    if (action == @selector(copy:) || action == @selector(cut:) || action == @selector(changeControl:inRange:) || action == @selector(select:) || action == @selector(selectAll:) || action == @selector(paste:) || action == @selector(changeProgram:inRange:) || action == @selector(changeDrummap:inRange:)) {
+    UITextRange *selectedRange = [_abcView.textView selectedTextRange];
+    NSString *paste = [UIPasteboard generalPasteboard].string;
+    BOOL selected = [_abcView.textView textInRange:selectedRange].length > 0;
+    if ((action == @selector(copy:)) & selected || (action == @selector(cut:)) & selected || (action == @selector(select:)) & !selected || (action == @selector(selectAll:)) & !selected || (action == @selector(paste:)) & (paste.length > 0) ||  (action == @selector(transpose:)) & selected || action == @selector(changeProgram:inRange:) || action == @selector(changeControl:inRange:) ||  action == @selector(changeDrummap:inRange:)) {
         return YES;
     }
     else return NO;
@@ -413,20 +586,22 @@ BOOL decorationController;
         NSDictionary *info = [notification userInfo];
         NSValue *keyBoardEndFrame = [info objectForKey:UIKeyboardFrameEndUserInfoKey];
         CGSize keyboardSize = [keyBoardEndFrame CGRectValue].size;
-        CGFloat keyboardHeight = keyboardSize.height;
+        _keyboardHeight = keyboardSize.height;
         CGFloat keyboardAnimationDuration = [[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
-        if (_displayHeight.constant + 28 > keyboardHeight) {
+        if (_displayHeight.constant + 28 > _keyboardHeight) {
             [UIView animateWithDuration:keyboardAnimationDuration*1.5 animations:^{
-                self->_displayHeight.constant = self->_displayHeight.constant *1.2 - keyboardHeight ;
+                float height = self->_displayHeight.constant *1.2 - self->_keyboardHeight;
+                self->_displayHeight.constant = height;
+                self->_webDisplayView.frame = CGRectMake(self->_webDisplayView.frame.origin.x, self->_webDisplayView.frame.origin.y, self->_webDisplayView.frame.size.width, height);
             }];
             buttonViewMoved = YES;
         }
         else {
             [UIView animateWithDuration:keyboardAnimationDuration*1.5 animations:^{
-                CGPoint newContentOffset = CGPointMake(self->_abcView.textView.contentOffset.x, self->_abcView.textView.contentOffset.y + keyboardHeight);
+                CGPoint newContentOffset = CGPointMake(self->_abcView.textView.contentOffset.x, self->_abcView.textView.contentOffset.y + self->_keyboardHeight);
                 [self->_abcView.textView setContentOffset:newContentOffset animated:YES];
             }];
-        }_abcViewBottom.constant = keyboardHeight + 2;
+        }_abcViewBottom.constant = _keyboardHeight + 2;
         [self.view layoutIfNeeded];
         [self.view layoutSubviews];
     }
@@ -439,11 +614,13 @@ BOOL buttonViewMoved;
     NSDictionary *info = [notification userInfo];
     NSValue *keyBoardEndFrame = [info objectForKey:UIKeyboardFrameEndUserInfoKey];
     CGSize keyboardSize = [keyBoardEndFrame CGRectValue].size;
-    CGFloat keyboardHeight = keyboardSize.height;
-    if (_displayHeight.constant + keyboardHeight < self.view.frame.size.height && buttonViewMoved) {
+    _keyboardHeight = keyboardSize.height;
+    if (_displayHeight.constant + _keyboardHeight < self.view.frame.size.height && buttonViewMoved) {
         CGFloat keyboardAnimationDuration = [[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
         [UIView animateWithDuration:keyboardAnimationDuration*1.5 animations:^{
-            self->_displayHeight.constant = (self->_displayHeight.constant + keyboardHeight) * 0.8;
+            float height = (self->_displayHeight.constant + self->_keyboardHeight) * 0.8;
+            self->_displayHeight.constant = height;
+            self->_webDisplayView.frame = CGRectMake(self->_webDisplayView.frame.origin.x, self->_webDisplayView.frame.origin.y, self->_webDisplayView.frame.size.width, height);
         }];
         [self.view layoutIfNeeded];
         [self.view layoutSubviews];
@@ -451,6 +628,7 @@ BOOL buttonViewMoved;
     }
     _abcViewBottom.constant = 2;
     _keyboard = NO;
+    _keyboardHeight = 0;
 }
 
 - (void) loadSvgImage {
@@ -459,11 +637,13 @@ BOOL buttonViewMoved;
     NSArray *directory = [fileManager contentsOfDirectoryAtPath:webFolder error:nil];
     NSString *imagePath = [_selectedVoice stringByAppendingPathExtension:@"svg"];
     int index = (int) [directory indexOfObject:imagePath];
+    if (index == -1 && directory.count > 1)
+        index = 1;
+    else if (index == -1)
+        return;
     NSString *filePath = [webFolder stringByAppendingPathComponent:directory[index]];
     _exportFile = [NSURL fileURLWithPath:filePath];
-    NSURLRequest *request = [NSURLRequest requestWithURL:_exportFile];
-    [_displayView setScalesPageToFit:YES];
-    [_displayView loadRequest:request];
+    [_webDisplayView loadFileURL:_exportFile allowingReadAccessToURL:[NSURL fileURLWithPath:webFolder]];
     
 }
 
@@ -541,75 +721,84 @@ BOOL buttonViewMoved;
 }
 
 - (NSMutableArray*) getVoicesWithHeader {
-    NSArray* allLinedStrings = [_abcView.textView.text componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-    NSMutableArray *header = [NSMutableArray array];
-    BOOL headerRead = false;
-    NSString *currentVoice;
-    NSMutableArray *currentVoiceString = [NSMutableArray array];
-    NSMutableArray *allVoices = [NSMutableArray array];
-    NSMutableArray *totalVoices = [NSMutableArray array];
-    NSMutableArray *userScoresAndStaves = [NSMutableArray array];
-    NSMutableArray *totalUserScoresAndStaves = [NSMutableArray array];
-    NSMutableArray *combinedVoicesWithName = [NSMutableArray array];
     NSMutableArray *allTunes = [NSMutableArray array];
-    NSString *tuneTitle;
-    BOOL tuneRead = NO;
-    for (int i = 0 ; i < allLinedStrings.count; i++) {
-        NSString *line = allLinedStrings[i];
-        BOOL lastLine = (i == allLinedStrings.count-1);
-//        lastLine = [line isEqualToString:[allLinedStrings lastObject]];
-        tuneRead = (lastLine || ((line.length > 2 && [[line substringToIndex:2] isEqualToString:@"X:"]) && ![line isEqualToString:[allLinedStrings firstObject]]));
-        if (line.length > 2 && ![[line substringToIndex:2] isEqualToString:@"V:"] && !headerRead) {
-            [header addObject: line];
-            if ((line.length > 10) && [[line substringToIndex:8] isEqualToString:@"%%staves"])
-                [userScoresAndStaves addObject:line];
-            if ((line.length > 9) && [[line substringToIndex:7] isEqualToString:@"%%score"])
-                [userScoresAndStaves addObject:line];
-        }
-        else {
-            if (line.length > 2 && [[line substringToIndex:2] isEqualToString:@"V:"]){
-                if (![line isEqualToString:currentVoice]) {
-                    headerRead = true;
-                    if (currentVoiceString.count > 0 && currentVoice != nil) {
-                        NSArray *voice = [self voiceStringWithNameFromCleanedHeader:header withData:currentVoiceString];
-                        [allVoices addObject:voice];
-                        [totalVoices addObject:voice];
+    if (!_directMode) {
+        NSArray* allLinedStrings = [_abcView.textView.text componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+        NSMutableArray *header = [NSMutableArray array];
+        BOOL headerRead = false;
+        NSString *currentVoice;
+        NSMutableArray *currentVoiceString = [NSMutableArray array];
+        NSMutableArray *allVoices = [NSMutableArray array];
+        NSMutableArray *totalVoices = [NSMutableArray array];
+        NSMutableArray *userScoresAndStaves = [NSMutableArray array];
+        NSMutableArray *totalUserScoresAndStaves = [NSMutableArray array];
+        NSMutableArray *combinedVoicesWithName = [NSMutableArray array];
+        NSString *tuneTitle;
+        BOOL tuneRead = NO;
+        for (int i = 0 ; i < allLinedStrings.count; i++) {
+            NSString *line = allLinedStrings[i];
+            BOOL lastLine = (i == allLinedStrings.count-1);
+            //        lastLine = [line isEqualToString:[allLinedStrings lastObject]];
+            tuneRead = (lastLine || ((line.length > 2 && [[line substringToIndex:2] isEqualToString:@"X:"]) && ![line isEqualToString:[allLinedStrings firstObject]]));
+            if (line.length > 2 && ![[line substringToIndex:2] isEqualToString:@"V:"] && !headerRead) {
+                [header addObject: line];
+                if ((line.length > 10) && [[line substringToIndex:8] isEqualToString:@"%%staves"])
+                    [userScoresAndStaves addObject:line];
+                if ((line.length > 9) && [[line substringToIndex:7] isEqualToString:@"%%score"])
+                    [userScoresAndStaves addObject:line];
+            }
+            else {
+                if (line.length > 2 && [[line substringToIndex:2] isEqualToString:@"V:"]){
+                    if (![line isEqualToString:currentVoice]) {
+                        headerRead = true;
+                        if (currentVoiceString.count > 0 && currentVoice != nil) {
+                            NSArray *voice = [self voiceStringWithNameFromCleanedHeader:header withData:currentVoiceString];
+                            [allVoices addObject:voice];
+                            [totalVoices addObject:voice];
+                        }
+                        currentVoice = line;
+                        [currentVoiceString removeAllObjects];
                     }
-                    currentVoice = line;
-                    [currentVoiceString removeAllObjects];
                 }
+                [currentVoiceString addObject:line];
             }
-            [currentVoiceString addObject:line];
-        }
-        if (tuneRead) {
-            NSArray *voice = [self voiceStringWithNameFromCleanedHeader:header withData:currentVoiceString];
-            tuneTitle = voice[3];
-            [allVoices addObject:voice];
-            [totalVoices addObject:voice];
-            BOOL multi = (allTunes.count > 0 && lastLine);
-            if (!multi)
-                combinedVoicesWithName = [self combineVoicesFromUserScoresAndStaves:userScoresAndStaves forArray:allVoices forMultiFile:NO];
-            if (combinedVoicesWithName.count < 1) {
-                _potentialVoices = [NSMutableArray array];
-                for (NSArray *voice in allVoices) {
-                    [_potentialVoices addObject:voice[0]];
+            if (tuneRead) {
+                NSArray *voice = [self voiceStringWithNameFromCleanedHeader:header withData:currentVoiceString];
+                tuneTitle = voice[3];
+                [allVoices addObject:voice];
+                [totalVoices addObject:voice];
+                BOOL multi = (allTunes.count > 0 && lastLine);
+                if (!multi)
+                    combinedVoicesWithName = [self combineVoicesFromUserScoresAndStaves:userScoresAndStaves forArray:allVoices forMultiFile:NO];
+                if (combinedVoicesWithName.count < 1) {
+                    _potentialVoices = [NSMutableArray array];
+                    for (NSArray *voice in allVoices) {
+                        [_potentialVoices addObject:voice[0]];
+                    }
                 }
+                [allTunes addObject:@[tuneTitle, [combinedVoicesWithName mutableCopy]]];
+                [currentVoiceString removeAllObjects];
+                [totalUserScoresAndStaves addObject:[userScoresAndStaves mutableCopy]];
+                headerRead = false;
+                [header removeAllObjects];
+                [userScoresAndStaves removeAllObjects];
+                [allVoices removeAllObjects];
+                tuneRead = false;
             }
-            [allTunes addObject:@[tuneTitle, [combinedVoicesWithName mutableCopy]]];
-            [currentVoiceString removeAllObjects];
-            [totalUserScoresAndStaves addObject:[userScoresAndStaves mutableCopy]];
-            headerRead = false;
-            [header removeAllObjects];
-            [userScoresAndStaves removeAllObjects];
-            [allVoices removeAllObjects];
-            tuneRead = false;
+            if (lastLine && allTunes.count > 1) {
+                combinedVoicesWithName = [self combineVoicesFromUserScoresAndStaves:totalUserScoresAndStaves forArray:totalVoices forMultiFile:YES];
+                [allTunes removeAllObjects];
+                NSString *name = [_filepath lastPathComponent];
+                [allTunes addObject:@[[name substringToIndex:name.length-4], [combinedVoicesWithName mutableCopy]]];
+            }
         }
-        if (lastLine && allTunes.count > 1) {
-            combinedVoicesWithName = [self combineVoicesFromUserScoresAndStaves:totalUserScoresAndStaves forArray:totalVoices forMultiFile:YES];
-            [allTunes removeAllObjects];
-            NSString *name = [_filepath lastPathComponent];
-            [allTunes addObject:@[[name substringToIndex:name.length-4], [combinedVoicesWithName mutableCopy]]];
-        }
+    }
+    else {
+        // read from abctextView
+        [allTunes removeAllObjects];
+        NSString *name = [_filepath lastPathComponent];
+        [allTunes addObject:@[[name substringToIndex:name.length-4], [@[@[[name substringToIndex:name.length-4], [NSString stringWithString:_abcView.textView.text]]] mutableCopy]]];
+        
     }
     return allTunes;
 }
@@ -633,6 +822,8 @@ BOOL buttonViewMoved;
                 if (![scoresAndStaves containsObject:staveOrScoreName]) {
                     if ([staveOrScoreName hasPrefix:@"staves"] || [staveOrScoreName hasPrefix:@"score"]) {
                         usualWriting = YES;
+                        NSCharacterSet *delete = [NSCharacterSet characterSetWithCharactersInString:@"{}()[]"];
+                        staveOrScoreName = [[staveOrScoreName componentsSeparatedByCharactersInSet: delete] componentsJoinedByString: @""];
                         [scoresAndStaves addObject:staveOrScoreName];
                         NSArray *wantedVoices = [staveOrScoreName componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
                         for (int i = 1; i < wantedVoices.count; i++) {
@@ -766,10 +957,17 @@ BOOL buttonViewMoved;
 
 - (IBAction)moveHorizontalStack:(UIPanGestureRecognizer *)sender {
     if (!_skipping) {
-        if ( [sender locationInView:self.view].y < 28 || [sender locationInView:self.view].y > self.view.frame.size.height-28) {
+        float yLoc = [sender locationInView:self.view].y;
+        if ( yLoc < 28 || yLoc > self.view.frame.size.height-28) {
             return;
         }
-        else _displayHeight.constant = [sender locationInView:self.view].y - _logHeight.constant;
+        else {
+            float height = yLoc - _logHeight.constant;
+            if (height >= self.view.frame.size.height -_keyboardHeight - ((_buttonViewExpanded) ? 169 : 40))
+                return;
+            _displayHeight.constant = height;
+            _webDisplayView.frame = CGRectMake(_webDisplayView.frame.origin.x, _webDisplayView.frame.origin.y, _webDisplayView.frame.size.width, height);
+        }
     }
     else {
         float skipper = [sender locationInView:self.view].x / self.view.frame.size.width;
@@ -796,7 +994,7 @@ BOOL buttonViewMoved;
 
 - (IBAction)buttonViewSizeToggle:(id)sender {
     _buttonViewExpanded = !_buttonViewExpanded;
-    _buttonViewHeight.constant = (_buttonViewExpanded) ? 110 : 24;
+    _buttonViewHeight.constant = (_buttonViewExpanded) ? 153 : 24;
     [UIView animateWithDuration:0.3 animations:^{
         self->_sfButton.hidden = !self->_buttonViewExpanded;
         self->_playButton.hidden = !self->_buttonViewExpanded;
@@ -809,7 +1007,13 @@ BOOL buttonViewMoved;
         self->_codeHighlightingLabel.hidden = !self->_buttonViewExpanded;
         self->_codeHighlightingSwitch.hidden = !self->_buttonViewExpanded;
         self->_playbackProgress.hidden = !self->_buttonViewExpanded;
+        self->_autoRefreshLabel.hidden = !self->_buttonViewExpanded;
+        self->_autoRefreshSwitch.hidden = !self->_buttonViewExpanded;
+        self->_codeAssistLabel.hidden = !self->_buttonViewExpanded;
+        self->_codeAssistSwitch.hidden = !self->_buttonViewExpanded;
         [self.view layoutIfNeeded];
+        self->_displayHeight.constant = self->_buttonsView.frame.origin.y-6;
+        self->_webDisplayView.frame = CGRectMake(self->_displayView.frame.origin.x-2, self->_displayView.frame.origin.y-4, self->_displayView.frame.size.width, self->_displayView.frame.size.height);
     }];
 }
 
@@ -843,7 +1047,11 @@ BOOL buttonViewMoved;
 }
 
 - (void) loadABCfileFromPath: (NSString*) path {
+    
     _filepath = [NSURL fileURLWithPath:path];
+#if TARGET_OS_MACCATALYST
+    _filepath = [NSURL fileURLWithPath:[docsPath stringByAppendingPathComponent:[_filepath lastPathComponent]]];
+#endif
     NSString *content = @"";
     content = [self stringWithContentsOfEncodedFile:path];
     if (![content isEqualToString:@""]) {
@@ -853,7 +1061,7 @@ BOOL buttonViewMoved;
         _allVoices = [self getVoicesWithHeader];
     }
     if (_allVoices.count < 1) {
-        [_displayView loadHTMLString:@"" baseURL:nil];
+        [_webDisplayView loadHTMLString:@"" baseURL:nil];
         return;
     }
     NSArray *tune = _allVoices[0];
@@ -908,97 +1116,23 @@ BOOL buttonViewMoved;
     else return NO;
 }
 
+
 - (IBAction)buttonPressed:(UIButton *)sender {
     if (sender.tag == 0) {
-        //load
-        dropCreate = 0;
-        _loadFilePopup = [self createPopupcontrollerWithIdentifier:@"loadNewFileController"];
-        loadFileViewController *loadFile = (loadFileViewController *) _loadFilePopup.topViewController;
-        loadFile.loadController = YES;
-        if (_tuneSelected != -1) {
-            loadFile.loadTunes = YES;
-            loadFile.multiTuneFile = [_filepath path];
-        }
-        [loadFile load];
-        [_loadFilePopup presentInViewController:self];
+        _midiCreated = NO;
+        [self load];
     }
     else if (sender.tag == 1) {
-            //store
-        if (_tuneSelected == -1) {
-            NSError *error;
-            BOOL write = [_abcView.textView.text writeToURL:_filepath atomically:NO encoding:_encoding error:&error];
-            if (!write) {
-                write = [_abcView.textView.text writeToURL:_filepath atomically:NO encoding:NSUTF8StringEncoding error:&error];
-                if (!write) {
-                    NSLog(@"could not write file: %@", error);
-                }
-            }
-            else {
-                _refreshButton.enabled = YES;
-                _saveButton.enabled = YES;
-            }
-        }
-        else {
-            //merge textView content into File
-            NSError *error;
-            NSString *oldFileContent = [NSString stringWithContentsOfURL:_filepath encoding:_encoding error:&error];
-            if (!error) {
-                NSArray *replaceTune = _tuneArray[_tuneSelected];
-                NSValue *rangeObject = replaceTune[1];
-                NSRange range = rangeObject.rangeValue;
-                range.location = range.location-2;
-                range.length = range.length+2;
-                NSString *newFileContent = [oldFileContent stringByReplacingCharactersInRange:range withString:_abcView.textView.text];
-                if (![newFileContent writeToURL:_filepath atomically:YES encoding:_encoding error:&error])
-                    NSLog(@"couldn't write newFileContent: %@", error.localizedFailureReason);
-                else [self updateTuneArray];
-            }
-            else NSLog(@"couldn't read multituneFile: %@", error.localizedFailureReason);
-        }
+        [self store];
     }
     else if (sender.tag == 2) {
-        //display
-        dropCreate = 0;
-        _loadFilePopup = [self createPopupcontrollerWithIdentifier:@"loadNewFileController"];
-        loadFileViewController *loadFile = (loadFileViewController *) _loadFilePopup.topViewController;
-        loadFile.loadController = NO;
-        if (_tuneSelected != -1) {
-            loadFile.loadTunes = YES;
-            loadFile.multiTuneFile = [_filepath path];
-        }
-        [loadFile load];
-        [_loadFilePopup presentInViewController:self];
+        [self display];
     }
     else if (sender.tag == 3) {
-        //refresh
-        _allVoices = [self getVoicesWithHeader];
-        if (_allVoices.count < 1) {
-                    [_displayView loadHTMLString:@"" baseURL:nil];
-            return;
-        }
-        if (_tuneSelected < 0) {
-            NSArray *tune = self->_allVoices[0];
-            NSMutableArray *tuneArray = tune[1];
-            [_voiceSVGpaths createVoices:tuneArray];
-        }
-        else {
-            NSString *currentTune = [NSTemporaryDirectory() stringByAppendingPathComponent:@"currentTune.abc"];
-            NSError *error;
-            if (![_abcView.textView.text writeToFile:currentTune atomically:YES encoding:NSUTF8StringEncoding error:&error])
-                NSLog(@"couldn't write currentTune to file: %@", error.localizedFailureReason);
-            else {
-                NSURL *keepMultifile = _filepath;
-                [self loadABCfileFromPath:currentTune];
-                _filepath = keepMultifile;
-            }
-        }
-        if (![self enterFullScoreAndOrParts])
-            [self loadSvgImage];
-                [_displayView loadHTMLString:@"" baseURL:nil];
+        [self render];
     }
     else if (sender.tag == 4) {
         //create new file:
-        dropCreate = 1;
         [self createNewFile];
     }
 }
@@ -1038,6 +1172,7 @@ UIAlertController *alert;
 BOOL alertShown;
 
 - (void) createNewFile {
+    dropCreate = 1;
     _createFilePopup = [self createPopupcontrollerWithIdentifier:@"createNewFileController"];
     [_createFilePopup presentInViewController:self];
 }
@@ -1182,16 +1317,20 @@ float dropCreate;
                 sfFile = [[NSBundle mainBundle] pathForResource:@"32MbGMStereo" ofType:@"sf2" inDirectory:@"DefaultFiles"];
             }
             else sfFile = [docsPath stringByAppendingPathComponent: _userSoundfonts[indexPath.row-1]];
-            _soundfontUrl = [[NSURL alloc] initFileURLWithPath:sfFile];
-            _mp = [[midiPlayer alloc] initWithSoundFontURL:_soundfontUrl];
-            _mp.progressView = _playbackProgress;
-            _mp.delegate = self;
+        [self loadSoundfontAtPath:(NSString *) sfFile];
     }
     else {
         NSArray *split = _decorations[indexPath.row];
         [_abcView.textView replaceRange:_abcView.textView.selectedTextRange withText:split[0]];
         [self dismissViewControllerAnimated:YES completion:nil];
     }
+}
+
+- (void) loadSoundfontAtPath: (NSString*) sfFile {
+    _soundfontUrl = [[NSURL alloc] initFileURLWithPath:sfFile];
+    _mp = [[midiPlayer alloc] initWithSoundFontURL:_soundfontUrl];
+    _mp.progressView = _playbackProgress;
+    _mp.delegate = self;
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -1215,8 +1354,17 @@ float dropCreate;
     }
 }
 
-- (IBAction)exportMIDI:(UIButton*) sender {
-    if (!sender.isSelected) {
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (!decorationController && indexPath.row > 0) 
+        return YES;
+    else
+        return NO;
+}
+
+- (IBAction)exportMIDI:(UIButton*) sender andPlay: (BOOL) play {
+    if (sender == nil || !sender.isSelected ) {
+        play = sender != nil;
+        _midiCreated = YES;
         //delete old midi files
         NSFileManager *fileManager = [[NSFileManager alloc] init];
         NSArray *directory = [fileManager contentsOfDirectoryAtPath:docsPath error:nil];
@@ -1232,12 +1380,13 @@ float dropCreate;
         //    create the new one
         NSString *inPath = [NSTemporaryDirectory() stringByAppendingPathComponent:[_selectedVoice stringByAppendingPathExtension:@"abc"]];
         NSString *filename = [[[inPath lastPathComponent] substringToIndex:[inPath lastPathComponent].length-4] stringByAppendingPathExtension:@"mid"];
-        NSString *outFile = [NSString stringWithFormat:@"%@", [docsPath stringByAppendingPathComponent: filename]];
+        NSString *outFile = [NSString stringWithFormat:@"%@", [[docsPath stringByAppendingPathComponent:@"webDAV"] stringByAppendingPathComponent: filename]];
         char *open = strdup([@"-o" UTF8String]);
         const char *outPath = strdup([outFile UTF8String]);
         char *duppedOut = strdup(outPath);
         char *duppedInPath = strdup([inPath UTF8String]);
         char *args[] = {open, duppedInPath, open, duppedOut, NULL };
+        gatherTranspose = NO;
         fileprogram = ABC2MIDI;
         abc2midiMain(4, args);
         
@@ -1246,10 +1395,13 @@ float dropCreate;
             _mp.delegate = self;
             _mp.progressView = _playbackProgress;
         }
-        [_mp loadMidiFileFromUrl:[[NSURL alloc] initFileURLWithPath:outFile]];
-        [_mp startMidiPlayer];
-        
-        _playButton.selected = YES;
+        _midiFile = [[NSURL alloc] initFileURLWithPath:outFile];
+        if (play) {
+            [_mp loadMidiFileFromUrl:_midiFile];
+            [_mp startMidiPlayer];
+            
+            _playButton.selected = YES;
+        }
     }
     else {
         [_mp stopMidiPlayer];
@@ -1313,6 +1465,10 @@ float dropCreate;
 }
 
 - (IBAction)loadUserSoundFont:(id)sender {
+    
+    #if TARGET_OS_MACCATALYST
+    [self openInCatalystWithDocType:@"com.soundblaster.soundfont"];
+    #else
     decorationController = NO;
     [self loadSf2Documents];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"load soundfont-Tune:" message:@"to use your own sf2-files put them in the apps Shared Folder with iTunes." preferredStyle:UIAlertControllerStyleAlert];
@@ -1321,6 +1477,7 @@ float dropCreate;
     UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
     [alert addAction:cancel];
     [self presentViewController:alert animated:YES completion:nil];
+    #endif
 }
 
 int printf(const char * __restrict format, ...) {
@@ -1332,23 +1489,30 @@ int printf(const char * __restrict format, ...) {
     return 1;
 }
 
+BOOL gatherTranspose;
+
 - (void) logText:(NSString *)log {
-    NSLog(@"redirected printf: %@", log);
-    _logString = [log stringByAppendingString:[NSString stringWithFormat:@"%@", _logString]];
-    NSArray *lines = [_logString componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-    if (lines.count > 999) {
-        NSString *cut = @"";
-        for (int i = (int) lines.count - 50; i < lines.count; i++) {
-            cut = [cut stringByAppendingString:[NSString stringWithFormat:@"\n%@", lines[i]]];
-        }
-        _logString = cut;
+    if (gatherTranspose) {
+        _transposedString = [_transposedString stringByAppendingString:log];
     }
-    if (_logEnabled) {
-        if (setLogString) {
-            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(endSkip) object: nil];
+    else {
+        NSLog(@"redirected printf: %@", log);
+        _logString = [log stringByAppendingString:[NSString stringWithFormat:@"%@", _logString]];
+        NSArray *lines = [_logString componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+        if (lines.count > 999) {
+            NSString *cut = @"";
+            for (int i = (int) lines.count - 50; i < lines.count; i++) {
+                cut = [cut stringByAppendingString:[NSString stringWithFormat:@"\n%@", lines[i]]];
+            }
+            _logString = cut;
         }
-        [self performSelector:@selector(setMutableLogString) withObject:nil afterDelay:0.2];
-        setLogString = YES;
+        if (_logEnabled) {
+            if (setLogString) {
+                [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(endSkip) object: nil];
+            }
+            [self performSelector:@selector(setMutableLogString) withObject:nil afterDelay:0.2];
+            setLogString = YES;
+        }
     }
 }
 
@@ -1396,19 +1560,14 @@ BOOL setLogString;
     if (_codeHighlighting) {
         [self setColouredCodeFromString:_abcView.textView.text];
     }
+    if (autoRefresh)
+        [self render];
 }
 
 - (IBAction)exportDocument:(id)sender {
     dropCreate = 2;
     _exportPopup = [self createPopupcontrollerWithIdentifier:@"exportFileController"];
     [_exportPopup presentInViewController:self];
-//    UIActionSheet *actionSheet = [[UIActionSheet alloc]
-//                                   initWithTitle:@""
-//                                   delegate:self
-//                                   cancelButtonTitle:@"Cancel"
-//                                   destructiveButtonTitle:nil
-//                                   otherButtonTitles:@"include abc-File", @"Export via Email", nil];
-//    [actionSheet showInView:self.view];
 }
 
 - (IBAction)clearLog:(id)sender {
@@ -1448,6 +1607,221 @@ BOOL setLogString;
                         error:(NSError *)error {
     [self dismissModalViewControllerAnimated:YES];
 }
+
+- (void) shareExportDataArray: (NSArray *) dataArray {
+    UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:dataArray applicationActivities:nil];
+    activityVC.excludedActivityTypes = @[UIActivityTypeAssignToContact, UIActivityTypePostToTwitter, UIActivityTypeSaveToCameraRoll, UIActivityTypeMail, UIActivityTypePostToWeibo];
+    NSLog(@"Shared Files: %@", dataArray);
+    [self presentViewController:activityVC animated:YES completion:nil];
+}
+
+- (void) display {
+    //        if (!_directMode) {
+    dropCreate = 0;
+    _loadFilePopup = [self createPopupcontrollerWithIdentifier:@"loadNewFileController"];
+    loadFileViewController *loadFile = (loadFileViewController *) _loadFilePopup.topViewController;
+    loadFile.loadController = NO;
+    if (_tuneSelected != -1) {
+        loadFile.loadTunes = YES;
+        loadFile.multiTuneFile = [_filepath path];
+    }
+    [loadFile load];
+    [_loadFilePopup presentInViewController:self];
+}
+
+- (void) load {
+    //load
+    #if TARGET_OS_MACCATALYST
+    [self openInCatalystWithDocType:@"public.alembic"];
+    #else
+    dropCreate = 0;
+    _loadFilePopup = [self createPopupcontrollerWithIdentifier:@"loadNewFileController"];
+    loadFileViewController *loadFile = (loadFileViewController *) _loadFilePopup.topViewController;
+    loadFile.loadController = YES;
+    if (_tuneSelected != -1  || _unselectedMultitune) {
+        loadFile.loadTunes = YES;
+        loadFile.multiTuneFile = [_filepath path];
+    }
+    [loadFile load];
+    [_loadFilePopup presentInViewController:self];
+    #endif
+}
+
+-(void) openInCatalystWithDocType: (NSString*) docType {
+    UIDocumentPickerViewController *documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[docType]
+                                                                                                            inMode:UIDocumentPickerModeImport];
+    documentPicker.delegate = self;
+    documentPicker.allowsMultipleSelection = NO;
+    documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+    [self presentViewController:documentPicker animated:YES completion:nil];
+}
+
+//mac catalyst import
+- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(nonnull NSArray<NSURL *> *)urls {
+    if (controller.documentPickerMode == UIDocumentPickerModeImport) {
+        NSURL *url = urls[0];
+        NSString *path = [url path];
+        if ([[path substringFromIndex:[path length]-4] isEqualToString:@".abc"]) {
+            [self loadABCfileFromPath:path];
+            _refreshButton.enabled = YES;
+            _saveButton.enabled = YES;
+        }
+        else [self loadSoundfontAtPath:path];
+    }
+}
+
+- (void) store {
+    //store
+    if (_tuneSelected == -1) {
+        NSError *error;
+        BOOL write = [_abcView.textView.text writeToURL:_filepath atomically:NO encoding:_encoding error:&error];
+        if (!write) {
+            write = [_abcView.textView.text writeToURL:_filepath atomically:NO encoding:NSUTF8StringEncoding error:&error];
+            if (!write) {
+                NSLog(@"could not write file: %@", error);
+            }
+        }
+        else {
+            _refreshButton.enabled = YES;
+            _saveButton.enabled = YES;
+        }
+    }
+    else {
+        //merge textView content into File
+        NSError *error;
+        NSString *oldFileContent = [NSString stringWithContentsOfURL:_filepath encoding:_encoding error:&error];
+        if (!error) {
+            NSArray *replaceTune = _tuneArray[_tuneSelected];
+            NSValue *rangeObject = replaceTune[1];
+            NSRange range = rangeObject.rangeValue;
+            range.location = range.location-2;
+            range.length = range.length+2;
+            NSString *newFileContent = [oldFileContent stringByReplacingCharactersInRange:range withString:_abcView.textView.text];
+            if (![newFileContent writeToURL:_filepath atomically:YES encoding:_encoding error:&error])
+                NSLog(@"couldn't write newFileContent: %@", error.localizedFailureReason);
+            else [self updateTuneArray];
+        }
+        else NSLog(@"couldn't read multituneFile: %@", error.localizedFailureReason);
+    }
+    
+#if TARGET_OS_MACCATALYST
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Want to export?" message:[NSString stringWithFormat:@"%@ stored to app's sandbox. Want to export?", [_filepath lastPathComponent]] preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *exportAction = [UIAlertAction actionWithTitle:@"export" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        
+        UIDocumentPickerViewController *documentPicker = [[UIDocumentPickerViewController alloc] initWithURL:self->_filepath inMode:UIDocumentPickerModeExportToService];
+        documentPicker.delegate = self;
+        documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+        [self presentViewController:documentPicker animated:YES completion:nil];
+    }];
+    UIAlertAction *noAction = [UIAlertAction actionWithTitle:@"No, thanks" style:UIAlertActionStyleDefault handler:nil];
+    [alertController addAction:exportAction];
+    [alertController addAction:noAction];
+    [self presentViewController:alertController animated:YES completion:nil];
+#endif
+}
+
+- (void) storeText {
+    [_saveButton setHighlighted:YES];
+    [self store];
+    [_saveButton setHighlighted:NO];
+}
+
+- (void) renderText {
+    [_refreshButton setHighlighted:YES];
+    [self render];
+    [_refreshButton setHighlighted:NO];
+}
+
+- (void) transpose {
+    [self transpose:nil];
+}
+
+- (void) loadDocument {
+    [self load];
+}
+
+- (void) newDocument {
+    [self createNewFile];
+}
+
+- (void) displayDocument {
+    [self display];
+}
+
+- (void) exportDocument {
+    [self exportDocument:nil];
+}
+
+- (void) playBack {
+    [self exportMIDI:_playButton andPlay:YES];
+}
+
+- (void) render {
+    //refresh
+    _allVoices = [self getVoicesWithHeader];
+    if (_allVoices.count < 1) {
+        [_webDisplayView loadHTMLString:@"" baseURL:nil];
+        return;
+    }
+    if (_tuneSelected < 0) {
+        NSArray *tune = self->_allVoices[0];
+        NSMutableArray *tuneArray = tune[1];
+        [_voiceSVGpaths createVoices:tuneArray];
+    }
+    else {
+        NSString *currentTune = [NSTemporaryDirectory() stringByAppendingPathComponent:@"currentTune.abc"];
+        NSError *error;
+        if (![_abcView.textView.text writeToFile:currentTune atomically:YES encoding:NSUTF8StringEncoding error:&error])
+            NSLog(@"couldn't write currentTune to file: %@", error.localizedFailureReason);
+        else {
+            NSURL *keepMultifile = _filepath;
+            [self loadABCfileFromPath:currentTune];
+            _filepath = keepMultifile;
+        }
+    }
+    if (![self enterFullScoreAndOrParts])
+        [self loadSvgImage];
+    else [_webDisplayView loadHTMLString:@"" baseURL:nil];
+}
+
+- (IBAction)toggleCodeAssistant:(id)sender {
+    codeAssist = _codeAssistSwitch.isOn;
+    _codeAssistLabel.text = (codeAssist) ? @"abc-Code assisted" : @"assist abc-Code";
+}
+
+- (IBAction)toggleAutoRefresh:(id)sender {
+    autoRefresh = _autoRefreshSwitch.isOn;
+    _autoRefreshLabel.text = (autoRefresh) ? @"auto-refresh enabled" : @"enable auto-refresh";
+}
+
+BOOL autoRefresh, codeAssist;
+
+
+- (void) dropInteraction:(UIDropInteraction *)interaction performDrop:(id<UIDropSession>)session  API_AVAILABLE(ios(11.0)){
+    [session loadObjectsOfClass:([NSURL self]) completion: ^(NSArray *urls) {
+        for (NSURL *url in urls) {
+            NSLog(@"url of dragItem: %@", url.absoluteString);
+        }
+    }];
+    for (UIDragItem *item in session.items) {
+        if ([[item.itemProvider.suggestedName substringFromIndex:item.itemProvider.suggestedName.length-4] isEqualToString:@".abc"]) {
+            [item.itemProvider loadItemForTypeIdentifier:@"public.alembic" options:nil completionHandler:^(NSURL *url, NSError *error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [APP openUrl:url];
+                });
+            }];
+        }
+    }
+}
+
+- (BOOL)dropInteraction:(UIDropInteraction *)interaction canHandleSession:(id<UIDropSession>)session  API_AVAILABLE(ios(11.0)){
+    return [session hasItemsConformingToTypeIdentifiers:@[@"public.alembic"]];
+}
+
+- (UIDropProposal *)dropInteraction:(UIDropInteraction *)interaction sessionDidUpdate:(id<UIDropSession>)session  API_AVAILABLE(ios(11.0)){
+    UIDropProposal *proposal = [[UIDropProposal alloc] initWithDropOperation: UIDropOperationCopy];
+    return proposal;
+ }
 
 @end
 

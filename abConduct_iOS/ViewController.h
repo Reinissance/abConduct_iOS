@@ -15,9 +15,11 @@
 
 @class WebServer;
 
-@interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, midiPlayerDelegate, UITextViewDelegate, UIActionSheetDelegate, MFMailComposeViewControllerDelegate>
+@interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, midiPlayerDelegate, UITextViewDelegate, UIActionSheetDelegate, MFMailComposeViewControllerDelegate, lineNumberDelegate, UIDropInteractionDelegate>
 
 @property NSURL *exportFile;
+@property NSURL *midiFile;
+@property BOOL midiCreated;
 @property NSURL *filepath;
 @property NSStringEncoding encoding;
 - (NSString *) stringWithContentsOfEncodedFile: (NSString *) file;
@@ -27,14 +29,25 @@
 @property NSString *logString;
 @property (weak, nonatomic) IBOutlet UIButton *refreshButton;
 @property (weak, nonatomic) IBOutlet UIButton *saveButton;
-@property (weak, nonatomic) IBOutlet UIWebView *displayView;
+@property (weak, nonatomic) IBOutlet UIView *displayView;
+@property float keyboardHeight;
+@property (weak, nonatomic) IBOutlet UIView *buttonsView;
+@property WKWebView *webDisplayView;
 @property (assign, nonatomic) IBOutlet LineNumberTextViewWrapper* abcView;
+//@property (nonatomic) LineNumberTextViewWrapper* navTextView;
+@property (weak, nonatomic) IBOutlet UIButton *displayBtn;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *abcViewBottom;
 - (IBAction)moveHorizontalStack:(UIPanGestureRecognizer *)sender;
 - (IBAction)toggleLogExpansion:(id)sender;
 - (IBAction)expandLog:(UIPanGestureRecognizer *)sender;
 @property (weak, nonatomic) IBOutlet UISwitch *logSwitch;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *displayHeight;
+@property (weak, nonatomic) IBOutlet UISwitch *codeAssistSwitch;
+- (IBAction)toggleCodeAssistant:(id)sender;
+- (IBAction)toggleAutoRefresh:(id)sender;
+@property (weak, nonatomic) IBOutlet UILabel *codeAssistLabel;
+@property (weak, nonatomic) IBOutlet UISwitch *autoRefreshSwitch;
+@property (weak, nonatomic) IBOutlet UILabel *autoRefreshLabel;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *buttonViewHeight;
 - (IBAction)buttonViewSizeToggle:(id)sender;
 - (IBAction)buttonPressed:(UIButton *)sender;
@@ -45,7 +58,7 @@
 @property (weak, nonatomic) IBOutlet UISwitch *serverSwitch;
 - (IBAction)hideKeyboard:(id)sender;
 @property (weak, nonatomic) IBOutlet UILabel *codeHighlightingLabel;
-- (IBAction)exportMIDI:(UIButton*)sender;
+- (IBAction)exportMIDI:(UIButton*)sender andPlay: (BOOL) play;
 
 @property (weak, nonatomic) WebServer *server;
 - (void) loadABCfileFromPath: (NSString*) path;
@@ -64,6 +77,8 @@
 @property (weak, nonatomic) IBOutlet UISegmentedControl *skipControl;
 @property (weak, nonatomic) IBOutlet UIButton *exportButton;
 @property int tuneSelected;
+@property BOOL directMode;
+@property BOOL unselectedMultitune;
 @property NSString *tuneTitle;
 @property NSMutableArray *tuneArray;
 - (NSMutableArray*) updateTuneArray;
@@ -75,5 +90,6 @@
 - (void) loadSvgImage;
 - (BOOL) enterFullScoreAndOrParts;
 - (void) createMailComposerWithDataArray: (NSArray *) dataArray;
+- (void) shareExportDataArray: (NSArray *) dataArray;
 
 @end
