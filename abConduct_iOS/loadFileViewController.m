@@ -16,6 +16,8 @@
 
 @interface loadFileViewController ()
 
+@property (strong, nonatomic) NSMutableArray *shownDocuments;
+
 @end
 
 @implementation loadFileViewController
@@ -27,6 +29,10 @@
     _tableView.delegate = self;
     _tableView.dataSource = self;
     _abcDocuments = [NSMutableArray array];
+    _shownDocuments = [NSMutableArray array];
+    _searchBar.delegate = self;
+//    self.definesPresentationContext = YES;
+
     
 }
 
@@ -37,7 +43,8 @@
             for (NSArray *tune in controller.tuneArray) {
                 [_abcDocuments addObject:tune[2]];
             }
-            [_abcDocuments addObject:@"<<< all abc-Tunes"];
+            _shownDocuments = _abcDocuments.mutableCopy;
+            [_shownDocuments addObject:@"<<< all abc-Tunes"];
             _titleLabel.text = @"select tune";
             NSString *name = [controller.filepath lastPathComponent];
             _messageLabel.text = [NSString stringWithFormat: @"multiple tunes found in file %@, you may wish to load only one?", name];
@@ -56,6 +63,7 @@
         }
         if (!controller.directMode) {
             _abcDocuments = controller.voiceSVGpaths.voicePaths;
+            _shownDocuments = _abcDocuments.mutableCopy;
         }
         else {
             [self getVoicesForDirectMode];
@@ -65,6 +73,7 @@
 
 - (void) getVoicesForDirectMode {
     _abcDocuments = [NSMutableArray array];
+    _shownDocuments = _abcDocuments.mutableCopy;
 }
 
 - (void) setDisplayTitle {
@@ -76,7 +85,20 @@
 - (void) setLoadTitle {
     _titleLabel.text = @"load abc-Tune";
     _titleLabel.textColor = [UIColor blackColor];
+#if TARGET_OS_MACCATALYST
+    _messageLabel.text = @"import abc-Tune";
+    UIButton *importButton = [[UIButton alloc] initWithFrame:_messageLabel.frame];
+    importButton.backgroundColor = [UIColor colorWithWhite:0.1 alpha:0.5];
+    [importButton addTarget:self action:@selector(importAbcTune) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:importButton];
+#else
     _messageLabel.text = @"to add tunes put them in the apps Shared Folder with iTunes.";
+#endif
+}
+
+- (void) importAbcTune {
+    [self dismissViewControllerAnimated:YES completion:nil];
+    [controller openInCatalystWithDocType:@"public.alembic"];
 }
 
 
@@ -95,6 +117,7 @@
         }
     }
     _abcDocuments = [self checkMultiFile:_abcDocuments];
+    _shownDocuments = _abcDocuments.mutableCopy;
 }
 
 - (NSMutableArray *) checkMultiFile: (NSMutableArray *) array {
@@ -118,6 +141,7 @@
 
 - (void) getTunes: (NSString*) fileName {
     _abcDocuments = [controller updateTuneArray];
+    _shownDocuments = _abcDocuments.mutableCopy;
 }
 
 - (nonnull UITableViewCell *)tableView:(nonnull UITableView *)tableView cellForRowAtIndexPath:(nonnull NSIndexPath *)indexPath {
@@ -126,7 +150,7 @@
     if(cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle: UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
     }
-    NSString *title = _abcDocuments[indexPath.row];
+    NSString *title = _shownDocuments[indexPath.row];
     if ([title hasPrefix:@"currentTune_"]) {
         title = [title stringByReplacingOccurrencesOfString:@"currentTune" withString:_tuneTitle];
     }
@@ -135,18 +159,23 @@
     }
     cell.textLabel.text = title;
     cell.textLabel.adjustsFontSizeToFitWidth = YES;
-    cell.textLabel.textColor = ([[title substringFromIndex:title.length-4] isEqualToString:@" >>>"] || [[title substringToIndex:4] isEqualToString:@"<<< "]) ? [UIColor colorWithRed:0.0 green:0.0 blue:1.0 alpha:0.5] : [UIColor blueColor];
+    if (@available(iOS 13.0, *)) {
+        cell.textLabel.textColor = ([[title substringFromIndex:title.length-4] isEqualToString:@" >>>"] || [[title substringToIndex:4] isEqualToString:@"<<< "]) ? [UIColor systemGray2Color] : [UIColor labelColor];
+    } else {
+        cell.textLabel.textColor = ([[title substringFromIndex:title.length-4] isEqualToString:@" >>>"] || [[title substringToIndex:4] isEqualToString:@"<<< "]) ? [UIColor colorWithRed:0.0 green:0.0 blue:1.0 alpha:0.5] : [UIColor blueColor];
+    }
     cell.textLabel.font = [UIFont systemFontOfSize:16];
     return cell;
 }
 
 - (NSInteger)tableView:(nonnull UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return _abcDocuments.count;
+    return _shownDocuments.count;
 }
 
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSString *fileName = _abcDocuments[indexPath.row];
+    _searchBar.text = @"";
+    NSString *fileName = _shownDocuments[indexPath.row];
     if (_loadController) {
         //load abcDocuments
         controller.refreshButton.enabled = YES;
@@ -170,7 +199,7 @@
                 [controller enterFullScoreAndOrParts];
                 controller.unselectedMultitune = YES;
                 [self getTunes:_multiTuneFile];
-                [_abcDocuments addObject:@"<<< all abc-Tunes"];
+                [_shownDocuments addObject:@"<<< all abc-Tunes"];
                 _titleLabel.text = @"select tune";
                 NSString *name = [fileName.lastPathComponent substringToIndex:fileName.lastPathComponent.length-4];
                 _messageLabel.text = [NSString stringWithFormat: @"multiple tunes found in file %@, you may wish to load only one?", name];
@@ -178,7 +207,7 @@
                 [_tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationLeft];
             }
         }
-        else if (indexPath.row == _abcDocuments.count-1) {
+        else if (indexPath.row == _shownDocuments.count-1) {
             // return to all documents
             controller.unselectedMultitune = NO;
             _loadTunes = NO;
@@ -216,7 +245,8 @@
     else {
         //display voices
         if (!controller.directMode) {
-            NSString *voice = controller.voiceSVGpaths.voicePaths[indexPath.row];
+            int index = (int)[_abcDocuments indexOfObject:fileName];
+            NSString *voice = controller.voiceSVGpaths.voicePaths[index];
             controller.selectedVoice = [voice substringToIndex:voice.length-4];
             [controller loadSvgImage];
             [self dismissViewControllerAnimated:YES completion:nil];
@@ -231,7 +261,7 @@
     if (editingStyle == UITableViewCellEditingStyleDelete) {
         NSFileManager *fileManager = [NSFileManager defaultManager];
         NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-        NSString *excludeMulti = _abcDocuments[indexPath.row];
+        NSString *excludeMulti = _shownDocuments[indexPath.row];
         excludeMulti = ([[excludeMulti substringFromIndex:excludeMulti.length-4] isEqualToString:@" >>>"]) ? [excludeMulti substringToIndex:excludeMulti.length-4] : excludeMulti;
         NSString *filePath = [documentsPath stringByAppendingPathComponent: excludeMulti];
         NSError *error;
@@ -239,14 +269,14 @@
         if (!success) {
             NSLog(@"Could not delete file -:%@ ",[error localizedDescription]);
         }
-        if ([_abcDocuments[indexPath.row] isEqualToString:[controller.filepath lastPathComponent]]) {
+        if ([_shownDocuments[indexPath.row] isEqualToString:[controller.filepath lastPathComponent]]) {
             controller.abcView.textView.text = @"";
 //                    [controller.displayView loadHTMLString:@"" baseURL:nil];
             controller.refreshButton.enabled = NO;
             controller.saveButton.enabled = NO;
         }
         [self loadABCdocuments];
-        if (_abcDocuments.count == 0) {
+        if (_shownDocuments.count == 0) {
             [self dismissViewControllerAnimated:YES completion:nil];
             return;
         }
@@ -262,6 +292,25 @@
     }
     else
         return NO;
+}
+
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText
+{
+  NSString *searchString = _searchBar.text;
+  [self filterTableContent:searchString];
+  [self.tableView reloadData];
+}
+
+- (void) filterTableContent:(NSString*) text {
+    [_shownDocuments removeAllObjects];
+    if ([text isEqualToString:@""]) {
+        _shownDocuments = _abcDocuments.mutableCopy;
+    }
+    else for (NSString *string in _abcDocuments) {
+        if ([string containsString:text]) {
+            [_shownDocuments addObject:string];
+        }
+    }
 }
 
 @end

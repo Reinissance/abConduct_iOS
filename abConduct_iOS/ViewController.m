@@ -735,11 +735,13 @@ BOOL buttonViewMoved;
         NSMutableArray *combinedVoicesWithName = [NSMutableArray array];
         NSString *tuneTitle;
         BOOL tuneRead = NO;
+        BOOL firstTune = NO;
         for (int i = 0 ; i < allLinedStrings.count; i++) {
             NSString *line = allLinedStrings[i];
             BOOL lastLine = (i == allLinedStrings.count-1);
             //        lastLine = [line isEqualToString:[allLinedStrings lastObject]];
-            tuneRead = (lastLine || ((line.length > 2 && [[line substringToIndex:2] isEqualToString:@"X:"]) && ![line isEqualToString:[allLinedStrings firstObject]]));
+            tuneRead = (lastLine || ((line.length > 2 && [[line substringToIndex:2] isEqualToString:@"X:"]) && firstTune));
+            firstTune = (line.length > 2 && [[line substringToIndex:2] isEqualToString:@"X:"]);
             if (line.length > 2 && ![[line substringToIndex:2] isEqualToString:@"V:"] && !headerRead) {
                 [header addObject: line];
                 if ((line.length > 10) && [[line substringToIndex:8] isEqualToString:@"%%staves"])
@@ -1631,9 +1633,9 @@ BOOL setLogString;
 
 - (void) load {
     //load
-    #if TARGET_OS_MACCATALYST
-    [self openInCatalystWithDocType:@"public.alembic"];
-    #else
+//    #if TARGET_OS_MACCATALYST
+//    [self openInCatalystWithDocType:@"public.alembic"];
+//    #else
     dropCreate = 0;
     _loadFilePopup = [self createPopupcontrollerWithIdentifier:@"loadNewFileController"];
     loadFileViewController *loadFile = (loadFileViewController *) _loadFilePopup.topViewController;
@@ -1644,7 +1646,7 @@ BOOL setLogString;
     }
     [loadFile load];
     [_loadFilePopup presentInViewController:self];
-    #endif
+//    #endif
 }
 
 -(void) openInCatalystWithDocType: (NSString*) docType {

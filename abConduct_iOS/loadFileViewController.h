@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface loadFileViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
+@interface loadFileViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate, UISearchResultsUpdating>
 
 @property NSMutableArray *abcDocuments;
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property BOOL loadTunes;
 @property NSString *multiTuneFile;
 @property NSString *tuneTitle;
+@property (weak, nonatomic) IBOutlet UISearchBar *searchBar;
 -(void) load;
 @end
 

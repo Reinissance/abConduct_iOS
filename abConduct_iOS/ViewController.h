@@ -91,5 +91,6 @@
 - (BOOL) enterFullScoreAndOrParts;
 - (void) createMailComposerWithDataArray: (NSArray *) dataArray;
 - (void) shareExportDataArray: (NSArray *) dataArray;
+- (void) openInCatalystWithDocType:(NSString*) docType;
 
 @end
