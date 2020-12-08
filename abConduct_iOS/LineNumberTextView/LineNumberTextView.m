@@ -39,6 +39,12 @@
         _lineNumberBackgroundColor = [UIColor grayColor];
         _lineNumberBorderColor = [UIColor darkGrayColor];
     }
+    self.autocorrectionType = UITextAutocorrectionTypeNo;
+    if (@available(iOS 11.0, *)) {
+        self.smartDashesType = UITextSmartDashesTypeNo;
+        self.smartQuotesType = UITextSmartQuotesTypeNo;
+        self.smartInsertDeleteType = UITextSmartInsertDeleteTypeNo;
+    }
     return self;
 }
 

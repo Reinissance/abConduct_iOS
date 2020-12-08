@@ -41,6 +41,10 @@
 @property STPopupController *loadFilePopup;
 @property STPopupController *exportPopup;
 @property NSString *transposedString;
+@property NSRange linkRange;
+@property NSLayoutManager *layoutManager;
+@property NSTextContainer *textContainer;
+@property NSTextStorage *textStorage;
 
 @end
 
@@ -94,12 +98,7 @@
     _abcView.delegate = self;
     [_abcView.textView setTintColor:[UIColor whiteColor]];
     _abcView.textView.backgroundColor = [UIColor colorWithHue:41.0/360.0 saturation:11.0/360.0 brightness:84.0/360.0 alpha:0.0];
-    _abcView.textView.autocorrectionType = UITextAutocorrectionTypeNo;
-    if (@available(iOS 11.0, *)) {
-        _abcView.textView.smartQuotesType = UITextSmartQuotesTypeNo;
-    }
-    #if TARGET_OS_MACCATALYST
-    #else
+    #if !TARGET_OS_MACCATALYST
     UIToolbar *toolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, self.view.window.frame.size.width, 44.0f)];
     toolbar.tintColor = [UIColor blackColor];
     toolbar.translucent = YES;
@@ -189,6 +188,70 @@
           UIDropInteraction *dropper = [[UIDropInteraction alloc] initWithDelegate:self];
           [self.view addInteraction:dropper];
       }
+    
+    
+    _serverLabel.userInteractionEnabled = YES;
+    [_serverLabel addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openLink:)]];
+    [_serverLabel addGestureRecognizer:[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(shareLink:)]];
+    _layoutManager = [[NSLayoutManager alloc] init];
+    _textContainer = [[NSTextContainer alloc] initWithSize:CGSizeZero];
+    _textStorage = [[NSTextStorage alloc] init];
+
+    // Configure layoutManager and textStorage
+    [_layoutManager addTextContainer:_textContainer];
+    [_textStorage addLayoutManager:_layoutManager];
+
+    // Configure textContainer
+    _textContainer.lineFragmentPadding = 0.0;
+    _textContainer.lineBreakMode = _serverLabel.lineBreakMode;
+}
+
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+    self.textContainer.size = self.serverLabel.bounds.size;
+}
+
+- (void) openLink: (UITapGestureRecognizer *)tapGesture {
+    if (_serverSwitch.isOn) {
+        CGPoint locationOfTouchInLabel = [tapGesture locationInView:tapGesture.view];
+            CGSize labelSize = tapGesture.view.bounds.size;
+            CGRect textBoundingBox = [self.layoutManager usedRectForTextContainer:self.textContainer];
+            CGPoint textContainerOffset = CGPointMake((labelSize.width - textBoundingBox.size.width) * 1.0 - textBoundingBox.origin.x,
+                                                      (labelSize.height - textBoundingBox.size.height) * 0.5 - textBoundingBox.origin.y);
+            CGPoint locationOfTouchInTextContainer = CGPointMake(locationOfTouchInLabel.x - textContainerOffset.x,
+                                                                 locationOfTouchInLabel.y - textContainerOffset.y);
+            NSInteger indexOfCharacter = [self.layoutManager characterIndexForPoint:locationOfTouchInTextContainer
+                                                                    inTextContainer:self.textContainer
+                                           fractionOfDistanceBetweenInsertionPoints:nil];
+            if (NSLocationInRange(indexOfCharacter, _linkRange)) {
+                // Open an URL, or handle the tap on the link in any other way
+                NSString *url = [_serverLabel.text substringWithRange:_linkRange];
+                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"http://%@", url]]];
+            }
+    }
+}
+
+- (void) shareLink: (UITapGestureRecognizer *)tapGesture {
+    if (_serverSwitch.isOn) {
+        CGPoint locationOfTouchInLabel = [tapGesture locationInView:tapGesture.view];
+            CGSize labelSize = tapGesture.view.bounds.size;
+            CGRect textBoundingBox = [self.layoutManager usedRectForTextContainer:self.textContainer];
+            CGPoint textContainerOffset = CGPointMake((labelSize.width - textBoundingBox.size.width) * 1.0 - textBoundingBox.origin.x,
+                                                      (labelSize.height - textBoundingBox.size.height) * 0.5 - textBoundingBox.origin.y);
+            CGPoint locationOfTouchInTextContainer = CGPointMake(locationOfTouchInLabel.x - textContainerOffset.x,
+                                                                 locationOfTouchInLabel.y - textContainerOffset.y);
+            NSInteger indexOfCharacter = [self.layoutManager characterIndexForPoint:locationOfTouchInTextContainer
+                                                                    inTextContainer:self.textContainer
+                                           fractionOfDistanceBetweenInsertionPoints:nil];
+            if (NSLocationInRange(indexOfCharacter, _linkRange)) {
+                // Open an URL, or handle the tap on the link in any other way
+                NSString *url = [_serverLabel.text substringWithRange:_linkRange];
+                NSMutableArray *exportArray = [NSMutableArray array];
+                [exportArray addObject:[NSURL URLWithString:[NSString stringWithFormat:@"http://%@", url]]];
+                [self shareExportDataArray:exportArray];
+            }
+    }
 }
 
 - (void) longPressModeToggle: (UILongPressGestureRecognizer*) gesture {
@@ -1075,6 +1138,9 @@ BOOL buttonViewMoved;
         _selectedVoice = voice[0];
         [self loadSvgImage];
     }
+    else {
+        
+    }
 }
 
 - (BOOL) enterFullScoreAndOrParts {
@@ -1274,8 +1340,19 @@ float dropCreate;
 }
 
 -(void) updateServerLabel {
-    [self.serverLabel setText: [NSString stringWithFormat:@"connect to: http://%@.local:%d or %@:%d", self.server.hostName, self.server.port, [self getIPAddress], self.server.port]];
+    NSString *ip = [self getIPAddress];
+    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"connect to: http://%@.local:%d or %@:%d", self.server.hostName, self.server.port, ip, self.server.port] attributes:nil];
+    int startLink = (int)(attributedString.length-ip.length-6);
+    _linkRange = NSMakeRange(startLink, ip.length+6);
+
+    NSDictionary *linkAttributes = @{ NSForegroundColorAttributeName : [UIColor colorWithRed:0.05 green:0.4 blue:0.65 alpha:1.0],
+                                      NSUnderlineStyleAttributeName : @(NSUnderlineStyleSingle) };
+    [attributedString setAttributes:linkAttributes range:_linkRange];
+    [self.serverLabel setAttributedText:attributedString];
+    [_textStorage setAttributedString:attributedString];
+    _textContainer.maximumNumberOfLines = _serverLabel.numberOfLines;
 }
+
 - (IBAction)hideKeyboard:(id)sender {
     [_abcView endEditing:YES];
 }
